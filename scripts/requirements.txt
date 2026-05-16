@@ -1,0 +1,5 @@
+# Both scripts use Python stdlib only (urllib, json, re, os, sys, time, datetime).
+# No pip install required for the scripts themselves.
+#
+# Optional: install playwright for local UI testing only
+# pip install playwright && playwright install chromium

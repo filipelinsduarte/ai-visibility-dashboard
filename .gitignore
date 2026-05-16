@@ -1,0 +1,19 @@
+# Environment / secrets
+.env
+*.env
+
+# Generated snapshot output files
+snapshot.json
+snapshot-*.json
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor
+.vscode/
+.idea/
