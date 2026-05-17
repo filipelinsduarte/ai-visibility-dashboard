@@ -2002,7 +2002,7 @@ button[onclick="aimOpenAddPrompts()"] {
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--text-muted);">
-                <span id="aim-pr-used-count" style="font-weight:700;color:var(--text);">12</span><span>/</span><span>30 prompts used</span>
+                <span id="aim-pr-used-count" style="font-weight:700;color:var(--text);">12</span><span>/</span><span id="aim-pr-total-count">30</span><span> prompts</span>
                 <div style="width:36px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;"><div id="aim-pr-used-bar" style="width:40%;height:100%;background:var(--accent);border-radius:2px;"></div></div>
               </div>
               <button onclick="aimOpenAddPrompts()" style="display:flex;align-items:center;gap:4px;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Add more prompts</button>
@@ -4706,10 +4706,79 @@ function aimActivatePrompt(id) {
   if (p) p.status = 'active';
 }
 
+function aimUpdatePromptCounters() {
+  const total  = AIM_PROMPTS.length;
+  const active = AIM_PROMPTS.filter(p => p.status !== 'inactive').length || total;
+  const usedEl  = document.getElementById('aim-pr-used-count');
+  const totalEl = document.getElementById('aim-pr-total-count');
+  const barEl   = document.getElementById('aim-pr-used-bar');
+  if (usedEl)  usedEl.textContent  = active;
+  if (totalEl) totalEl.textContent = total;
+  if (barEl)   barEl.style.width   = Math.min(100, Math.round(active / Math.max(1, total) * 100)) + '%';
+  const badge = document.getElementById('aim-st-prompt-count-badge');
+  if (badge)   badge.textContent   = total + '/' + total;
+}
+
 function aimAddSuggestedPrompt(id, el) {
+  const sug = AIM_AP_SUGGESTED.find(p => p.id === id);
+  if (!sug) { el.textContent = 'Added!'; el.disabled = true; return; }
+
+  const newId = AIM_PROMPTS.length + 1;
+  AIM_PROMPTS.push({
+    id: newId, text: sug.text, topic: sug.topic || 'General',
+    intent: 'Commercial', models: ['ChatGPT','Gemini','Perplexity','Google AIO','Google AI Mode'],
+    visibility: 0, sentiment: 50, position: null, status: 'active',
+    frequency: 'daily', lastRun: null,
+  });
+  const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = {});
+  if (!snap.prompt_metrics) snap.prompt_metrics = [];
+  snap.prompt_metrics.push({
+    prompt_id: 'ap' + newId, prompt_text: sug.text,
+    topic: sug.topic || 'General', intent: 'Commercial',
+    visibility_all: 0, sentiment_all: 50, position_all: null, last_run: null,
+  });
+
+  aimUpdatePromptCounters();
+  aimStRenderPrompts();
+  if (aimPromptsTab === 'Active') aimRenderPromptsTable();
+
   el.textContent = 'Added!';
   el.disabled = true;
   el.style.background = 'var(--success)';
+}
+
+function aimManualAddPrompt() {
+  const body = document.getElementById('aim-ap-body');
+  if (!body) return;
+  const textarea = body.querySelector('textarea');
+  const selects  = body.querySelectorAll('select');
+  const text = (textarea?.value || '').trim();
+  if (!text) {
+    if (textarea) { textarea.style.outline = '2px solid var(--danger)'; textarea.focus(); }
+    return;
+  }
+  const topic = selects[0]?.value || 'General';
+  const freq  = selects[1]?.value || 'daily';
+
+  const newId = AIM_PROMPTS.length + 1;
+  AIM_PROMPTS.push({
+    id: newId, text, topic, intent: 'Commercial',
+    models: ['ChatGPT','Gemini','Perplexity','Google AIO','Google AI Mode'],
+    visibility: 0, sentiment: 50, position: null, status: 'active',
+    frequency: freq, lastRun: null,
+  });
+  const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = {});
+  if (!snap.prompt_metrics) snap.prompt_metrics = [];
+  snap.prompt_metrics.push({
+    prompt_id: 'ap' + newId, prompt_text: text,
+    topic, intent: 'Commercial',
+    visibility_all: 0, sentiment_all: 50, position_all: null, last_run: null,
+  });
+
+  aimUpdatePromptCounters();
+  aimStRenderPrompts();
+  if (aimPromptsTab === 'Active') aimRenderPromptsTable();
+  aimCloseAddPrompts();
 }
 
 /* ── PROMPT DETAIL ───────────────────────────────────────────────── */
@@ -6346,7 +6415,7 @@ function aimStRenderPrompts() {
   var search = (document.getElementById('aim-st-prompt-search') || {}).value || '';
   search = search.toLowerCase();
   var badge = document.getElementById('aim-st-prompt-count-badge');
-  if (badge) badge.textContent = metrics.length + '/100';
+  if (badge) badge.textContent = metrics.length + '/' + metrics.length;
   var filtered = search
     ? metrics.filter(function(m) { return (m.prompt_text || '').toLowerCase().includes(search); })
     : metrics;
@@ -6637,7 +6706,7 @@ function aimApTab(tab) {
         <div style="display:flex;gap:10px;flex-wrap:wrap">${['ChatGPT','Perplexity','Gemini','Claude'].map(m=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--accent)"> ${m}</label>`).join('')}</div>
       </div>`;
     if (footer) footer.innerHTML = `<button onclick="aimCloseAddPrompts()" style="padding:6px 14px;background:var(--surface-alt);border:1px solid var(--border);border-radius:5px;font-size:12px;cursor:pointer;font-family:var(--font)">Cancel</button>
-      <button style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">Add Prompt</button>`;
+      <button onclick="aimManualAddPrompt()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">Add Prompt</button>`;
   }
 }
 
@@ -7247,11 +7316,14 @@ function aimApplySnapshot(snap) {
   }
 
   // Update "prompts used" count chip and progress bar from real data
-  const _activePromptCount = AIM_PROMPTS.filter(p => p.status !== 'inactive').length || AIM_PROMPTS.length;
-  const _usedCountEl = document.getElementById('aim-pr-used-count');
-  const _usedBarEl   = document.getElementById('aim-pr-used-bar');
-  if (_usedCountEl) _usedCountEl.textContent = _activePromptCount;
-  if (_usedBarEl)   _usedBarEl.style.width = Math.min(100, Math.round(_activePromptCount / 30 * 100)) + '%';
+  const _totalPromptCount  = AIM_PROMPTS.length;
+  const _activePromptCount = AIM_PROMPTS.filter(p => p.status !== 'inactive').length || _totalPromptCount;
+  const _usedCountEl  = document.getElementById('aim-pr-used-count');
+  const _totalCountEl = document.getElementById('aim-pr-total-count');
+  const _usedBarEl    = document.getElementById('aim-pr-used-bar');
+  if (_usedCountEl)  _usedCountEl.textContent  = _activePromptCount;
+  if (_totalCountEl) _totalCountEl.textContent = _totalPromptCount;
+  if (_usedBarEl)    _usedBarEl.style.width = Math.min(100, Math.round(_activePromptCount / Math.max(1, _totalPromptCount) * 100)) + '%';
 
   // Rebuild URL domain filter dropdown from real top source URL domains
   const _urlDomDrop = document.getElementById('aim-url-domain-dropdown');
