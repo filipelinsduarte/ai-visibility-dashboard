@@ -1800,6 +1800,214 @@ button[onclick="aimOpenAddPrompts()"] {
 .aim-sc-convert-btn { font-size:11px; padding:3px 9px; background:none; border:1px solid var(--border); border-radius:6px; color:var(--text-muted); cursor:pointer; transition:all .12s; white-space:nowrap; }
 .aim-sc-convert-btn:hover { border-color:var(--accent-30); color:var(--accent); background:var(--accent-light); }
 @media (max-width:900px) { .aim-sc-stat-grid { grid-template-columns:repeat(2,1fr); } }
+.aim-nb-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 1200; opacity: 0; transition: opacity .2s;
+}
+.aim-nb-overlay.open { opacity: 1; }
+.aim-nb-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -48%);
+  z-index: 1201; width: 92%; max-width: 640px;
+  background: #fff; border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column;
+  max-height: 90vh; overflow: hidden;
+  opacity: 0; transition: opacity .2s, transform .2s;
+}
+.aim-nb-panel.open { opacity: 1; transform: translate(-50%, -50%); }
+.aim-nb-top {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.aim-nb-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.aim-nb-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.aim-nb-close {
+  width: 28px; height: 28px; border-radius: 7px; border: none;
+  background: transparent; cursor: pointer; font-size: 16px; line-height: 1;
+  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  transition: background .1s;
+}
+.aim-nb-close:hover { background: #f3f4f6; }
+.aim-nb-steps {
+  display: flex; align-items: center; gap: 0;
+}
+.aim-nb-step-item {
+  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+}
+.aim-nb-step-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--border); background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  transition: all .2s; flex-shrink: 0;
+}
+.aim-nb-step-item.active .aim-nb-step-dot {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.aim-nb-step-item.done .aim-nb-step-dot {
+  background: #d1fae5; border-color: #10b981; color: #065f46;
+}
+.aim-nb-step-label {
+  font-size: 11.5px; font-weight: 500; color: var(--text-muted);
+  transition: color .2s;
+}
+.aim-nb-step-item.active .aim-nb-step-label { color: var(--accent); font-weight: 600; }
+.aim-nb-step-item.done .aim-nb-step-label { color: #065f46; }
+.aim-nb-step-line {
+  flex: 1; height: 2px; background: var(--border); margin: 0 8px; min-width: 20px;
+  transition: background .2s;
+}
+.aim-nb-step-line.done { background: #10b981; }
+.aim-nb-body {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+}
+.aim-nb-body::-webkit-scrollbar { width: 4px; }
+.aim-nb-body::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+.aim-nb-footer {
+  padding: 14px 24px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; gap: 10px;
+}
+.aim-nb-field { margin-bottom: 14px; }
+.aim-nb-field-label {
+  font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 5px;
+}
+.aim-nb-field-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.aim-nb-input, .aim-nb-select, .aim-nb-textarea {
+  width: 100%; box-sizing: border-box;
+  padding: 8px 11px; border: 1px solid var(--border); border-radius: 7px;
+  font-size: 13px; font-family: var(--font); color: var(--text); background: #fff;
+  outline: none; transition: border-color .15s;
+}
+.aim-nb-input:focus, .aim-nb-select:focus, .aim-nb-textarea:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light);
+}
+.aim-nb-textarea { resize: vertical; min-height: 68px; }
+.aim-nb-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.aim-nb-mode-row {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.aim-nb-mode-btn {
+  flex: 1; padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  border: 2px solid var(--border); background: #fff; font-size: 12.5px;
+  font-weight: 500; color: var(--text-muted); font-family: var(--font);
+  transition: all .15s; text-align: center;
+}
+.aim-nb-mode-btn.active {
+  border-color: var(--accent); background: var(--accent-light);
+  color: var(--accent); font-weight: 600;
+}
+.aim-nb-autofill-row {
+  display: flex; gap: 8px; margin-bottom: 16px; align-items: flex-end;
+}
+.aim-nb-autofill-row .aim-nb-input { margin: 0; flex: 1; }
+.aim-nb-lookup-btn {
+  padding: 8px 14px; background: var(--accent); color: #fff; border: none;
+  border-radius: 7px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); white-space: nowrap; transition: opacity .15s;
+  flex-shrink: 0;
+}
+.aim-nb-lookup-btn:hover { opacity: .88; }
+.aim-nb-lookup-btn:disabled { opacity: .5; cursor: default; }
+.aim-nb-fetching {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text-muted); padding: 8px 0;
+}
+.aim-nb-fetching-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  animation: aimNbPulse 1s infinite;
+}
+@keyframes aimNbPulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .4; transform: scale(.7); }
+}
+.aim-nb-comp-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+}
+.aim-nb-comp-card {
+  padding: 10px 12px; border: 2px solid var(--border); border-radius: 9px;
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 9px;
+  background: #fff;
+}
+.aim-nb-comp-card:hover { border-color: var(--accent); background: var(--accent-light); }
+.aim-nb-comp-card.selected { border-color: var(--accent); background: var(--accent-light); }
+.aim-nb-comp-fav { width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0; }
+.aim-nb-comp-info { flex: 1; min-width: 0; }
+.aim-nb-comp-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.aim-nb-comp-url  { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aim-nb-comp-check {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; background: #fff;
+}
+.aim-nb-comp-card.selected .aim-nb-comp-check {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.aim-nb-add-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.aim-nb-add-row .aim-nb-input { flex: 1; margin: 0; }
+.aim-nb-add-row-btn {
+  padding: 8px 13px; background: var(--accent); color: #fff; border: none;
+  border-radius: 7px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); white-space: nowrap; transition: opacity .15s;
+}
+.aim-nb-add-row-btn:hover { opacity: .88; }
+.aim-nb-manual-list { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+.aim-nb-manual-tag {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  background: var(--surface-alt); border-radius: 6px; border: 1px solid var(--border);
+}
+.aim-nb-manual-tag-name { flex: 1; font-size: 12.5px; color: var(--text); }
+.aim-nb-manual-tag-del {
+  background: none; border: none; cursor: pointer; color: var(--text-muted);
+  font-size: 14px; line-height: 1; padding: 2px 4px; border-radius: 4px;
+}
+.aim-nb-manual-tag-del:hover { color: #ef4444; background: #fef2f2; }
+.aim-nb-intent-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.aim-nb-intent-pill {
+  padding: 6px 13px; border-radius: 99px; border: 2px solid var(--border);
+  background: #fff; font-size: 12px; font-weight: 500; cursor: pointer;
+  font-family: var(--font); transition: all .15s; color: var(--text-muted);
+}
+.aim-nb-intent-pill.active {
+  border-color: var(--accent); background: var(--accent-light);
+  color: var(--accent); font-weight: 600;
+}
+.aim-nb-gen-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 16px; background: var(--accent); color: #fff;
+  border: none; border-radius: 7px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); transition: opacity .15s;
+  margin-bottom: 14px;
+}
+.aim-nb-gen-btn:hover { opacity: .88; }
+.aim-nb-gen-btn:disabled { opacity: .5; cursor: default; }
+.aim-nb-prompt-list { display: flex; flex-direction: column; gap: 5px; max-height: 260px; overflow-y: auto; margin-bottom: 10px; }
+.aim-nb-prompt-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  background: var(--surface-alt); border-radius: 6px; border: 1px solid var(--border);
+}
+.aim-nb-prompt-text { flex: 1; font-size: 12px; color: var(--text); line-height: 1.35; }
+.aim-nb-prompt-del {
+  background: none; border: none; cursor: pointer; color: var(--text-muted);
+  font-size: 14px; line-height: 1; padding: 2px 4px; border-radius: 4px; flex-shrink: 0;
+}
+.aim-nb-prompt-del:hover { color: #ef4444; background: #fef2f2; }
+.aim-nb-prompt-count {
+  font-size: 11px; color: var(--text-muted); text-align: right; margin-bottom: 8px;
+}
+.aim-nb-section-hd {
+  font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; gap: 6px;
+}
+/* ── end Add New Brand ─────────────────────────────────── */
+
 </style>
 
 
@@ -3762,7 +3970,7 @@ function aimRenderTopbar() {
   const dropdownFooter = '<div class="aim-bd-footer">'
     + (_atLimit
         ? '<div class="aim-bd-footer-item upgrade" onclick="event.stopPropagation()">' + _icoCrown + 'Upgrade to Add More</div>'
-        : '<div class="aim-bd-footer-item aim-add-brand-btn" onclick="event.stopPropagation()">' + _icoPlus + 'Add New Brand</div>')
+        : '<div class="aim-bd-footer-item aim-add-brand-btn" onclick="event.stopPropagation();aimOpenAddBrand()">' + _icoPlus + 'Add New Brand</div>')
     + '<div class="aim-bd-footer-item aim-mgr-open-btn">' + _icoGear + 'Manage Brands</div>'
     + '</div>';
 
@@ -8046,6 +8254,454 @@ function _aimMgrFilter(q) {
   });
 }
 // ── end Manage Brands ──────────────────────────────────────────────────────
+
+var _aimNewBrand = {
+  step: 1,
+  mode: 'auto',
+  lookupUrl: '',
+  name: '', description: '', url: '', industry: '',
+  selectedComps: {},   // name → {name, domain}
+  manualComps: [],     // [{name, domain}]
+  language: 'English',
+  location: 'United States',
+  intents: ['Commercial', 'Informational'],
+  prompts: [],         // [{text, intent}]
+};
+
+var _AIM_INDUSTRIES = [
+  'SaaS & Software','E-Commerce','Healthcare','Finance & Fintech',
+  'Marketing & SEO','AI & Machine Learning','Education','Real Estate',
+  'Travel & Hospitality','Food & Beverage','Fashion & Apparel',
+  'Professional Services','Cybersecurity','Media & Publishing','Legal','Retail'
+];
+
+var _AIM_SUGGESTED_COMPS = {
+  'Marketing & SEO':        [{name:'Semrush',domain:'semrush.com'},{name:'Ahrefs',domain:'ahrefs.com'},{name:'Moz',domain:'moz.com'},{name:'HubSpot',domain:'hubspot.com'},{name:'BrightEdge',domain:'brightedge.com'},{name:'Conductor',domain:'conductor.com'}],
+  'AI & Machine Learning':  [{name:'OpenAI',domain:'openai.com'},{name:'Anthropic',domain:'anthropic.com'},{name:'Google DeepMind',domain:'deepmind.google'},{name:'Mistral',domain:'mistral.ai'},{name:'Cohere',domain:'cohere.com'},{name:'Perplexity',domain:'perplexity.ai'}],
+  'SaaS & Software':        [{name:'G2',domain:'g2.com'},{name:'Capterra',domain:'capterra.com'},{name:'Product Hunt',domain:'producthunt.com'},{name:'Trustpilot',domain:'trustpilot.com'},{name:'GetApp',domain:'getapp.com'},{name:'Gartner',domain:'gartner.com'}],
+  'E-Commerce':             [{name:'Shopify',domain:'shopify.com'},{name:'WooCommerce',domain:'woocommerce.com'},{name:'BigCommerce',domain:'bigcommerce.com'},{name:'Magento',domain:'magento.com'},{name:'Squarespace',domain:'squarespace.com'}],
+  'Healthcare':             [{name:'WebMD',domain:'webmd.com'},{name:'Healthline',domain:'healthline.com'},{name:'Zocdoc',domain:'zocdoc.com'},{name:'Practo',domain:'practo.com'},{name:'Oscar Health',domain:'hioscar.com'}],
+  'Finance & Fintech':      [{name:'Stripe',domain:'stripe.com'},{name:'Plaid',domain:'plaid.com'},{name:'Square',domain:'squareup.com'},{name:'Brex',domain:'brex.com'},{name:'Wise',domain:'wise.com'},{name:'Revolut',domain:'revolut.com'}],
+  'Education':              [{name:'Coursera',domain:'coursera.org'},{name:'Udemy',domain:'udemy.com'},{name:'Khan Academy',domain:'khanacademy.org'},{name:'Duolingo',domain:'duolingo.com'},{name:'Skillshare',domain:'skillshare.com'}],
+};
+var _AIM_DEFAULT_COMPS = [{name:'Competitor A',domain:'competitora.com'},{name:'Competitor B',domain:'competitorb.com'},{name:'Competitor C',domain:'competitorc.com'},{name:'Competitor D',domain:'competitord.com'},{name:'Competitor E',domain:'competitore.com'}];
+
+var _AIM_LANGUAGES = ['English','Spanish','French','German','Portuguese','Italian','Dutch','Polish','Swedish','Japanese','Chinese (Simplified)'];
+var _AIM_LOCATIONS = ['United States','United Kingdom','Canada','Australia','Germany','France','Spain','Brazil','India','Global'];
+
+function aimOpenAddBrand() {
+  document.querySelectorAll('.aim-brand-dropdown.open, [id$="-portal"].aim-brand-dropdown.open').forEach(function(el){ el.classList.remove('open'); el.style.display='none'; });
+  _aimNewBrand = { step:1, mode:'auto', lookupUrl:'', name:'', description:'', url:'', industry:'', selectedComps:{}, manualComps:[], language:'English', location:'United States', intents:['Commercial','Informational'], prompts:[] };
+  var existing = document.getElementById('aim-nb-root');
+  if (existing) existing.remove();
+  var root = document.createElement('div');
+  root.id = 'aim-nb-root';
+  root.innerHTML = '<div class="aim-nb-overlay" id="aim-nb-overlay" onclick="aimCloseAddBrand()"></div><div class="aim-nb-panel" id="aim-nb-panel"></div>';
+  document.body.appendChild(root);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    var o = document.getElementById('aim-nb-overlay');
+    var p = document.getElementById('aim-nb-panel');
+    if (o) o.classList.add('open');
+    if (p) p.classList.add('open');
+    _aimNbRender();
+  }); });
+}
+
+function aimCloseAddBrand() {
+  var o = document.getElementById('aim-nb-overlay');
+  var p = document.getElementById('aim-nb-panel');
+  if (o) o.classList.remove('open');
+  if (p) p.classList.remove('open');
+  setTimeout(function(){ var r = document.getElementById('aim-nb-root'); if(r) r.remove(); }, 250);
+}
+
+function _aimNbRender() {
+  var p = document.getElementById('aim-nb-panel');
+  if (!p) return;
+  var s = _aimNewBrand.step;
+  var stepLabels = ['Brand Info','Competitors','Prompts'];
+  var stepsHtml = stepLabels.map(function(lbl, i) {
+    var n = i + 1;
+    var cls = n < s ? 'done' : (n === s ? 'active' : '');
+    var dotInner = n < s
+      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      : n;
+    var line = i < 2 ? '<div class="aim-nb-step-line' + (n < s ? ' done' : '') + '"></div>' : '';
+    return '<div class="aim-nb-step-item ' + cls + '">'
+      + '<div class="aim-nb-step-dot">' + dotInner + '</div>'
+      + '<span class="aim-nb-step-label">' + lbl + '</span>'
+      + '</div>' + line;
+  }).join('');
+
+  var bodyHtml = s === 1 ? _aimNbStep1Html() : (s === 2 ? _aimNbStep2Html() : _aimNbStep3Html());
+
+  var backBtn = s > 1
+    ? '<button onclick="aimNbPrev()" style="padding:8px 18px;border:1px solid var(--border);background:#fff;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);color:var(--text);">Back</button>'
+    : '<div></div>';
+  var nextLabel = s === 3 ? 'Create Brand' : 'Next →';
+  var nextStyle = s === 3 ? 'background:#10b981;' : 'background:var(--accent);';
+  var nextBtn = '<button onclick="aimNbNext()" style="padding:8px 20px;' + nextStyle + 'color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">' + nextLabel + '</button>';
+
+  p.innerHTML = '<div class="aim-nb-top">'
+    + '<div class="aim-nb-title-row"><span class="aim-nb-title">Add New Brand</span><button class="aim-nb-close" onclick="aimCloseAddBrand()">&#x2715;</button></div>'
+    + '<div class="aim-nb-steps">' + stepsHtml + '</div>'
+    + '</div>'
+    + '<div class="aim-nb-body">' + bodyHtml + '</div>'
+    + '<div class="aim-nb-footer">' + backBtn + nextBtn + '</div>';
+
+  _aimNbBindStep(s);
+}
+
+function _aimNbStep1Html() {
+  var nb = _aimNewBrand;
+  var modeAuto = nb.mode === 'auto';
+  var indOpts = _AIM_INDUSTRIES.map(function(ind) {
+    return '<option value="' + ind + '"' + (nb.industry === ind ? ' selected' : '') + '>' + ind + '</option>';
+  }).join('');
+
+  return '<div class="aim-nb-mode-row">'
+    + '<button class="aim-nb-mode-btn' + (modeAuto ? ' active' : '') + '" onclick="aimNbSetMode(\'auto\')">'
+    +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Auto-fill from URL</button>'
+    + '<button class="aim-nb-mode-btn' + (!modeAuto ? ' active' : '') + '" onclick="aimNbSetMode(\'manual\')">'
+    +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manual entry</button>'
+    + '</div>'
+    + (modeAuto
+      ? '<div class="aim-nb-autofill-row">'
+        + '<input id="aim-nb-lookup-url" class="aim-nb-input" type="text" placeholder="https://yourbrand.com" value="' + aimEscHtml(nb.lookupUrl) + '" onkeydown="if(event.key===\'Enter\')aimNbLookup()">'
+        + '<button id="aim-nb-lookup-btn" class="aim-nb-lookup-btn" onclick="aimNbLookup()">Look up</button>'
+        + '</div>'
+        + '<div id="aim-nb-fetch-status"></div>'
+      : '')
+    + '<div id="aim-nb-fields-section">'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label">Brand Name <span style="color:#ef4444">*</span></div>'
+    +   '<input id="aim-nb-name" class="aim-nb-input" type="text" placeholder="e.g. Acme Corp" value="' + aimEscHtml(nb.name) + '"></div>'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label">Short Description</div>'
+    +   '<textarea id="aim-nb-desc" class="aim-nb-textarea" placeholder="Briefly describe what your brand does...">' + aimEscHtml(nb.description) + '</textarea></div>'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label">Website URL <span style="color:#ef4444">*</span></div>'
+    +   '<input id="aim-nb-website" class="aim-nb-input" type="text" placeholder="https://yourbrand.com" value="' + aimEscHtml(nb.url) + '"></div>'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label">Industry <span style="color:#ef4444">*</span></div>'
+    +   '<select id="aim-nb-industry" class="aim-nb-select"><option value="">— Select industry —</option>' + indOpts + '</select></div>'
+    + '</div>';
+}
+
+function _aimNbStep2Html() {
+  var nb = _aimNewBrand;
+  var sugg = _AIM_SUGGESTED_COMPS[nb.industry] || _AIM_DEFAULT_COMPS;
+  var compCards = sugg.map(function(c) {
+    var isSel = !!nb.selectedComps[c.name];
+    var favUrl = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(c.domain) + '&sz=64';
+    var fl = (c.name[0]||'?').toUpperCase();
+    var fc = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6'][c.name.charCodeAt(0)%6];
+    var checkSvg = isSel ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+    return '<div class="aim-nb-comp-card' + (isSel ? ' selected' : '') + '" onclick="aimNbToggleComp(\'' + c.name.replace(/'/g,'\\\'') + '\',\'' + c.domain + '\')" data-comp-name="' + aimEscHtml(c.name) + '">'
+      + '<img class="aim-nb-comp-fav" src="' + favUrl + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+      + '<div style="display:none;width:26px;height:26px;border-radius:6px;background:' + fc + ';align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">' + fl + '</div>'
+      + '<div class="aim-nb-comp-info"><div class="aim-nb-comp-name">' + aimEscHtml(c.name) + '</div><div class="aim-nb-comp-url">' + c.domain + '</div></div>'
+      + '<div class="aim-nb-comp-check">' + checkSvg + '</div>'
+      + '</div>';
+  }).join('');
+
+  var manualTags = nb.manualComps.map(function(c, i) {
+    return '<div class="aim-nb-manual-tag">'
+      + '<span class="aim-nb-manual-tag-name">' + aimEscHtml(c.name) + (c.domain ? ' <span style="color:var(--text-muted);font-size:11px">— ' + c.domain + '</span>' : '') + '</span>'
+      + '<button class="aim-nb-manual-tag-del" onclick="aimNbRemoveManualComp(' + i + ')">&#x2715;</button>'
+      + '</div>';
+  }).join('');
+
+  return '<div class="aim-nb-section-hd">'
+    +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+    +   'Suggested Competitors'
+    +   '<span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:auto;">Based on your industry</span>'
+    + '</div>'
+    + '<div class="aim-nb-comp-grid">' + compCards + '</div>'
+    + '<div class="aim-nb-section-hd" style="margin-top:4px;">'
+    +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+    +   'Add Manually'
+    + '</div>'
+    + '<div class="aim-nb-add-row" style="margin-bottom:8px;">'
+    +   '<input id="aim-nb-comp-inp" class="aim-nb-input" type="text" placeholder="Brand name or website URL" onkeydown="if(event.key===\'Enter\')aimNbAddManualComp()">'
+    +   '<button class="aim-nb-add-row-btn" onclick="aimNbAddManualComp()">Add</button>'
+    + '</div>'
+    + (manualTags ? '<div class="aim-nb-manual-list">' + manualTags + '</div>' : '');
+}
+
+function _aimNbStep3Html() {
+  var nb = _aimNewBrand;
+  var langOpts = _AIM_LANGUAGES.map(function(l){ return '<option value="' + l + '"' + (nb.language===l?' selected':'') + '>' + l + '</option>'; }).join('');
+  var locOpts  = _AIM_LOCATIONS.map(function(l){ return '<option value="' + l + '"' + (nb.location===l?' selected':'') + '>' + l + '</option>'; }).join('');
+  var intentPills = ['Commercial','Informational','Transactional','Navigational'].map(function(intent) {
+    var active = nb.intents.indexOf(intent) !== -1;
+    return '<button class="aim-nb-intent-pill' + (active ? ' active' : '') + '" onclick="aimNbToggleIntent(\'' + intent + '\')">' + intent + '</button>';
+  }).join('');
+  var promptItems = nb.prompts.map(function(pt, i) {
+    return '<div class="aim-nb-prompt-item">'
+      + '<span class="aim-nb-prompt-text">' + aimEscHtml(pt) + '</span>'
+      + '<button class="aim-nb-prompt-del" onclick="aimNbRemovePrompt(' + i + ')">&#x2715;</button>'
+      + '</div>';
+  }).join('');
+  var promptCount = nb.prompts.length;
+  var promptLimit = 100;
+
+  return '<div class="aim-nb-2col" style="margin-bottom:14px;">'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label">Language</div>'
+    +   '<select id="aim-nb-lang" class="aim-nb-select">' + langOpts + '</select></div>'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label">Target Market</div>'
+    +   '<select id="aim-nb-loc" class="aim-nb-select">' + locOpts + '</select></div>'
+    + '</div>'
+    + '<div class="aim-nb-field"><div class="aim-nb-field-label" style="margin-bottom:8px;">Prompt Intent</div>'
+    +   '<div class="aim-nb-intent-row">' + intentPills + '</div></div>'
+    + '<button class="aim-nb-gen-btn" id="aim-nb-gen-btn" onclick="aimNbGeneratePrompts()">'
+    +   '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>'
+    +   'Generate Prompts with AI'
+    + '</button>'
+    + '<div class="aim-nb-section-hd">'
+    +   'Your Prompts <span style="font-size:11px;font-weight:500;color:var(--text-muted);margin-left:4px;">(' + promptCount + '/' + promptLimit + ')</span>'
+    + '</div>'
+    + (promptItems ? '<div class="aim-nb-prompt-list">' + promptItems + '</div>' : '<div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:12px;">No prompts yet — generate with AI or add manually below.</div>')
+    + '<div class="aim-nb-add-row">'
+    +   '<input id="aim-nb-prompt-inp" class="aim-nb-input" type="text" placeholder="Add a prompt manually..." onkeydown="if(event.key===\'Enter\')aimNbAddManualPrompt()">'
+    +   '<button class="aim-nb-add-row-btn" onclick="aimNbAddManualPrompt()">Add</button>'
+    + '</div>';
+}
+
+function _aimNbBindStep(s) {
+  if (s === 1) {
+    var nameEl = document.getElementById('aim-nb-name');
+    if (nameEl) nameEl.addEventListener('input', function(){ _aimNewBrand.name = this.value; });
+    var descEl = document.getElementById('aim-nb-desc');
+    if (descEl) descEl.addEventListener('input', function(){ _aimNewBrand.description = this.value; });
+    var webEl = document.getElementById('aim-nb-website');
+    if (webEl) webEl.addEventListener('input', function(){ _aimNewBrand.url = this.value; });
+    var indEl = document.getElementById('aim-nb-industry');
+    if (indEl) indEl.addEventListener('change', function(){ _aimNewBrand.industry = this.value; });
+  }
+  if (s === 3) {
+    var langEl = document.getElementById('aim-nb-lang');
+    if (langEl) langEl.addEventListener('change', function(){ _aimNewBrand.language = this.value; });
+    var locEl = document.getElementById('aim-nb-loc');
+    if (locEl) locEl.addEventListener('change', function(){ _aimNewBrand.location = this.value; });
+  }
+}
+
+function aimNbSetMode(mode) {
+  _aimNbSaveStep1Fields();
+  _aimNewBrand.mode = mode;
+  _aimNbRender();
+}
+
+function _aimNbSaveStep1Fields() {
+  var n = document.getElementById('aim-nb-name');
+  var d = document.getElementById('aim-nb-desc');
+  var w = document.getElementById('aim-nb-website');
+  var i = document.getElementById('aim-nb-industry');
+  if (n) _aimNewBrand.name = n.value;
+  if (d) _aimNewBrand.description = d.value;
+  if (w) _aimNewBrand.url = w.value;
+  if (i) _aimNewBrand.industry = i.value;
+}
+
+function aimNbLookup() {
+  var urlEl = document.getElementById('aim-nb-lookup-url');
+  if (!urlEl) return;
+  var raw = urlEl.value.trim();
+  if (!raw) return;
+  _aimNewBrand.lookupUrl = raw;
+  var statusEl = document.getElementById('aim-nb-fetch-status');
+  var btn = document.getElementById('aim-nb-lookup-btn');
+  if (btn) btn.disabled = true;
+  if (statusEl) statusEl.innerHTML = '<div class="aim-nb-fetching"><div class="aim-nb-fetching-dot"></div>Fetching brand info…</div>';
+  setTimeout(function() {
+    // Simulate auto-fill
+    var domain = raw.replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*$/,'').toLowerCase();
+    var parts   = domain.split('.');
+    var slug    = parts[0] || 'brand';
+    var brandName = slug.charAt(0).toUpperCase() + slug.slice(1);
+    _aimNewBrand.name = brandName;
+    _aimNewBrand.url  = 'https://' + domain;
+    _aimNewBrand.description = brandName + ' is a leading platform that helps businesses achieve their goals through innovative technology and exceptional service.';
+    // Guess industry
+    var kw = domain.toLowerCase();
+    var guessedInd = 'SaaS & Software';
+    if (/shop|store|buy|commerce/.test(kw)) guessedInd = 'E-Commerce';
+    else if (/health|med|clinic|care/.test(kw)) guessedInd = 'Healthcare';
+    else if (/pay|bank|finance|money/.test(kw)) guessedInd = 'Finance & Fintech';
+    else if (/ai|ml|gpt|llm/.test(kw)) guessedInd = 'AI & Machine Learning';
+    else if (/seo|rank|search|ahrefs|semrush/.test(kw)) guessedInd = 'Marketing & SEO';
+    _aimNewBrand.industry = guessedInd;
+    if (statusEl) statusEl.innerHTML = '<div style="font-size:12px;color:#10b981;padding:6px 0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Brand info fetched — review and adjust below.</div>';
+    if (btn) btn.disabled = false;
+    _aimNbRender();
+  }, 1200);
+}
+
+function aimNbToggleComp(name, domain) {
+  if (_aimNewBrand.selectedComps[name]) {
+    delete _aimNewBrand.selectedComps[name];
+  } else {
+    _aimNewBrand.selectedComps[name] = { name: name, domain: domain };
+  }
+  // Update just this card visually
+  var card = document.querySelector('.aim-nb-comp-card[data-comp-name="' + name.replace(/"/g,'&quot;') + '"]');
+  if (card) {
+    var isSel = !!_aimNewBrand.selectedComps[name];
+    card.classList.toggle('selected', isSel);
+    var chk = card.querySelector('.aim-nb-comp-check');
+    if (chk) chk.innerHTML = isSel ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+  }
+}
+
+function aimNbAddManualComp() {
+  var inp = document.getElementById('aim-nb-comp-inp');
+  if (!inp) return;
+  var val = inp.value.trim();
+  if (!val) return;
+  var isDomain = /\./.test(val) && !/\s/.test(val);
+  var entry = isDomain
+    ? { name: val.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0], domain: val.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0] }
+    : { name: val, domain: '' };
+  _aimNewBrand.manualComps.push(entry);
+  inp.value = '';
+  _aimNbRender();
+}
+
+function aimNbRemoveManualComp(i) {
+  _aimNewBrand.manualComps.splice(i, 1);
+  _aimNbRender();
+}
+
+function aimNbToggleIntent(intent) {
+  var nb = _aimNewBrand;
+  var idx = nb.intents.indexOf(intent);
+  if (idx !== -1) { if (nb.intents.length > 1) nb.intents.splice(idx, 1); }
+  else nb.intents.push(intent);
+  _aimNbRender();
+}
+
+function aimNbGeneratePrompts() {
+  var nb = _aimNewBrand;
+  var btn = document.getElementById('aim-nb-gen-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  setTimeout(function() {
+    var name = nb.name || 'Your Brand';
+    var loc  = nb.location || 'United States';
+    var gen  = [];
+    if (nb.intents.indexOf('Commercial') !== -1) {
+      gen.push('Best ' + name + ' alternatives for ' + loc + ' businesses');
+      gen.push('What are the top ' + name + ' competitors in ' + loc + '?');
+      gen.push('Is ' + name + ' worth it? Honest review');
+      gen.push('How does ' + name + ' compare to competitors?');
+      gen.push('Best ' + name + ' pricing plans for startups');
+    }
+    if (nb.intents.indexOf('Informational') !== -1) {
+      gen.push('How does ' + name + ' work?');
+      gen.push('What is ' + name + ' used for?');
+      gen.push('Key benefits of using ' + name);
+      gen.push(name + ' features and capabilities explained');
+      gen.push('Who is ' + name + ' best suited for?');
+    }
+    if (nb.intents.indexOf('Transactional') !== -1) {
+      gen.push(name + ' pricing — what does it cost?');
+      gen.push(name + ' free trial — how to get started');
+      gen.push(name + ' discount codes and deals');
+      gen.push('How to sign up for ' + name);
+    }
+    if (nb.intents.indexOf('Navigational') !== -1) {
+      gen.push(name + ' login and account access');
+      gen.push(name + ' documentation and help center');
+      gen.push(name + ' customer support options');
+    }
+    // Merge with existing, cap at 100
+    var existing = nb.prompts.map(function(p){ return p.toLowerCase(); });
+    gen.forEach(function(t) {
+      if (nb.prompts.length < 100 && existing.indexOf(t.toLowerCase()) === -1) {
+        nb.prompts.push(t);
+        existing.push(t.toLowerCase());
+      }
+    });
+    _aimNbRender();
+  }, 1400);
+}
+
+function aimNbAddManualPrompt() {
+  var inp = document.getElementById('aim-nb-prompt-inp');
+  if (!inp) return;
+  var val = inp.value.trim();
+  if (!val) return;
+  if (_aimNewBrand.prompts.length >= 100) return;
+  _aimNewBrand.prompts.push(val);
+  inp.value = '';
+  _aimNbRender();
+}
+
+function aimNbRemovePrompt(i) {
+  _aimNewBrand.prompts.splice(i, 1);
+  _aimNbRender();
+}
+
+function aimNbPrev() {
+  if (_aimNewBrand.step <= 1) return;
+  _aimNewBrand.step--;
+  _aimNbRender();
+}
+
+function aimNbNext() {
+  var nb = _aimNewBrand;
+  if (nb.step === 1) {
+    _aimNbSaveStep1Fields();
+    if (!nb.name.trim()) { alert('Please enter a brand name.'); return; }
+    if (!nb.url.trim())  { alert('Please enter a website URL.'); return; }
+    if (!nb.industry)    { alert('Please select an industry.'); return; }
+    nb.step = 2;
+    _aimNbRender();
+  } else if (nb.step === 2) {
+    nb.step = 3;
+    _aimNbRender();
+  } else if (nb.step === 3) {
+    _aimNbCreateBrand();
+  }
+}
+
+function _aimNbCreateBrand() {
+  var nb = _aimNewBrand;
+  var snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = {});
+  if (!snap.all_brands) snap.all_brands = [];
+  var newId = 'nb-' + Date.now();
+  var domain = nb.url.replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*$/,'');
+  var newBrand = {
+    id: newId, name: nb.name, domain: domain,
+    industry: nb.industry, location: nb.location,
+    promptCount: nb.prompts.length,
+    analysisEnabled: true,
+    lastAnalysisAt: new Date().toISOString(),
+  };
+  snap.all_brands.unshift(newBrand);
+  // Add prompts to AIM_PROMPTS
+  var baseId = AIM_PROMPTS.length + 1;
+  nb.prompts.forEach(function(txt, i) {
+    AIM_PROMPTS.push({
+      id: baseId + i, text: txt, topic: nb.industry,
+      intent: (nb.intents[0] || 'Commercial'), status: 'active',
+      models: ['ChatGPT','Gemini','Perplexity'],
+      visibility: 0, sentiment: 50, position: null,
+      frequency: 'daily', lastRun: null,
+    });
+  });
+  aimUpdatePromptCounters();
+  if (typeof aimRenderTopbar === 'function') aimRenderTopbar();
+  if (typeof aimStRenderPrompts === 'function') try { aimStRenderPrompts(); } catch(e) {}
+  aimCloseAddBrand();
+  // Show success toast
+  setTimeout(function() {
+    var toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 20px;border-radius:9px;font-size:13px;font-weight:500;font-family:var(--font);z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);';
+    toast.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><b>' + aimEscHtml(nb.name) + '</b>&nbsp;has been added to your account.';
+    document.body.appendChild(toast);
+    setTimeout(function(){ toast.style.opacity='0'; toast.style.transition='opacity .4s'; setTimeout(function(){ toast.remove(); },400); }, 3000);
+  }, 300);
+}
+
+// ── end Add New Brand ───────────────────────────────────────────────────────
+
 
 </script>
 </body>
