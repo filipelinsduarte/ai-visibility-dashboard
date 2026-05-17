@@ -5500,13 +5500,9 @@ function _aimResolveBrandDomain(brandObj) {
 }
 
 function aimPmFavCheck(img) {
-  if (img.naturalWidth <= 16 && !img.dataset.fb) {
-    img.dataset.fb = '1';
-    const domain = img.dataset.domain;
+  if (img.naturalWidth <= 16) {
     const hasBn = !!img.dataset.bn;
-    img.onload  = function() { if (this.naturalWidth <= 16) { hasBn ? aimFavError(this) : (this.style.display = 'none'); } };
-    img.onerror = function() { hasBn ? aimFavError(this) : (this.style.display = 'none'); };
-    img.src = 'https://icons.duckduckgo.com/ip3/' + domain + '.ico';
+    hasBn ? aimFavError(img) : (img.style.display = 'none');
   }
 }
 
@@ -5547,7 +5543,7 @@ function aimRenderCompPromptMatrix() {
         html += `<td><span class="aim-pm-fav-letter${isMain ? ' is-main' : ''}" style="background:${_lbg};color:#fff;border-color:transparent" title="${safeName}" data-bn="${safeName}" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()">${b.n.substring(0, 2).toUpperCase()}</span></td>`;
         return;
       }
-      html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://${domain}/favicon.ico" alt="${safeName}" data-bn="${safeName}" loading="lazy" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
+      html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${safeName}" data-bn="${safeName}" data-domain="${domain}" loading="lazy" onload="aimPmFavCheck(this)" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
     });
     html += '</tr>';
   });
