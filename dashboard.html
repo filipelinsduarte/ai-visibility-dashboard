@@ -492,6 +492,8 @@ tbody td { padding: 9px 12px; }
 .aim-bd-footer-item:hover { background: #f9fafb; }
 .aim-bd-footer-item.upgrade { color: #c2622a; font-weight: 500; }
 .aim-bd-footer-item.upgrade:hover { background: #fff7ed; }
+.aim-bd-footer-item.aim-add-brand-btn { color: var(--accent); font-weight: 500; }
+.aim-bd-footer-item.aim-add-brand-btn:hover { background: var(--accent-light); }
 .aim-bd-footer-item svg { flex-shrink:0; }
 /* Hidden */
 .aim-brand-opt-hidden, .aim-bd-item-hidden { display:none !important; }
@@ -3697,13 +3699,20 @@ function aimRenderTopbar() {
   const _snapBrandId = (window._AIM_SNAPSHOT && window._AIM_SNAPSHOT.brand_id) || '';
   const _selBrandId  = window._aimSelectedApiBrandId || _snapBrandId;
   const _snapBrand   = _apiBrands.find(function(b){ return b.id === _snapBrandId; });
-  const _activeCount = _apiBrands.filter(function(b){ return b.analysisEnabled !== false; }).length;
+  const _activeCount = _apiBrands.filter(function(b){
+    if (window._aimMgrDeleted && window._aimMgrDeleted[b.id]) return false;
+    if (window._aimMgrToggles && window._aimMgrToggles[b.id] !== undefined) return window._aimMgrToggles[b.id];
+    return b.analysisEnabled !== false;
+  }).length;
+  const AIM_BRAND_LIMIT = 20;
+  const _atLimit = _activeCount >= AIM_BRAND_LIMIT;
 
   // SVG icons
   const _icoPin  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>';
   const _icoMsg  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
   const _icoClock= '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
   const _icoChk  = '<svg class="aim-bd-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  const _icoPlus = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
   const _icoSearch='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
   const _icoSort = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>';
   const _icoCrown= '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21 5.5l-2 10H5L3 5.5l4.094 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>';
@@ -3739,7 +3748,7 @@ function aimRenderTopbar() {
   // Full dropdown HTML
   const searchBar = '<div class="aim-bd-header">'
     + '<div class="aim-bd-header-left"><span class="aim-bd-title">Switch Brand</span><span class="aim-bd-plan-badge">Custom Plan</span></div>'
-    + '<div class="aim-bd-header-right"><span class="aim-bd-count">' + _activeCount + '/20 active</span><span class="aim-bd-limit-badge">Limit reached</span></div>'
+    + '<div class="aim-bd-header-right"><span class="aim-bd-count">' + _activeCount + '/' + AIM_BRAND_LIMIT + ' active</span>' + (_atLimit ? '<span class="aim-bd-limit-badge">Limit reached</span>' : '') + '</div>'
     + '</div>'
     + '<div class="aim-bd-search-row">'
     + '<div class="aim-bd-search-wrap">' + _icoSearch + '<input class="aim-bd-search" type="text" placeholder="Search..." oninput="aimBrandSearch(this.value)" onclick="event.stopPropagation()"></div>'
@@ -3751,7 +3760,9 @@ function aimRenderTopbar() {
     + '</div>';
 
   const dropdownFooter = '<div class="aim-bd-footer">'
-    + '<div class="aim-bd-footer-item upgrade" onclick="event.stopPropagation()">' + _icoCrown + 'Upgrade to Add More</div>'
+    + (_atLimit
+        ? '<div class="aim-bd-footer-item upgrade" onclick="event.stopPropagation()">' + _icoCrown + 'Upgrade to Add More</div>'
+        : '<div class="aim-bd-footer-item aim-add-brand-btn" onclick="event.stopPropagation()">' + _icoPlus + 'Add New Brand</div>')
     + '<div class="aim-bd-footer-item aim-mgr-open-btn">' + _icoGear + 'Manage Brands</div>'
     + '</div>';
 
@@ -8009,6 +8020,7 @@ function aimMgrToggle(brandId, isOn) {
   var totalN  = brands.filter(function(b){ return !window._aimMgrDeleted[b.id]; }).length;
   var statsEl = document.querySelector('.aim-mgr-stats');
   if (statsEl) statsEl.textContent = activeN + '/' + totalN + ' active brands • ' + (totalN - activeN) + ' paused • Custom Plan';
+  if (typeof aimRenderTopbar === 'function') aimRenderTopbar();
 }
 
 function aimMgrDelete(brandId) {
@@ -8022,6 +8034,7 @@ function aimMgrDelete(brandId) {
   var totalN  = brands.filter(function(b){ return !window._aimMgrDeleted[b.id]; }).length;
   var statsEl = document.querySelector('.aim-mgr-stats');
   if (statsEl) statsEl.textContent = activeN + '/' + totalN + ' active brands • ' + (totalN - activeN) + ' paused • Custom Plan';
+  if (typeof aimRenderTopbar === 'function') aimRenderTopbar();
 }
 
 function _aimMgrFilter(q) {
