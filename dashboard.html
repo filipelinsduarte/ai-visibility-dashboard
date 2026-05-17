@@ -1800,6 +1800,7 @@ button[onclick="aimOpenAddPrompts()"] {
 .aim-sc-convert-btn { font-size:11px; padding:3px 9px; background:none; border:1px solid var(--border); border-radius:6px; color:var(--text-muted); cursor:pointer; transition:all .12s; white-space:nowrap; }
 .aim-sc-convert-btn:hover { border-color:var(--accent-30); color:var(--accent); background:var(--accent-light); }
 @media (max-width:900px) { .aim-sc-stat-grid { grid-template-columns:repeat(2,1fr); } }
+/* ── Add New Brand wizard ────────────────────────────── */
 .aim-nb-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45);
   z-index: 1200; opacity: 0; transition: opacity .2s;
@@ -2047,6 +2048,36 @@ button[onclick="aimOpenAddPrompts()"] {
 .aim-nb-sel-fav { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; object-fit: cover; }
 .aim-nb-sel-tag-name { flex: 1; font-size: 12.5px; color: var(--text); font-weight: 500; }
 .aim-nb-sel-tag-domain { font-size: 11px; color: var(--text-muted); }
+.aim-nb-comp-action-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 8px;
+}
+.aim-nb-comp-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0;
+}
+.aim-nb-comp-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 8px 4px 6px; background: var(--surface-alt);
+  border: 1px solid var(--border); border-radius: 20px;
+  font-size: 11.5px; font-weight: 500; color: var(--text);
+  white-space: nowrap; max-width: 160px;
+}
+.aim-nb-comp-chip img {
+  width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; object-fit: cover;
+}
+.aim-nb-comp-chip-letter {
+  width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; color: #fff;
+}
+.aim-nb-comp-chip-name {
+  overflow: hidden; text-overflow: ellipsis; max-width: 100px;
+}
+.aim-nb-comp-chip-del {
+  background: none; border: none; cursor: pointer; color: var(--text-muted);
+  font-size: 12px; line-height: 1; padding: 0 1px; margin-left: 1px;
+  transition: color .1s; flex-shrink: 0;
+}
+.aim-nb-comp-chip-del:hover { color: #ef4444; }
 .aim-nb-prompt-edit-row { cursor: default !important; }
 .aim-nb-prompt-edit-row:hover { border-color: var(--border) !important; background: var(--surface-alt) !important; }
 .aim-nb-prompt-edit-row:hover .aim-nb-prompt-text { color: var(--text) !important; }
@@ -8313,6 +8344,7 @@ function _aimMgrFilter(q) {
   });
 }
 // ── end Manage Brands ──────────────────────────────────────────────────────
+// ── Add New Brand wizard ────────────────────────────────────────────────────
 
 var _aimNewBrand = {
   step: 1,
@@ -8343,7 +8375,14 @@ var _AIM_SUGGESTED_COMPS = {
   'Finance & Fintech':      [{name:'Stripe',domain:'stripe.com'},{name:'Plaid',domain:'plaid.com'},{name:'Square',domain:'squareup.com'},{name:'Brex',domain:'brex.com'},{name:'Wise',domain:'wise.com'},{name:'Revolut',domain:'revolut.com'}],
   'Education':              [{name:'Coursera',domain:'coursera.org'},{name:'Udemy',domain:'udemy.com'},{name:'Khan Academy',domain:'khanacademy.org'},{name:'Duolingo',domain:'duolingo.com'},{name:'Skillshare',domain:'skillshare.com'}],
 };
-var _AIM_DEFAULT_COMPS = [{name:'Competitor A',domain:'competitora.com'},{name:'Competitor B',domain:'competitorb.com'},{name:'Competitor C',domain:'competitorc.com'},{name:'Competitor D',domain:'competitord.com'},{name:'Competitor E',domain:'competitore.com'}];
+var _AIM_DEFAULT_COMPS = [
+  {name:'HubSpot',domain:'hubspot.com'},
+  {name:'Salesforce',domain:'salesforce.com'},
+  {name:'Intercom',domain:'intercom.com'},
+  {name:'Zendesk',domain:'zendesk.com'},
+  {name:'Notion',domain:'notion.so'},
+  {name:'Slack',domain:'slack.com'}
+];
 
 var _AIM_LANGUAGES = [
   'Arabic','Bengali','Chinese (Simplified)','Chinese (Traditional)','Czech','Danish',
@@ -8507,24 +8546,78 @@ function _aimNbStep1Html() {
     + '</div>';
 }
 
+var _AIM_COMP_POOLS = {
+  'ai-visibility':   [{name:'Profound',domain:'profound.so'},{name:'Otterly AI',domain:'otterly.ai'},{name:'Semrush',domain:'semrush.com'},{name:'Wincher',domain:'wincher.com'},{name:'BrandWatch',domain:'brandwatch.com'},{name:'Nightwatch',domain:'nightwatch.io'},{name:'Mention',domain:'mention.com'},{name:'Brand24',domain:'brand24.com'}],
+  'ai-visibility-2': [{name:'NightWatch',domain:'nightwatch.io'},{name:'AthenaHQ',domain:'athenahq.com'},{name:'Visio AI',domain:'visio.ai'},{name:'Profound',domain:'profound.so'},{name:'Semrush',domain:'semrush.com'},{name:'Ahrefs',domain:'ahrefs.com'},{name:'Moz',domain:'moz.com'},{name:'SE Ranking',domain:'seranking.com'}],
+  'ecommerce':       [{name:'Shopify',domain:'shopify.com'},{name:'WooCommerce',domain:'woocommerce.com'},{name:'BigCommerce',domain:'bigcommerce.com'},{name:'Wix',domain:'wix.com'},{name:'Squarespace',domain:'squarespace.com'},{name:'Magento',domain:'magento.com'}],
+  'ecommerce-2':     [{name:'PrestaShop',domain:'prestashop.com'},{name:'Volusion',domain:'volusion.com'},{name:'OpenCart',domain:'opencart.com'},{name:'Ecwid',domain:'ecwid.com'},{name:'3dcart',domain:'shift4shop.com'},{name:'Wix',domain:'wix.com'}],
+  'healthcare':      [{name:'WebMD',domain:'webmd.com'},{name:'Healthline',domain:'healthline.com'},{name:'Zocdoc',domain:'zocdoc.com'},{name:'Teladoc',domain:'teladoc.com'},{name:'Hims',domain:'forhims.com'},{name:'Headspace',domain:'headspace.com'}],
+  'healthcare-2':    [{name:'Calm',domain:'calm.com'},{name:'Practo',domain:'practo.com'},{name:'Oscar Health',domain:'hioscar.com'},{name:'Noom',domain:'noom.com'},{name:'Maven Clinic',domain:'mavenclinic.com'},{name:'Tempus',domain:'tempus.com'}],
+  'fintech':         [{name:'Stripe',domain:'stripe.com'},{name:'Plaid',domain:'plaid.com'},{name:'Brex',domain:'brex.com'},{name:'Wise',domain:'wise.com'},{name:'Revolut',domain:'revolut.com'},{name:'Adyen',domain:'adyen.com'}],
+  'fintech-2':       [{name:'Square',domain:'squareup.com'},{name:'Checkout.com',domain:'checkout.com'},{name:'Payoneer',domain:'payoneer.com'},{name:'Ramp',domain:'ramp.com'},{name:'Mercury',domain:'mercury.com'},{name:'Patreon',domain:'patreon.com'}],
+  'seo':             [{name:'Semrush',domain:'semrush.com'},{name:'Ahrefs',domain:'ahrefs.com'},{name:'Moz',domain:'moz.com'},{name:'BrightEdge',domain:'brightedge.com'},{name:'Conductor',domain:'conductor.com'},{name:'Mangools',domain:'mangools.com'}],
+  'seo-2':           [{name:'SE Ranking',domain:'seranking.com'},{name:'Wincher',domain:'wincher.com'},{name:'Ubersuggest',domain:'neilpatel.com'},{name:'Surfer SEO',domain:'surferseo.com'},{name:'Clearscope',domain:'clearscope.io'},{name:'MarketMuse',domain:'marketmuse.com'}],
+  'ai-ml':           [{name:'OpenAI',domain:'openai.com'},{name:'Anthropic',domain:'anthropic.com'},{name:'Mistral',domain:'mistral.ai'},{name:'Cohere',domain:'cohere.com'},{name:'Perplexity',domain:'perplexity.ai'},{name:'xAI',domain:'x.ai'}],
+  'ai-ml-2':         [{name:'Writer',domain:'writer.com'},{name:'Jasper',domain:'jasper.ai'},{name:'Copy.ai',domain:'copy.ai'},{name:'Runway',domain:'runwayml.com'},{name:'Stability AI',domain:'stability.ai'},{name:'Inflection AI',domain:'inflection.ai'}],
+  'crm':             [{name:'Salesforce',domain:'salesforce.com'},{name:'HubSpot',domain:'hubspot.com'},{name:'Pipedrive',domain:'pipedrive.com'},{name:'Zoho CRM',domain:'zoho.com'},{name:'Monday.com',domain:'monday.com'},{name:'Freshsales',domain:'freshworks.com'}],
+  'crm-2':           [{name:'Close',domain:'close.com'},{name:'Copper',domain:'copper.com'},{name:'Streak',domain:'streak.com'},{name:'Keap',domain:'keap.com'},{name:'ActiveCampaign',domain:'activecampaign.com'},{name:'Nutshell',domain:'nutshell.com'}],
+  'marketing':       [{name:'HubSpot',domain:'hubspot.com'},{name:'Marketo',domain:'marketo.com'},{name:'Mailchimp',domain:'mailchimp.com'},{name:'ActiveCampaign',domain:'activecampaign.com'},{name:'Klaviyo',domain:'klaviyo.com'},{name:'Braze',domain:'braze.com'}],
+  'marketing-2':     [{name:'Iterable',domain:'iterable.com'},{name:'Customer.io',domain:'customer.io'},{name:'Pardot',domain:'pardot.com'},{name:'Drip',domain:'drip.com'},{name:'Omnisend',domain:'omnisend.com'},{name:'Sendgrid',domain:'sendgrid.com'}],
+  'analytics':       [{name:'Mixpanel',domain:'mixpanel.com'},{name:'Amplitude',domain:'amplitude.com'},{name:'Segment',domain:'segment.com'},{name:'Heap',domain:'heap.io'},{name:'Pendo',domain:'pendo.io'},{name:'FullStory',domain:'fullstory.com'}],
+  'analytics-2':     [{name:'Hotjar',domain:'hotjar.com'},{name:'Mouseflow',domain:'mouseflow.com'},{name:'Crazy Egg',domain:'crazyegg.com'},{name:'Contentsquare',domain:'contentsquare.com'},{name:'LogRocket',domain:'logrocket.com'},{name:'PostHog',domain:'posthog.com'}],
+  'hr':              [{name:'Workday',domain:'workday.com'},{name:'BambooHR',domain:'bamboohr.com'},{name:'Rippling',domain:'rippling.com'},{name:'Gusto',domain:'gusto.com'},{name:'Lattice',domain:'lattice.com'},{name:'Namely',domain:'namely.com'}],
+  'hr-2':            [{name:'Deel',domain:'deel.com'},{name:'Remote',domain:'remote.com'},{name:'Oyster',domain:'oysterhr.com'},{name:'Greenhouse',domain:'greenhouse.io'},{name:'Lever',domain:'lever.co'},{name:'Personio',domain:'personio.com'}],
+  'project':         [{name:'Asana',domain:'asana.com'},{name:'Monday.com',domain:'monday.com'},{name:'Linear',domain:'linear.app'},{name:'Jira',domain:'atlassian.com'},{name:'Notion',domain:'notion.so'},{name:'Basecamp',domain:'basecamp.com'}],
+  'project-2':       [{name:'ClickUp',domain:'clickup.com'},{name:'Trello',domain:'trello.com'},{name:'Wrike',domain:'wrike.com'},{name:'Smartsheet',domain:'smartsheet.com'},{name:'Teamwork',domain:'teamwork.com'},{name:'Airtable',domain:'airtable.com'}],
+  'devtools':        [{name:'GitHub',domain:'github.com'},{name:'GitLab',domain:'gitlab.com'},{name:'CircleCI',domain:'circleci.com'},{name:'Vercel',domain:'vercel.com'},{name:'Netlify',domain:'netlify.com'},{name:'Datadog',domain:'datadoghq.com'}],
+  'devtools-2':      [{name:'Sentry',domain:'sentry.io'},{name:'New Relic',domain:'newrelic.com'},{name:'PagerDuty',domain:'pagerduty.com'},{name:'Honeycomb',domain:'honeycomb.io'},{name:'LaunchDarkly',domain:'launchdarkly.com'},{name:'Supabase',domain:'supabase.com'}],
+  'security':        [{name:'CrowdStrike',domain:'crowdstrike.com'},{name:'Palo Alto',domain:'paloaltonetworks.com'},{name:'SentinelOne',domain:'sentinelone.com'},{name:'Cloudflare',domain:'cloudflare.com'},{name:'Snyk',domain:'snyk.io'},{name:'1Password',domain:'1password.com'}],
+  'communication':   [{name:'Slack',domain:'slack.com'},{name:'Microsoft Teams',domain:'microsoft.com'},{name:'Zoom',domain:'zoom.us'},{name:'Intercom',domain:'intercom.com'},{name:'Zendesk',domain:'zendesk.com'},{name:'Freshdesk',domain:'freshdesk.com'}],
+  'education':       [{name:'Coursera',domain:'coursera.org'},{name:'Udemy',domain:'udemy.com'},{name:'Skillshare',domain:'skillshare.com'},{name:'LinkedIn Learning',domain:'linkedin.com'},{name:'Pluralsight',domain:'pluralsight.com'},{name:'Teachable',domain:'teachable.com'}],
+  'education-2':     [{name:'Thinkific',domain:'thinkific.com'},{name:'Kajabi',domain:'kajabi.com'},{name:'LearnDash',domain:'learndash.com'},{name:'Duolingo',domain:'duolingo.com'},{name:'Khan Academy',domain:'khanacademy.org'},{name:'Podia',domain:'podia.com'}],
+};
+
 function _aimNbGetSuggestedComps() {
   var nb = _aimNewBrand;
-  var combined = ((nb.name || '') + ' ' + (nb.description || '') + ' ' + (nb.url || '')).toLowerCase();
-  if (/peekaboo|ai visibility|ai monitor|brand monitor|ai search|ai mention/.test(combined))
-    return [{name:'Profound',domain:'profound.so'},{name:'Otterly AI',domain:'otterly.ai'},{name:'Semrush',domain:'semrush.com'},{name:'Wincher',domain:'wincher.com'},{name:'BrandWatch',domain:'brandwatch.com'},{name:'Nightwatch',domain:'nightwatch.io'}];
-  if (/ecommerce|e-commerce|shopify|woocommerce|store|shop|retail/.test(combined))
-    return [{name:'Shopify',domain:'shopify.com'},{name:'WooCommerce',domain:'woocommerce.com'},{name:'BigCommerce',domain:'bigcommerce.com'},{name:'Magento',domain:'magento.com'},{name:'Squarespace',domain:'squarespace.com'},{name:'Wix',domain:'wix.com'}];
-  if (/health|med|clinic|care|patient|doctor/.test(combined))
-    return [{name:'WebMD',domain:'webmd.com'},{name:'Healthline',domain:'healthline.com'},{name:'Zocdoc',domain:'zocdoc.com'},{name:'Practo',domain:'practo.com'},{name:'Oscar Health',domain:'hioscar.com'},{name:'Headspace',domain:'headspace.com'}];
-  if (/pay|bank|finance|money|fintech|payment|stripe/.test(combined))
-    return [{name:'Stripe',domain:'stripe.com'},{name:'Plaid',domain:'plaid.com'},{name:'Square',domain:'squareup.com'},{name:'Brex',domain:'brex.com'},{name:'Wise',domain:'wise.com'},{name:'Revolut',domain:'revolut.com'}];
-  if (/seo|rank|search|keyword|backlink|ahrefs|moz/.test(combined))
-    return [{name:'Semrush',domain:'semrush.com'},{name:'Ahrefs',domain:'ahrefs.com'},{name:'Moz',domain:'moz.com'},{name:'HubSpot',domain:'hubspot.com'},{name:'BrightEdge',domain:'brightedge.com'},{name:'Conductor',domain:'conductor.com'}];
-  if (/ai|llm|gpt|ml|machine learning|openai|anthropic/.test(combined))
-    return [{name:'OpenAI',domain:'openai.com'},{name:'Anthropic',domain:'anthropic.com'},{name:'Mistral',domain:'mistral.ai'},{name:'Cohere',domain:'cohere.com'},{name:'Perplexity',domain:'perplexity.ai'},{name:'Google DeepMind',domain:'deepmind.google'}];
-  if (/saas|software|platform|app|tool|dashboard/.test(combined))
-    return [{name:'G2',domain:'g2.com'},{name:'Capterra',domain:'capterra.com'},{name:'Product Hunt',domain:'producthunt.com'},{name:'Trustpilot',domain:'trustpilot.com'},{name:'GetApp',domain:'getapp.com'},{name:'Gartner',domain:'gartner.com'}];
-  return _AIM_SUGGESTED_COMPS[nb.industry] || _AIM_DEFAULT_COMPS;
+  var name = (nb.name || '').toLowerCase();
+  var desc = (nb.description || '').toLowerCase();
+  var domain = (nb.url || '').replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].toLowerCase();
+  var combined = name + ' ' + desc + ' ' + domain;
+
+  // Precise brand/domain signals first
+  if (/peekaboo|ai.?visib|ai.?monitor|brand.?monitor|llm.?monitor|ai.?mention|ai.?search.?track/.test(combined)) return _AIM_COMP_POOLS['ai-visibility'];
+  if (/shopify|woocommerce|bigcommerce|magento|e.?comm|online.?store|product.?catalog/.test(combined)) return _AIM_COMP_POOLS['ecommerce'];
+  if (/stripe|plaid|payment|fintech|neobank|lending|wallet|remittance/.test(combined)) return _AIM_COMP_POOLS['fintech'];
+  if (/ahrefs|semrush|moz|brightedge|conductor|rank.?track|backlink|keyword.?research/.test(combined)) return _AIM_COMP_POOLS['seo'];
+  if (/openai|anthropic|mistral|cohere|llm|gpt|large.?language|foundation.?model/.test(combined)) return _AIM_COMP_POOLS['ai-ml'];
+  if (/salesforce|hubspot|pipedrive|crm|customer.?relation|sales.?pipeline/.test(combined)) return _AIM_COMP_POOLS['crm'];
+  if (/mailchimp|klaviyo|braze|marketo|email.?market|marketing.?auto/.test(combined)) return _AIM_COMP_POOLS['marketing'];
+  if (/mixpanel|amplitude|segment|heap|pendo|product.?analytic|user.?analytic/.test(combined)) return _AIM_COMP_POOLS['analytics'];
+  if (/asana|linear|jira|monday|project.?manag|task.?manag|sprint/.test(combined)) return _AIM_COMP_POOLS['project'];
+  if (/bamboohr|workday|rippling|gusto|hrm|hris|payroll|recruit/.test(combined)) return _AIM_COMP_POOLS['hr'];
+  if (/github|gitlab|circleci|vercel|netlify|devops|ci.?cd|deploy|cloud.?infra/.test(combined)) return _AIM_COMP_POOLS['devtools'];
+  if (/crowdstrike|sentinelone|cloudflare|cyber|security|soc|threat/.test(combined)) return _AIM_COMP_POOLS['security'];
+  if (/health|medical|clinic|patient|doctor|wellness|mental.?health|telemed/.test(combined)) return _AIM_COMP_POOLS['healthcare'];
+  if (/coursera|udemy|elearn|lms|online.?course|education|training.?platform/.test(combined)) return _AIM_COMP_POOLS['education'];
+  if (/slack|teams|intercom|zendesk|support|customer.?success|live.?chat/.test(combined)) return _AIM_COMP_POOLS['communication'];
+
+  // Industry fallback
+  var iMap = {
+    'Marketing & SEO':       'seo',
+    'AI & Machine Learning': 'ai-ml',
+    'SaaS & Software':       'analytics',
+    'E-Commerce':            'ecommerce',
+    'Healthcare':            'healthcare',
+    'Finance & Fintech':     'fintech',
+    'Education':             'education',
+    'Cybersecurity':         'security',
+    'Professional Services': 'crm',
+  };
+  var pool = iMap[nb.industry];
+  if (pool) return _AIM_COMP_POOLS[pool];
+
+  // Final fallback: analytics tools (genuinely useful SaaS competitors, not review sites)
+  return _AIM_COMP_POOLS['analytics'];
 }
 
 function _aimNbCompCard(c, isSel) {
@@ -8556,16 +8649,28 @@ function _aimNbSelTagHtml(c, type, key) {
     + '</div>';
 }
 
+function _aimNbChipHtml(c, type, key) {
+  var favUrl = c.domain ? 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(c.domain) + '&sz=32' : '';
+  var fl = (c.name[0]||'?').toUpperCase();
+  var fc = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6'][c.name.charCodeAt(0)%6];
+  var rmKey = key.replace(/'/g,"\\'");
+  return '<span class="aim-nb-comp-chip">'
+    + (favUrl
+        ? '<img src="' + favUrl + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+          + '<span class="aim-nb-comp-chip-letter" style="display:none;background:' + fc + ';">' + fl + '</span>'
+        : '<span class="aim-nb-comp-chip-letter" style="background:' + fc + ';">' + fl + '</span>')
+    + '<span class="aim-nb-comp-chip-name">' + aimEscHtml(c.name) + '</span>'
+    + '<button class="aim-nb-comp-chip-del" onclick="aimNbRemoveComp(\'' + type + '\',\'' + rmKey + '\')" title="Remove">&#x2715;</button>'
+    + '</span>';
+}
+
 function _aimNbRenderSelectedList() {
   var nb = _aimNewBrand;
-  var items = [];
-  Object.keys(nb.selectedComps).forEach(function(k) { items.push(_aimNbSelTagHtml(nb.selectedComps[k], 'g', k)); });
-  nb.manualComps.forEach(function(c, i) { items.push(_aimNbSelTagHtml(c, 'm', String(i))); });
-  var hd  = document.getElementById('aim-nb-sel-hd');
-  var lst = document.getElementById('aim-nb-sel-list');
-  var show = items.length > 0;
-  if (hd)  { hd.style.display  = show ? '' : 'none'; var sp = hd.querySelector('.aim-nb-sel-count'); if (sp) sp.textContent = '(' + items.length + ')'; }
-  if (lst) { lst.style.display = show ? '' : 'none'; lst.innerHTML = items.join(''); }
+  var chips = [];
+  Object.keys(nb.selectedComps).forEach(function(k) { chips.push(_aimNbChipHtml(nb.selectedComps[k], 'g', k)); });
+  nb.manualComps.forEach(function(c, i) { chips.push(_aimNbChipHtml(c, 'm', String(i))); });
+  var container = document.getElementById('aim-nb-comp-chips');
+  if (container) container.innerHTML = chips.join('');
 }
 
 function _aimNbStep2Html() {
@@ -8576,6 +8681,9 @@ function _aimNbStep2Html() {
   Object.keys(nb.selectedComps).forEach(function(k) { selItems.push(_aimNbSelTagHtml(nb.selectedComps[k], 'g', k)); });
   nb.manualComps.forEach(function(c, i) { selItems.push(_aimNbSelTagHtml(c, 'm', String(i))); });
   var hasSelected = selItems.length > 0;
+  var chipItems = [];
+  Object.keys(nb.selectedComps).forEach(function(k) { chipItems.push(_aimNbChipHtml(nb.selectedComps[k], 'g', k)); });
+  nb.manualComps.forEach(function(c, i) { chipItems.push(_aimNbChipHtml(c, 'm', String(i))); });
 
   return '<div class="aim-nb-section-hd">'
     +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
@@ -8588,11 +8696,6 @@ function _aimNbStep2Html() {
     +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>'
     +   'Generate new competitors with AI'
     + '</button>'
-    + '<div class="aim-nb-section-hd" id="aim-nb-sel-hd"' + (hasSelected ? '' : ' style="display:none"') + '>'
-    +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-    +   'Selected <span class="aim-nb-sel-count">(' + selItems.length + ')</span>'
-    + '</div>'
-    + '<div class="aim-nb-sel-list" id="aim-nb-sel-list"' + (hasSelected ? '' : ' style="display:none"') + '>' + selItems.join('') + '</div>'
     + '<div class="aim-nb-section-hd" style="margin-top:4px;">'
     +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
     +   'Add Manually'
@@ -8601,7 +8704,10 @@ function _aimNbStep2Html() {
     +   '<input id="aim-nb-comp-name-inp" class="aim-nb-input" type="text" placeholder="Brand name (optional)">'
     +   '<input id="aim-nb-comp-url-inp" class="aim-nb-input" type="text" placeholder="Website URL" onkeydown="if(event.key===\'Enter\')aimNbAddManualComp()">'
     + '</div>'
-    + '<button class="aim-nb-add-row-btn" style="margin-bottom:8px;" onclick="aimNbAddManualComp()">Add Competitor</button>';
+    + '<div class="aim-nb-comp-action-row">'
+    +   '<button class="aim-nb-add-row-btn" onclick="aimNbAddManualComp()">Add Competitor</button>'
+    +   '<div class="aim-nb-comp-chips" id="aim-nb-comp-chips">' + chipItems.join('') + '</div>'
+    + '</div>';
 }
 
 function _aimNbComboHtml(id, items, selectedVal, placeholder) {
@@ -8812,22 +8918,38 @@ function aimNbGenerateComps() {
   if (statusEl) statusEl.innerHTML = '<div class="aim-nb-fetching" style="margin-bottom:10px;"><div class="aim-nb-fetching-dot"></div>Generating competitors with AI...</div>';
   setTimeout(function() {
     var nb = _aimNewBrand;
-    var combined = ((nb.name||'') + ' ' + (nb.description||'') + ' ' + (nb.url||'')).toLowerCase();
-    var pools = [
-      {kw:/peekaboo|ai visibility|ai monitor|brand monitor|ai search/, list:[{name:'Profound',domain:'profound.so'},{name:'Otterly AI',domain:'otterly.ai'},{name:'Wincher',domain:'wincher.com'},{name:'BrandWatch',domain:'brandwatch.com'},{name:'Nightwatch',domain:'nightwatch.io'},{name:'Mention',domain:'mention.com'},{name:'Semrush',domain:'semrush.com'},{name:'Ahrefs',domain:'ahrefs.com'}]},
-      {kw:/ecommerce|e-commerce|shopify|woocommerce|store|shop|retail/, list:[{name:'Shopify',domain:'shopify.com'},{name:'WooCommerce',domain:'woocommerce.com'},{name:'BigCommerce',domain:'bigcommerce.com'},{name:'Magento',domain:'magento.com'},{name:'Squarespace',domain:'squarespace.com'},{name:'Wix',domain:'wix.com'},{name:'Ecwid',domain:'ecwid.com'},{name:'Volusion',domain:'volusion.com'}]},
-      {kw:/health|med|clinic|care|patient|doctor/, list:[{name:'WebMD',domain:'webmd.com'},{name:'Healthline',domain:'healthline.com'},{name:'Zocdoc',domain:'zocdoc.com'},{name:'Practo',domain:'practo.com'},{name:'Headspace',domain:'headspace.com'},{name:'Hims',domain:'forhims.com'},{name:'Teladoc',domain:'teladoc.com'},{name:'Calm',domain:'calm.com'}]},
-      {kw:/pay|bank|finance|money|fintech|payment|stripe/, list:[{name:'Stripe',domain:'stripe.com'},{name:'Plaid',domain:'plaid.com'},{name:'Square',domain:'squareup.com'},{name:'Brex',domain:'brex.com'},{name:'Wise',domain:'wise.com'},{name:'Revolut',domain:'revolut.com'},{name:'Adyen',domain:'adyen.com'},{name:'Checkout.com',domain:'checkout.com'}]},
-      {kw:/seo|rank|search|keyword|backlink|ahrefs|moz/, list:[{name:'Semrush',domain:'semrush.com'},{name:'Ahrefs',domain:'ahrefs.com'},{name:'Moz',domain:'moz.com'},{name:'HubSpot',domain:'hubspot.com'},{name:'BrightEdge',domain:'brightedge.com'},{name:'Conductor',domain:'conductor.com'},{name:'Mangools',domain:'mangools.com'},{name:'SE Ranking',domain:'seranking.com'}]},
-      {kw:/ai|llm|gpt|ml|machine learning|openai|anthropic/, list:[{name:'OpenAI',domain:'openai.com'},{name:'Anthropic',domain:'anthropic.com'},{name:'Mistral',domain:'mistral.ai'},{name:'Cohere',domain:'cohere.com'},{name:'Perplexity',domain:'perplexity.ai'},{name:'xAI Grok',domain:'x.ai'},{name:'Inflection AI',domain:'inflection.ai'},{name:'Writer',domain:'writer.com'}]},
-    ];
-    var matched = null;
-    for (var i = 0; i < pools.length; i++) {
-      if (pools[i].kw.test(combined)) { matched = pools[i].list; break; }
+    nb._genRound = ((nb._genRound || 0) + 1);
+    var name = (nb.name || '').toLowerCase();
+    var desc = (nb.description || '').toLowerCase();
+    var domain = (nb.url || '').replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].toLowerCase();
+    var combined = name + ' ' + desc + ' ' + domain;
+
+    // Determine base pool key (alternate to -2 pools for fresh results)
+    var poolKey = 'analytics-2';
+    if (/peekaboo|ai.?visib|ai.?monitor|brand.?monitor|llm.?monitor|ai.?mention/.test(combined))  poolKey = 'ai-visibility-2';
+    else if (/shopify|woocommerce|bigcommerce|e.?comm|online.?store/.test(combined))               poolKey = 'ecommerce-2';
+    else if (/stripe|plaid|payment|fintech|neobank|lending/.test(combined))                        poolKey = 'fintech-2';
+    else if (/ahrefs|semrush|moz|brightedge|rank.?track|backlink/.test(combined))                  poolKey = 'seo-2';
+    else if (/openai|anthropic|mistral|llm|gpt|large.?language/.test(combined))                    poolKey = 'ai-ml-2';
+    else if (/salesforce|hubspot|pipedrive|crm|sales.?pipeline/.test(combined))                    poolKey = 'crm-2';
+    else if (/mailchimp|klaviyo|braze|marketo|email.?market/.test(combined))                       poolKey = 'marketing-2';
+    else if (/mixpanel|amplitude|segment|heap|product.?analytic/.test(combined))                   poolKey = 'analytics-2';
+    else if (/asana|linear|jira|monday|project.?manag/.test(combined))                             poolKey = 'project-2';
+    else if (/bamboohr|workday|rippling|gusto|hrm|payroll/.test(combined))                         poolKey = 'hr-2';
+    else if (/github|gitlab|circleci|vercel|devops|ci.?cd/.test(combined))                         poolKey = 'devtools-2';
+    else if (/crowdstrike|sentinelone|cloudflare|cyber|security/.test(combined))                    poolKey = 'security';
+    else if (/health|medical|clinic|patient|telemed/.test(combined))                               poolKey = 'healthcare-2';
+    else if (/coursera|udemy|elearn|lms|online.?course/.test(combined))                            poolKey = 'education-2';
+    else if (/slack|intercom|zendesk|support|customer.?success/.test(combined))                    poolKey = 'communication';
+    else {
+      // For completely unknown brands, alternate between different pools each round
+      var altPools = ['crm-2','marketing-2','project-2','devtools-2','hr-2'];
+      poolKey = altPools[(nb._genRound - 1) % altPools.length];
     }
-    var list = matched || (_AIM_SUGGESTED_COMPS[nb.industry] || _AIM_DEFAULT_COMPS);
+
+    var list = _AIM_COMP_POOLS[poolKey] || _AIM_COMP_POOLS['analytics-2'];
     nb._compsGenerated = list;
-    if (statusEl) statusEl.innerHTML = '<div style="font-size:12px;color:#10b981;padding:4px 0 10px;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>New competitors generated based on your brand.</div>';
+    if (statusEl) statusEl.innerHTML = '<div style="font-size:12px;color:#10b981;padding:4px 0 10px;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Competitors refreshed based on your brand.</div>';
     var grid = document.getElementById('aim-nb-comp-grid');
     if (grid) grid.innerHTML = list.map(function(c){ return _aimNbCompCard(c, !!nb.selectedComps[c.name]); }).join('');
     if (btn) btn.disabled = false;
