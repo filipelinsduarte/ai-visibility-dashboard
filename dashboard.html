@@ -4269,7 +4269,7 @@ function aimRenderCompetitorsTablePage() {
   const competitorRows = pageCompetitors.map((b, idx) => {
     const rank = start + idx + 1;
     const vis  = parseFloat((b.visibility ?? 0).toFixed(1));
-    const pos  = b.position;
+    const pos  = b.position != null ? parseFloat(b.position).toFixed(1) : null;
     const sent = b.sentiment ?? 50;
     const sentInfo = aimSentimentLabel(sent);
     return `<tr>
@@ -4280,7 +4280,7 @@ function aimRenderCompetitorsTablePage() {
       </div></td>
       <td><div class="aim-vis-bar"><div class="aim-vis-bar-track" style="max-width:60px"><div class="aim-vis-bar-fill" style="width:${vis}%;background:${b.color}"></div></div><span class="aim-vis-pct" style="color:${b.color};font-weight:600">&nbsp;${vis}%</span></div></td>
       <td><span class="aim-sent-badge ${sentInfo.cls}">${sentInfo.label}</span></td>
-      <td><span class="aim-pos-val">${pos != null ? '#' + pos : '–'}</span></td>
+      <td><span class="aim-pos-val">${pos != null ? '#' + parseFloat(pos).toFixed(1) : '–'}</span></td>
     </tr>`;
   }).join('');
 
@@ -4300,7 +4300,7 @@ function aimRenderCompetitorsTablePage() {
       </div></td>
       <td><div class="aim-vis-bar"><div class="aim-vis-bar-track" style="max-width:60px"><div class="aim-vis-bar-fill" style="width:${vis}%;background:${mainBrand.color}"></div></div><span class="aim-vis-pct" style="color:${mainBrand.color};font-weight:600">&nbsp;${vis}%</span></div></td>
       <td><span class="aim-sent-badge ${sentInfo.cls}">${sentInfo.label}</span></td>
-      <td><span class="aim-pos-val">${pos != null ? '#' + pos : '–'}</span></td>
+      <td><span class="aim-pos-val">${pos != null ? '#' + parseFloat(pos).toFixed(1) : '–'}</span></td>
     </tr>`;
   }
 
@@ -4620,7 +4620,7 @@ function aimRenderPromptsTable() {
     const visIdx = AIM_PROMPTS.findIndex(ap => ap.id === p.id);
     const vis = Math.min(100, Math.round((promptVisArr[visIdx] ?? p.visibility) * dateCfg.df));
     const sent = Math.min(100, Math.round(p.sentiment * dateCfg.df));
-    const pos = p.position ?? null;
+    const pos = p.position != null ? parseFloat(p.position).toFixed(1) : null;
     const sentInfo = aimSentimentLabel(sent);
     const checked = aimCheckedPrompts.has(p.id);
     const intent = p.intent || 'Informational';
@@ -4659,7 +4659,7 @@ function aimRenderPromptsTable() {
       <td class="col-left" style="min-width:260px"><div class="aim-prompt-text">${aimEscHtml(p.text)}</div></td>
       <td><span class="aim-vis-pct ${vis>=60?'high':vis>=35?'mid':'low'}">${vis}%</span></td>
       <td><span class="aim-sent-badge ${sentInfo.cls}">${sentInfo.label}</span></td>
-      <td><span class="aim-pos-val">${pos != null ? '#' + pos : '–'}</span></td>
+      <td><span class="aim-pos-val">${pos != null ? '#' + parseFloat(pos).toFixed(1) : '–'}</span></td>
       <td>${_mentionsCell}</td>
       <td>${_citeCell}</td>
       <td>${aimTopicBadge(p.topic)}</td>
@@ -6167,13 +6167,13 @@ function aimRenderScStats() {
     card('Total Clicks',      s.clicks,          s.clicksChange,      s.clicksUp)      +
     card('Total Impressions', s.impressions,      s.impressionsChange, s.impressionsUp) +
     card('Avg CTR',           s.ctr + '%',        s.ctrChange,         s.ctrUp)         +
-    card('Avg Position',      '#' + s.position,   Math.abs(s.positionChange), !s.positionUp);
+    card('Avg Position',      '#' + parseFloat(s.position).toFixed(1),   Math.abs(s.positionChange), !s.positionUp);
 }
 
 function aimRenderScSummary() {
   const d  = window.AIM_SC_DATA;
   const el = document.getElementById('aim-sc-summary-bar');
-  if (el) el.innerHTML = `Your site received <strong>${d.stats.clicks.toLocaleString()} clicks</strong> from <strong>${d.stats.impressions.toLocaleString()} impressions</strong> over the last 30 days. Average ranking position: <strong>#${d.stats.position}</strong>`;
+  if (el) el.innerHTML = `Your site received <strong>${d.stats.clicks.toLocaleString()} clicks</strong> from <strong>${d.stats.impressions.toLocaleString()} impressions</strong> over the last 30 days. Average ranking position: <strong>#${parseFloat(d.stats.position).toFixed(1)}</strong>`;
   const lu = document.getElementById('aim-sc-last-updated');
   if (lu) lu.textContent = 'Last updated: ' + d.lastUpdated;
 }
@@ -6379,7 +6379,7 @@ function aimRenderScTable() {
         <td style="text-align:right;font-size:12px;font-weight:600;">${q.clicks}</td>
         <td style="text-align:right;font-size:12px;">${q.impressions.toLocaleString()}</td>
         <td style="text-align:right;font-size:12px;">${q.ctr}%</td>
-        <td style="text-align:right;font-size:12px;">${q.position}</td>
+        <td style="text-align:right;font-size:12px;">${parseFloat(q.position).toFixed(1)}</td>
         <td style="text-align:right;"><button class="aim-sc-convert-btn" onclick="aimScConvertToPrompt('${q.query.replace(/'/g,"\\'")}',this)">Convert to Prompt</button></td>
       </tr>`;
     }).join('');
@@ -6397,7 +6397,7 @@ function aimRenderScTable() {
       <td style="text-align:right;font-size:12px;font-weight:600;">${p.clicks}</td>
       <td style="text-align:right;font-size:12px;">${p.impressions.toLocaleString()}</td>
       <td style="text-align:right;font-size:12px;">${p.ctr}%</td>
-      <td style="text-align:right;font-size:12px;">${p.position}</td>
+      <td style="text-align:right;font-size:12px;">${parseFloat(p.position).toFixed(1)}</td>
     </tr>`).join('');
 
   } else if (tab === 'gaps') {
@@ -6414,7 +6414,7 @@ function aimRenderScTable() {
         <td class="col-left" style="font-size:12px;">${g.query}</td>
         <td><span class="aim-intent-badge ${ic}">${g.intent}</span></td>
         <td style="text-align:right;font-size:12px;">${g.impressions.toLocaleString()}</td>
-        <td style="text-align:right;font-size:12px;">${g.position}</td>
+        <td style="text-align:right;font-size:12px;">${parseFloat(g.position).toFixed(1)}</td>
         <td style="text-align:right;"><span style="font-size:11px;padding:2px 7px;border-radius:9999px;background:#fee2e2;color:#dc2626;font-weight:500;">Not tracked</span></td>
         <td style="text-align:right;"><button class="aim-sc-convert-btn" onclick="aimScConvertToPrompt('${g.query.replace(/'/g,"\\'")}',this)">Add as Prompt</button></td>
       </tr>`;
