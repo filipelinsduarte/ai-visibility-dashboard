@@ -5428,6 +5428,64 @@ function aimRenderCompSentimentTable() {
   if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
 }
 
+const _AIM_BRAND_DOMAIN_MAP = {
+  'ai peekaboo':'aipeekaboo.com','profound':'tryprofound.com','profound ai':'tryprofound.com',
+  'otterly ai':'otterly.ai','otterly.ai':'otterly.ai','otterlyai':'otterly.ai',
+  'scrunch':'scrunch.ai','scrunch ai':'scrunch.ai','peec':'peec.ai','peec ai':'peec.ai',
+  'peek ai':'peec.ai','peekaboo':'aipeekaboo.com','rankscale ai':'rankscale.ai',
+  'rankscale':'rankscale.ai','rankability':'rankability.com','siftly':'siftly.ai',
+  'nightwatch':'nightwatch.io','athenahq':'athenahq.com','airops':'airops.com',
+  'gracerai':'gracker.ai','grackerai':'gracker.ai','evertune':'evertune.com',
+  'goodie ai':'goodie.ai','brandlight.ai':'brandlight.ai','brandsnag':'brandsnag.com',
+  'brandi ai':'brandi.ai','llmrefs':'llmrefs.com','llm pulse':'llmpulse.io',
+  'promptwatch':'promptwatch.io','promptmonitor':'promptmonitor.com','promptrush':'promptrush.io',
+  'rankprompt':'rankprompt.com','sight ai':'trysight.ai','visibl':'visibl.com',
+  'visby ai':'visio.ai','vismore':'vismore.io','ziptie':'ziptie.dev','ziptie.dev':'ziptie.dev',
+  'ayzeo':'ayzeo.com','indexly':'indexly.io','finseo':'finseo.io','geneo':'geneo.ai',
+  'geoptie':'geoptie.com','radarkit.ai':'radarkit.ai','wellows':'wellows.com',
+  'camelai':'camel-ai.org','energent.ai':'energent.ai','querio':'querio.ai',
+  'knowatoa':'knowatoa.com','aiclicks':'aiclicks.com',
+  'se ranking':'seranking.com','semrush':'semrush.com','ahrefs':'ahrefs.com',
+  'ahrefs brand radar':'ahrefs.com','airefs':'ahrefs.com','moz pro':'moz.com',
+  'brightedge':'brightedge.com','conductor':'conductor.com','marketmuse':'marketmuse.com',
+  'neuronwriter':'neuronwriter.com','surfer seo':'surferseo.com','seomonitor':'seomonitor.com',
+  'authoritas':'authoritas.com','keyword.com':'keyword.com','ubersuggest':'neilpatel.com',
+  'growthos':'growthos.com','brandwatch':'brandwatch.com','brand24':'brand24.com',
+  'brandcrowd':'brandcrowd.com','mention.ai':'mention.ai','mentionlytics':'mentionlytics.com',
+  'sprout social':'sproutsocial.com','meltwater':'meltwater.com',
+  'hubspot':'hubspot.com','hubspot aeo':'hubspot.com',
+  'chatgpt':'openai.com','claude':'claude.ai','gemini':'gemini.google.com',
+  'perplexity':'perplexity.ai','similarweb':'similarweb.com','funnel.io':'funnel.io',
+  'triple whale':'triplewhale.com','northbeam':'northbeam.io','improvado':'improvado.io',
+  'adverity':'adverity.com','cometly':'cometly.com','datadog':'datadoghq.com',
+  'metabase':'metabase.com','domo':'domo.com','zoho analytics':'zoho.com',
+  'gwi spark':'gwi.com','microsoft power bi':'powerbi.microsoft.com',
+  'google looker studio':'lookerstudio.google.com','google search console':'search.google.com',
+  'google earth pro':'earth.google.com','posthog':'posthog.com',
+  'writesonic':'writesonic.com','jasper':'jasper.ai','copy.ai':'copy.ai',
+  'frase':'frase.io','buffer':'buffer.com','canva':'canva.com',
+  'julius ai':'julius.ai','maxim ai':'getmaxim.ai','braintrust':'braintrustdata.com',
+  'langfuse':'langfuse.com','helicone':'helicone.ai','fiddler ai':'fiddler.ai',
+  'infranodus':'infranodus.com','polymer':'polymersearch.com',
+  'arcgis pro':'esri.com','qgis':'qgis.org','mapbox':'mapbox.com','grass gis':'grass.osgeo.org',
+  'namelix':'namelix.com','namify':'namify.com','namy.ai':'namy.ai',
+  'namecheap':'namecheap.com','looka':'looka.com','truic':'truic.com',
+  'namemancer':'namemancer.com','namesnack':'namesnack.com',
+  'uptimerobot':'uptimerobot.com','pingdom':'pingdom.com','visualping':'visualping.io',
+  'wp rocket':'wp-rocket.me','slate':'slate.com','scout':'scoutapm.com',
+};
+
+function _aimResolveBrandDomain(brandObj) {
+  if (brandObj.d) return brandObj.d;
+  const name = (brandObj.n || '').trim();
+  const exact = AI_BRANDS.find(b => b.name === name);
+  if (exact && exact.domain) return exact.domain;
+  const norm = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normed = AI_BRANDS.find(b => b.name.toLowerCase().replace(/[^a-z0-9]/g, '') === norm);
+  if (normed && normed.domain) return normed.domain;
+  return _AIM_BRAND_DOMAIN_MAP[name.toLowerCase()] || null;
+}
+
 function aimRenderCompPromptMatrix() {
   const wrap = document.getElementById('aim-cp-matrix-wrap');
   if (!wrap) return;
@@ -5444,10 +5502,8 @@ function aimRenderCompPromptMatrix() {
     if (aimFilterTopic !== 'all' && p.topic !== aimFilterTopic) return;
     let brands;
     if (window.AIM_REAL_MATRIX_DATA && window.AIM_REAL_MATRIX_DATA[p.id] && window.AIM_REAL_MATRIX_DATA[p.id].length) {
-      // Real data: already sorted by mention count desc
       brands = window.AIM_REAL_MATRIX_DATA[p.id].slice(0, NUM_COLS);
     } else {
-      // Fallback to mock data
       const rawBrands = mockRankings[p.id] || [];
       brands = [...rawBrands].sort((a, bObj) => {
         const ba = _brandLookup[a.n] || { visibility: 30, sentiment: 50 };
@@ -5461,11 +5517,12 @@ function aimRenderCompPromptMatrix() {
       if (!b) { html += '<td style="color:var(--text-faint);font-size:10px">–</td>'; return; }
       const isMain = mainBrand && b.n === mainBrand.name;
       const safeName = b.n.replace(/"/g, '&quot;');
-      if (!b.d) {
+      const domain = _aimResolveBrandDomain(b);
+      if (!domain) {
         html += `<td><span class="aim-pm-fav-letter${isMain ? ' is-main' : ''}" title="${safeName}" data-bn="${safeName}" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()">${b.n.substring(0, 2).toUpperCase()}</span></td>`;
         return;
       }
-      html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://www.google.com/s2/favicons?domain=${b.d}&sz=32" alt="${safeName}" data-bn="${safeName}" loading="lazy" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
+      html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" alt="${safeName}" data-bn="${safeName}" loading="lazy" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
     });
     html += '</tr>';
   });
