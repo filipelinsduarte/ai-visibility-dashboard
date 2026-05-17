@@ -1195,7 +1195,7 @@ tbody td { padding: 9px 12px; }
   padding: 16px; backdrop-filter: blur(4px);
 }
 .aim-ap-panel {
-  width: 100%; max-width: 580px;
+  width: 100%; max-width: 820px;
   max-height: calc(100vh - 32px);
   background: var(--surface); border-radius: 16px;
   box-shadow: 0 24px 64px rgba(0,0,0,.2);
@@ -1268,6 +1268,131 @@ tbody td { padding: 9px 12px; }
 }
 .aim-ap-ai-banner-text { flex: 1; font-size: 12px; color: #b352b3; font-weight: 500; }
 
+/* ── Add Prompts dropdown button ── */
+.aim-add-menu-wrap{position:relative;display:inline-flex;}
+.aim-add-menu{position:absolute;top:calc(100% + 5px);right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:900;min-width:195px;padding:4px;display:none;}
+.aim-add-menu.open{display:block;}
+.aim-add-menu-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;white-space:nowrap;border:none;background:none;width:100%;font-family:var(--font);text-align:left;}
+.aim-add-menu-item:hover{background:var(--surface-alt);}
+.aim-add-menu-item svg{color:var(--accent);flex-shrink:0;}
+/* ── AI Prompt Generation modal ── */
+.aim-ai-gen-sub-tabs{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:18px;background:var(--surface-alt);padding:3px;gap:3px;}
+.aim-ai-gen-sub-tab{flex:1;padding:7px 10px;font-size:12px;font-weight:600;background:transparent;border:none;cursor:pointer;font-family:var(--font);color:var(--text-muted);display:flex;align-items:center;justify-content:center;gap:6px;transition:background .12s,color .12s;border-radius:6px;}
+.aim-ai-gen-sub-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.aim-ai-gen-section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.aim-ai-gen-section-title{font-size:14px;font-weight:700;color:var(--text);}
+.aim-ai-gen-sel-count{font-size:12px;color:var(--text-muted);}
+.aim-ai-gen-section-sub{font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;}
+.aim-ai-gen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;}
+@media(max-width:600px){.aim-ai-gen-grid{grid-template-columns:repeat(2,1fr);}}
+.aim-ai-gen-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 10px 9px;cursor:pointer;display:flex;align-items:flex-start;gap:8px;background:var(--surface);transition:border-color .12s,background .12s;position:relative;user-select:none;}
+.aim-ai-gen-card:hover{border-color:var(--accent-30);}
+.aim-ai-gen-card.selected{border-color:var(--accent);background:var(--accent-light);}
+.aim-ai-gen-card-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.aim-ai-gen-card-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
+.aim-ai-gen-card-desc{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.aim-ai-gen-card-cb{position:absolute;top:7px;right:7px;width:15px;height:15px;border:1.5px solid #d1d5db;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.aim-ai-gen-card.selected .aim-ai-gen-card-cb{background:var(--accent);border-color:var(--accent);}
+.aim-ai-gen-bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;align-items:end;}
+.aim-ai-gen-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:block;}
+.aim-ai-gen-lang-select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);color:var(--text);background:var(--surface);outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;}
+.aim-ai-gen-lang-select:focus{border-color:var(--accent);}
+.aim-ai-gen-slider-val{font-size:12px;font-weight:700;color:var(--text);min-width:20px;}
+.aim-ai-gen-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:#e5e7eb;outline:none;cursor:pointer;margin-bottom:4px;}
+.aim-ai-gen-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:#111827;cursor:pointer;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);}
+.aim-ai-gen-slider::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:#111827;cursor:pointer;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);}
+.aim-ai-gen-slider-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);}
+.aim-ai-gen-adv{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.aim-ai-gen-adv-btn{width:100%;display:flex;align-items:center;gap:8px;padding:9px 13px;background:none;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--text);font-family:var(--font);text-align:left;}
+.aim-ai-gen-adv-body{padding:12px 14px;border-top:1px solid var(--border);display:none;}
+.aim-ai-gen-adv-body.open{display:block;}
+.aim-ai-gen-check-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;}
+.aim-ai-gen-checkbox{width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
+/* ── Bulk import toggle ── */
+.aim-bulk-toggle-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;}
+.aim-bulk-lbl{flex:1;}
+.aim-bulk-lbl strong{font-size:12px;font-weight:600;color:var(--text);display:block;}
+.aim-bulk-lbl span{font-size:11px;color:var(--text-muted);}
+.aim-ios-toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.aim-ios-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.aim-ios-slider{position:absolute;inset:0;background:#d1d5db;border-radius:20px;cursor:pointer;transition:.15s;}
+.aim-ios-slider:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.15s;}
+.aim-ios-toggle input:checked+.aim-ios-slider{background:var(--accent);}
+.aim-ios-toggle input:checked+.aim-ios-slider:before{transform:translateX(16px);}
+.aim-bulk-textarea{width:100%;min-height:180px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);color:var(--text);resize:vertical;box-sizing:border-box;outline:none;line-height:1.7;}
+.aim-mp-add-row-btn{display:inline-flex;align-items:center;gap:6px;margin:10px 0 6px 20px;padding:6px 14px;border:1px dashed #d1d5db;border-radius:7px;font-size:12px;font-weight:500;color:#6b7280;background:none;cursor:pointer;font-family:var(--font);transition:border-color .12s,color .12s;}
+.aim-mp-add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+.aim-mp-tbl-input{height:36px;min-height:36px;line-height:36px;padding:0 9px;resize:none;}
+/* Bulk actions bar */
+.aim-st-bulk-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--accent-light);border:1px solid var(--accent-30);border-radius:8px;margin-bottom:12px;flex-wrap:wrap;}
+.aim-st-bulk-count{font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0;min-width:90px;}
+.aim-st-bulk-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border:1px solid var(--accent-30);border-radius:6px;font-size:12px;font-weight:500;color:var(--accent);background:#fff;cursor:pointer;font-family:var(--font);transition:background .12s,border-color .12s;white-space:nowrap;}
+.aim-st-bulk-btn:hover{background:var(--accent-light);border-color:var(--accent);}
+.aim-st-bulk-btn.danger{color:#dc2626;border-color:#fca5a5;background:#fff;}
+.aim-st-bulk-btn.danger:hover{background:#fee2e2;border-color:#f87171;}
+.aim-st-bulk-sep{width:1px;height:18px;background:var(--accent-30);flex-shrink:0;}
+.aim-st-bulk-clear{margin-left:auto;font-size:11px;color:var(--text-muted);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:var(--font);padding:0;}
+/* Small modal (Add Topic / Add Intent / Bulk pick) */
+.aim-st-sm-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:10500;display:flex;align-items:center;justify-content:center;}
+.aim-st-sm-modal{background:#fff;border-radius:14px;width:400px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.2);font-family:var(--font);overflow:hidden;}
+.aim-st-sm-modal-hd{padding:16px 20px 14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;}
+.aim-st-sm-modal-title{font-size:14px;font-weight:700;color:var(--text);}
+.aim-st-sm-modal-body{padding:16px 20px;}
+.aim-st-sm-modal-footer{padding:12px 20px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;gap:8px;}
+.aim-st-sm-input{width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;box-sizing:border-box;transition:border-color .12s,box-shadow .12s;}
+.aim-st-sm-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-30);}
+.aim-st-sm-label{font-size:12px;font-weight:500;color:#6b7280;margin-bottom:6px;display:block;}
+.aim-st-color-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.aim-st-color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:border-color .12s,transform .1s;box-sizing:border-box;}
+.aim-st-color-swatch:hover{transform:scale(1.1);}
+.aim-st-color-swatch.selected{border-color:#111827;transform:scale(1.15);}
+/* Bulk pick list (topic/intent) */
+.aim-st-pick-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text);transition:background .1s;}
+.aim-st-pick-row:hover{background:var(--surface-alt);}
+.aim-bulk-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,82,179,.1);}
+
+
+/* ── AI Gen additional styles ── */
+/* ── Custom selects inside AI gen modal ── */
+#aim-ap-modal .ct-custom-select{width:100%;}
+#aim-ap-modal .ct-custom-trigger{height:36px;font-size:12px;border-color:#e5e7eb;border-radius:8px;}
+#aim-ap-modal .ct-custom-dropdown{z-index:1400;}
+
+.aim-ai-gen-divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.aim-ai-gen-info-banner{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;margin-bottom:14px;font-size:12px;color:#3b5fb5;line-height:1.5;}
+.aim-ai-gen-adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.aim-ai-gen-adv-select{width:100%;padding:8px 32px 8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);color:var(--text);background:var(--surface);outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;box-sizing:border-box;}
+.aim-ai-gen-adv-select:focus{border-color:var(--accent);}
+.aim-ai-gen-adv-field{position:relative;}
+.aim-ai-gen-adv-field-chev{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted);}
+.aim-ai-gen-adv-label{font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;display:block;}
+.aim-intent-pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.aim-intent-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--font);transition:opacity .12s,transform .1s;user-select:none;}
+.aim-intent-pill.off{opacity:.35;}
+.aim-intent-pill:active{transform:scale(.96);}
+
+/* ── Manual prompt card & intent multi-select ── */
+.aim-mp-card{background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;padding:20px;}
+.aim-mp-card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.aim-mp-label{font-size:12px;font-weight:500;color:#6b7280;margin-bottom:6px;display:block;}
+.aim-mp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.aim-mp-count-line{font-size:11px;color:#6b7280;margin:6px 0 14px;}
+.aim-intent-ms-wrap{position:relative;}
+.aim-intent-ms-trigger{display:flex;align-items:center;gap:8px;width:100%;padding:0 12px;height:36px;background:#fff;border:1px solid #e5e5e5;border-radius:6px;cursor:pointer;font-size:13px;font-family:var(--font);color:var(--text);outline:none;text-align:left;transition:background .12s,border-color .12s;}
+.aim-intent-ms-trigger:hover{background:#f5f5f5;}
+.aim-intent-ms-trigger svg{flex-shrink:0;color:#9ca3af;}
+.aim-intent-ms-trigger .ms-chev{margin-left:auto;}
+.aim-intent-ms-trigger .ms-lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.aim-intent-ms-dd{display:none;position:fixed;background:#fff;border:1px solid #e5e5e5;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:1400;padding:4px;max-height:300px;overflow-y:auto;}
+.aim-intent-ms-dd.open{display:block;}
+.aim-intent-ms-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer;user-select:none;transition:background .1s;}
+.aim-intent-ms-row:hover{background:#f5f5f5;}
+.aim-intent-ms-row.selected{background:var(--accent-light);}
+.aim-intent-ms-cb{width:16px;height:16px;border:1.5px solid #d1d5db;border-radius:4px;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.aim-intent-ms-row.selected .aim-intent-ms-cb{background:var(--accent);border-color:var(--accent);}
+.aim-intent-ms-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.aim-intent-ms-name{font-size:12px;font-weight:600;color:var(--text);}
+.aim-intent-ms-desc{font-size:11px;color:var(--text-muted);}
 /* ── Calendar ── */
 .aim-cal-overlay { position: fixed; inset: 0; z-index: 500; }
 .aim-cal-panel {
@@ -1456,8 +1581,6 @@ button[onclick="aimOpenAddPrompts()"] {
   /* Prompt matrix: constrain first column */
   .aim-pm-table th:first-child,
   .aim-pm-table td:first-child { min-width: 190px; max-width: 190px; }
-
-
 
   /* Sources: narrow search */
   .aim-search-input { width: 140px; }
@@ -1667,8 +1790,6 @@ button[onclick="aimOpenAddPrompts()"] {
   #aim-pr-active-table th:nth-child(9),
   #aim-pr-active-table td:nth-child(9) { display: none; }
 
-  #aim-pr-suggested-table th:nth-child(4),
-  #aim-pr-suggested-table td:nth-child(4) { display: none; }
 
   /* ── Sources toolbar: full-width search ── */
   .aim-search-input { width: 100% !important; }
@@ -1696,6 +1817,44 @@ button[onclick="aimOpenAddPrompts()"] {
   font-family: var(--font);
 }
 .aim-mgr-panel.open { transform: translateX(0); }
+
+/* ── Search Console Change Property panel ───────────── */
+.aim-sc-prop-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  z-index: 10000; opacity: 0; transition: opacity .25s;
+}
+.aim-sc-prop-overlay.open { opacity: 1; }
+.aim-sc-prop-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(480px, 100vw); background: #fff;
+  z-index: 10001; display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+  font-family: var(--font);
+}
+.aim-sc-prop-panel.open { transform: translateX(0); }
+.aim-sc-prop-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px; border-radius: 8px; cursor: pointer;
+  transition: background .12s;
+}
+.aim-sc-prop-row:hover { background: #f9fafb; }
+.aim-sc-prop-row.active { background: #eff6ff; }
+.aim-sc-prop-favicon {
+  width: 32px; height: 32px; border-radius: 7px; border: 1px solid #f3f4f6;
+  object-fit: contain; flex-shrink: 0;
+}
+.aim-sc-prop-info { flex: 1; min-width: 0; }
+.aim-sc-prop-domain { font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aim-sc-prop-type { font-size: 11px; color: #6b7280; margin-top: 1px; }
+.aim-sc-prop-check { color: #1a73e8; flex-shrink: 0; }
+.aim-sc-prop-add-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 11px 20px; border: none; background: transparent;
+  font-size: 14px; font-weight: 500; color: #1a73e8; cursor: pointer;
+  border-radius: 8px; transition: background .12s; text-align: left;
+  font-family: var(--font);
+}
+.aim-sc-prop-add-btn:hover { background: #f0f7ff; }
 .aim-mgr-header {
   padding: 20px 24px 14px; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;
 }
@@ -1784,8 +1943,11 @@ button[onclick="aimOpenAddPrompts()"] {
 /* ── end Manage Brands ─────────────────────────────────── */
 
 /* ── Search Console ──────────────────────────────────────── */
-.aim-sc-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
-.aim-sc-stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:16px; }
+.aim-sc-stat-grid { display:flex; flex-shrink:0; gap:0; }
+.aim-sc-stat-card { background:var(--surface); border:none; border-right:1px solid var(--border); border-radius:0; box-shadow:none; padding:12px 20px 14px; width:165px; flex-shrink:0; flex-grow:0; cursor:pointer; user-select:none; transition:background .15s; }
+.aim-sc-stat-card:last-child { border-right:none; }
+.aim-sc-stat-card:not(.aim-sc-card-on):hover { background:var(--surface-alt); }
+.aim-sc-stat-card.aim-sc-card-on:hover { opacity:.92; }
 .aim-sc-stat-label { font-size:11px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
 .aim-sc-stat-val { font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; line-height:1.1; margin-bottom:6px; }
 .aim-sc-stat-change { font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:3px; }
@@ -1799,7 +1961,63 @@ button[onclick="aimOpenAddPrompts()"] {
 .aim-sc-banner-text { font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px; }
 .aim-sc-convert-btn { font-size:11px; padding:3px 9px; background:none; border:1px solid var(--border); border-radius:6px; color:var(--text-muted); cursor:pointer; transition:all .12s; white-space:nowrap; }
 .aim-sc-convert-btn:hover { border-color:var(--accent-30); color:var(--accent); background:var(--accent-light); }
-@media (max-width:900px) { .aim-sc-stat-grid { grid-template-columns:repeat(2,1fr); } }
+.aim-sc-convert-btn.added { border-color:var(--success); color:var(--success); background:var(--success-light); cursor:default; pointer-events:none; }
+
+/* ── Add Prompt confirm dialog ───────────────────────── */
+.aim-ctp-dialog-bg { position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10200;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;padding:16px; }
+.aim-ctp-dialog-bg.open { opacity:1; }
+.aim-ctp-dialog { background:#fff;border-radius:14px;width:100%;max-width:820px;box-shadow:0 20px 60px rgba(0,0,0,.18);transform:scale(.96);transition:transform .18s cubic-bezier(.34,1.56,.64,1);font-family:var(--font);overflow:hidden; }
+.aim-ctp-dialog-bg.open .aim-ctp-dialog { transform:scale(1); }
+.aim-ctp-dialog-header { padding:18px 20px 14px;border-bottom:1px solid #f3f4f6; }
+/* Ensure custom dropdowns inside the dialog sit above it */
+#aim-ctp-dialog-root .ct-custom-dropdown { z-index:10400; }
+#aim-ctp-dialog-root .ct-custom-trigger { height:36px;font-size:12px;padding:0 10px;border-color:#e5e7eb; }
+#aim-ctp-dialog-root .ct-custom-select { min-width:0; }
+.aim-ctp-dialog-footer { padding:14px 20px;border-top:1px solid #f3f4f6;display:flex;align-items:center;justify-content:flex-end;gap:10px; }
+.aim-ctp-prompt-table { width:100%;border-collapse:collapse; }
+.aim-ctp-prompt-table th { font-size:10.5px;font-weight:700;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #f3f4f6;text-align:left; }
+.aim-ctp-prompt-table th:first-child { padding-left:20px; }
+.aim-ctp-prompt-table td { padding:6px 6px;border-bottom:1px solid #f9fafb;vertical-align:middle; }
+.aim-ctp-prompt-table td:first-child { padding-left:20px; }
+.aim-ctp-prompt-table tr:last-child td { border-bottom:none; }
+.aim-ctp-tbl-select { width:100%;height:36px;padding:0 9px;border:1px solid #e5e7eb;border-radius:7px;font-size:12px;font-family:var(--font);background:#fff;color:#111827;outline:none;cursor:pointer;box-sizing:border-box; }
+.aim-ctp-tbl-select:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-30); }
+.aim-ctp-tbl-input { width:100%;height:36px;padding:0 9px;border:1px solid #e5e7eb;border-radius:7px;font-size:12px;font-family:var(--font);resize:none;outline:none;color:#111827;line-height:36px;box-sizing:border-box; }
+.aim-ctp-tbl-input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-30); }
+.aim-ctp-tbl-rm { width:26px;height:26px;border:none;background:none;cursor:pointer;color:#9ca3af;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s; }
+.aim-ctp-tbl-rm:hover { background:#fee2e2;color:#dc2626; }
+.aim-ctp-dlg-cancel { padding:8px 18px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:500;color:#374151;cursor:pointer;font-family:var(--font); }
+.aim-ctp-dlg-cancel:hover { background:#f9fafb; }
+.aim-ctp-dlg-confirm { padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:opacity .12s; }
+.aim-ctp-dlg-confirm:hover { opacity:.88; }
+.aim-ctp-dlg-confirm:disabled { opacity:.4;cursor:default; }
+
+/* ── Convert to Prompt panel ─────────────────────────── */
+.aim-sc-ctp-overlay { position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:10000;opacity:0;transition:opacity .25s; }
+.aim-sc-ctp-overlay.open { opacity:1; }
+.aim-sc-ctp-panel { position:fixed;top:0;right:0;bottom:0;width:min(500px,100vw);background:#fff;z-index:10001;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);font-family:var(--font);box-shadow:-4px 0 24px rgba(0,0,0,.1); }
+.aim-sc-ctp-panel.open { transform:translateX(0); }
+.aim-sc-ctp-prompt-card { display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:border-color .13s,background .13s;margin-bottom:10px;background:#fff; }
+.aim-sc-ctp-prompt-card:hover { border-color:var(--accent-30); }
+.aim-sc-ctp-prompt-card.selected { border-color:var(--accent);background:var(--accent-light); }
+.aim-sc-ctp-cb { width:17px;height:17px;border:1.5px solid #d1d5db;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .13s;background:#fff; }
+.aim-sc-ctp-prompt-card.selected .aim-sc-ctp-cb { background:var(--accent);border-color:var(--accent); }
+.aim-sc-ctp-cat-tag { display:inline-block;font-size:11px;font-weight:500;padding:2px 9px;border-radius:99px;background:#f3f4f6;color:#6b7280;margin-top:7px; }
+.aim-sc-ctp-footer { padding:14px 20px;border-top:1px solid #e5e7eb;flex-shrink:0;display:flex;align-items:center;gap:10px;background:#fff; }
+.aim-sc-ctp-footer-label { font-size:13px;color:#6b7280;flex:1;white-space:nowrap; }
+.aim-sc-ctp-cancel-btn { padding:9px 18px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:500;color:#374151;cursor:pointer;font-family:var(--font);white-space:nowrap; }
+.aim-sc-ctp-cancel-btn:hover { background:#f9fafb; }
+.aim-sc-ctp-add-btn { display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:opacity .12s; }
+.aim-sc-ctp-add-btn:hover { opacity:.88; }
+.aim-sc-ctp-add-btn:disabled { opacity:.4;cursor:default; }
+@media (max-width:900px) { .aim-sc-stat-grid { flex-wrap:wrap; } .aim-sc-stat-card { min-width:calc(50% - 0px); } }
+.aim-sc-period-btn { font-size:11px;font-weight:500;padding:4px 10px;border:none;border-radius:5px;cursor:pointer;background:transparent;color:var(--text-muted);transition:all .12s;line-height:1; }
+.aim-sc-period-btn.active { background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600; }
+.aim-sc-period-btn:hover:not(.active) { color:var(--text);background:rgba(0,0,0,.03); }
+.aim-sc-gran-btn { font-size:11px;font-weight:500;padding:3px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--text-muted);transition:all .12s; }
+.aim-sc-gran-btn.active { background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08); }
+.aim-sc-gran-btn:hover:not(.active) { color:var(--text); }
+
 /* ── Add New Brand wizard ────────────────────────────── */
 .aim-nb-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -2097,7 +2315,6 @@ button[onclick="aimOpenAddPrompts()"] {
 .aim-nb-prompt-cancel-btn { color: var(--text-muted); border: 1.5px solid var(--border); }
 .aim-nb-prompt-cancel-btn:hover { background: var(--surface-alt); }
 /* ── end Add New Brand ─────────────────────────────────── */
-
 </style>
 
 
@@ -2309,7 +2526,21 @@ button[onclick="aimOpenAddPrompts()"] {
                 <span id="aim-pr-used-count" style="font-weight:700;color:var(--text);">12</span><span>/</span><span id="aim-pr-total-count">30</span><span> prompts</span>
                 <div style="width:36px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;"><div id="aim-pr-used-bar" style="width:40%;height:100%;background:var(--accent);border-radius:2px;"></div></div>
               </div>
-              <button onclick="aimOpenAddPrompts()" style="display:flex;align-items:center;gap:4px;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Add more prompts</button>
+              <div class="aim-add-menu-wrap">
+                <button onclick="aimToggleAddMenu('aim-pr-add-menu',event)" style="display:flex;align-items:center;gap:4px;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);">
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  Add prompts
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style="margin-left:1px"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="aim-add-menu" id="aim-pr-add-menu">
+                  <button class="aim-add-menu-item" onclick="aimCloseAddMenus();aimOpenAddPrompts('ai')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>AI Suggested
+                  </button>
+                  <button class="aim-add-menu-item" onclick="aimCloseAddMenus();aimOpenAddPrompts('manual')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Manual Prompts
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div id="aim-pr-active-table" class="aim-table-wrap" style="max-height:calc(100vh - 360px);overflow-y:auto;">
@@ -2330,7 +2561,7 @@ button[onclick="aimOpenAddPrompts()"] {
           </div>
           <div id="aim-pr-suggested-table" class="aim-table-wrap" style="display:none;max-height:calc(100vh - 360px);overflow-y:auto;">
             <table class="aim-full-table" style="min-width:600px;">
-              <thead><tr><th style="width:30px;"><input type="checkbox" id="aim-sug-check-all" style="width:13px;height:13px;cursor:pointer;accent-color:var(--accent);" onchange="aimToggleAllSuggested(this.checked)"></th><th class="col-left" style="min-width:300px;">Suggested Prompt</th><th style="width:110px;">Intent</th><th style="width:120px;">Suggested At</th><th style="width:100px;">Actions</th></tr></thead>
+              <thead><tr><th style="width:30px;"><input type="checkbox" id="aim-sug-check-all" style="width:13px;height:13px;cursor:pointer;accent-color:var(--accent);" onchange="aimToggleAllSuggested(this.checked)"></th><th class="col-left" style="min-width:300px;">Suggested Prompt</th><th style="width:110px;">Intent</th><th style="width:100px;">Actions</th></tr></thead>
               <tbody id="aim-pr-suggested-tbody"></tbody>
             </table>
           </div>
@@ -2713,19 +2944,56 @@ button[onclick="aimOpenAddPrompts()"] {
               </div>
               <div class="aim-st-card-sub">AI-powered prompt generation with performance analytics and smart optimization.</div>
             </div>
-            <div style="display:flex;gap:8px;">
-              <button class="aim-st-btn-primary">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                Generate AI Prompts
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="aim-st-btn-outlined" onclick="aimStOpenAddTopic()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Add Topic
               </button>
-              <button class="aim-st-btn-outlined">+ Add Manual</button>
+              <button class="aim-st-btn-outlined" onclick="aimStOpenAddIntent()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Add Intent
+              </button>
+              <div class="aim-add-menu-wrap">
+              <button class="aim-st-btn-primary" onclick="aimToggleAddMenu('aim-st-add-menu',event)" style="display:flex;align-items:center;gap:6px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Prompts
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="aim-add-menu" id="aim-st-add-menu">
+                <button class="aim-add-menu-item" onclick="aimCloseAddMenus();aimOpenAddPrompts('ai')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>AI Suggested
+                </button>
+                <button class="aim-add-menu-item" onclick="aimCloseAddMenus();aimOpenAddPrompts('manual')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Manual Prompts
+                </button>
+              </div>
+              </div>
             </div>
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <input type="checkbox" id="aim-st-select-all" onclick="aimStSelectAll(this)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;" title="Select all prompts">
             <div class="aim-search-wrap" style="flex:1;min-width:160px;">
               <svg class="aim-search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
               <input class="aim-search-input" id="aim-st-prompt-search" placeholder="Search prompts..." oninput="aimStRenderPrompts()" style="width:100%">
             </div>
+          </div>
+          <div id="aim-st-bulk-bar" class="aim-st-bulk-bar" style="display:none;">
+            <span id="aim-st-bulk-count" class="aim-st-bulk-count">0 selected</span>
+            <div class="aim-st-bulk-sep"></div>
+            <button class="aim-st-bulk-btn" onclick="aimStBulkTopic()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              Change Topic
+            </button>
+            <button class="aim-st-bulk-btn" onclick="aimStBulkIntent()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              Change Intent
+            </button>
+            <div class="aim-st-bulk-sep"></div>
+            <button class="aim-st-bulk-btn danger" onclick="aimStBulkDelete()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              Delete
+            </button>
+            <button class="aim-st-bulk-clear" onclick="aimStClearSelection()">Clear selection</button>
           </div>
           <div id="aim-st-prompts-list"></div>
         </div>
@@ -2941,8 +3209,8 @@ button[onclick="aimOpenAddPrompts()"] {
           <div style="font-size:12px;color:var(--text-muted);">Analyze search traffic and convert high-value queries into AI-optimized prompts</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <span id="aim-sc-domain-label" style="font-size:12px;color:var(--text-muted);padding:5px 10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:6px;">aipeekaboo.com</span>
-          <button class="aim-export-btn" style="font-size:11px;">Change Property</button>
+          <span id="aim-sc-domain-label" style="font-size:12px;color:var(--text-muted);padding:5px 10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:6px;display:inline-flex;align-items:center;gap:6px;"><img src="https://www.google.com/s2/favicons?domain=aipeekaboo.com&sz=32" style="width:14px;height:14px;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none'">aipeekaboo.com</span>
+          <button class="aim-export-btn" style="font-size:11px;" onclick="aimOpenScProperty()">Change Property</button>
           <button class="aim-export-btn" style="font-size:11px;color:var(--danger);">Disconnect</button>
           <button class="aim-export-btn" style="font-size:11px;display:flex;align-items:center;gap:5px;" onclick="aimScRefresh(this)">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
@@ -2951,31 +3219,40 @@ button[onclick="aimOpenAddPrompts()"] {
         </div>
       </div>
 
-      <!-- KPI stat cards -->
-      <div class="aim-sc-stat-grid" id="aim-sc-stat-grid"></div>
-
-      <!-- Performance summary -->
-      <div id="aim-sc-summary-bar" style="font-size:12px;color:var(--text-muted);background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;margin-bottom:16px;"></div>
+      <!-- Performance Over Time title (swapped position with date range) -->
+      <div style="margin-bottom:10px;">
+        <span style="font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.2px;">Performance Over Time</span>
+      </div>
 
       <!-- Performance Over Time chart -->
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Performance Over Time</div>
-            <div class="card-desc" id="aim-sc-chart-period">Last 30 days</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;">
-            <div style="display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-muted);">
-              <span style="display:flex;align-items:center;gap:4px;"><span style="color:#1a73e8;font-size:16px;line-height:1;">●</span>Clicks</span>
-              <span style="display:flex;align-items:center;gap:4px;"><span style="color:#9334e6;font-size:16px;line-height:1;">●</span>Impressions</span>
-              <span style="display:flex;align-items:center;gap:4px;"><span style="color:#0d904f;font-size:16px;line-height:1;">●</span>CTR</span>
+      <div class="card" style="margin-bottom:16px;overflow:hidden;">
+        <!-- Date range selector (swapped into card header) -->
+        <div class="card-header" style="flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:11px;font-weight:500;color:var(--text-muted);">Date range:</span>
+            <div style="display:flex;align-items:center;gap:2px;background:var(--surface-alt);border:1px solid var(--border);border-radius:7px;padding:3px;">
+              <button class="aim-sc-period-btn" onclick="aimSetScPeriod('7d')" data-period="7d">Last 7 days</button>
+              <button class="aim-sc-period-btn active" onclick="aimSetScPeriod('28d')" data-period="28d">Last 28 days</button>
+              <button class="aim-sc-period-btn" onclick="aimSetScPeriod('3m')" data-period="3m">Last 3 months</button>
+              <button class="aim-sc-period-btn" onclick="aimSetScPeriod('6m')" data-period="6m">Last 6 months</button>
+              <button class="aim-sc-period-btn" onclick="aimSetScPeriod('12m')" data-period="12m">Last 12 months</button>
             </div>
-            <button class="aim-export-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M2 10h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Export</button>
+          </div>
+        </div>
+        <!-- Metric cards (left-aligned, auto width) + granularity dropdown (right) in same row -->
+        <div style="display:flex;align-items:stretch;border-bottom:1px solid var(--border-light);">
+          <div class="aim-sc-stat-grid" id="aim-sc-stat-grid"></div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;border-left:1px solid var(--border-light);">
+            <select id="aim-sc-gran-select" onchange="aimSetScGran(this.value)"
+              style="font-size:13px;padding:8px 14px 8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;outline:none;font-weight:500;min-width:120px;">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
           </div>
         </div>
         <div class="card-body">
-          <div class="chart-wrap" style="height:200px;"><canvas id="aim-sc-perf-chart"></canvas></div>
-          <div style="margin-top:8px;font-size:10px;color:var(--text-faint);" id="aim-sc-last-updated"></div>
+          <div class="chart-wrap" style="height:220px;"><canvas id="aim-sc-perf-chart"></canvas></div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text-faint);" id="aim-sc-last-updated"></div>
         </div>
       </div>
 
@@ -2984,8 +3261,7 @@ button[onclick="aimOpenAddPrompts()"] {
         <div class="aim-sc-banner-text">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);flex-shrink:0;"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
           <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:9999px;background:rgba(179,82,179,.1);color:var(--accent);">Beta</span>
-          Get instant insights about your queries, CTR, rankings, and search intent patterns
-        </div>
+</div>
         <button onclick="showView('ai-overview')" style="font-size:11px;font-weight:600;padding:5px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;">Ask AI</button>
       </div>
 
@@ -3092,11 +3368,7 @@ button[onclick="aimOpenAddPrompts()"] {
 <!-- Add Prompts Modal -->
 <div id="aim-ap-modal" class="aim-ap-overlay" style="display:none;" onclick="if(event.target===this)aimCloseAddPrompts()">
   <div class="aim-ap-panel" onclick="event.stopPropagation()">
-    <div class="aim-ap-header"><span class="aim-ap-title">Add Prompts</span><button class="aim-ap-close" onclick="aimCloseAddPrompts()">&#215;</button></div>
-    <div class="aim-ap-tabs">
-      <button class="aim-ap-tab active" id="aim-ap-tab-ai" onclick="aimApTab('ai')">AI Suggested</button>
-      <button class="aim-ap-tab" id="aim-ap-tab-manual" onclick="aimApTab('manual')">Add Manually</button>
-    </div>
+    <div class="aim-ap-header"><span class="aim-ap-title" id="aim-ap-title">Add Prompts</span><button class="aim-ap-close" onclick="aimCloseAddPrompts()">&#215;</button></div>
     <div class="aim-ap-body" id="aim-ap-body"></div>
     <div class="aim-ap-footer" id="aim-ap-footer"></div>
   </div>
@@ -3417,7 +3689,12 @@ const AIM_TOPIC_COLORS = {
   'Brand Visibility': '#2563eb',
   'Competitor Intel': '#f59e0b',
   'Content Strategy': '#10b981',
-  'SEO Tools': '#8b5cf6'
+  'SEO Tools': '#8b5cf6',
+  'General': '#6b7280',
+  'Purchase Intent': '#f97316',
+  'Validation': '#14b8a6',
+  'Discovery': '#0ea5e9',
+  'Education': '#3b82f6'
 };
 
 const AIM_PROMPTS = [
@@ -3816,7 +4093,7 @@ function aimModelBadge(model) {
 }
 
 function aimTopicBadge(topic) {
-  const c = AIM_TOPIC_COLORS[topic] || '#6b7280';
+  const c = AIM_TOPIC_COLORS[topic] || _aimStCatColors[topic] || '#6b7280';
   return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e5e7eb;color:#374151"><span style="color:${c};font-size:7px;line-height:1">●</span>${topic || '–'}</span>`;
 }
 
@@ -4901,7 +5178,6 @@ function aimRenderPromptsTable() {
           <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${aimEscHtml(p.rationale || '')}</div>
         </td>
         <td><span class="aim-intent-badge ${intentVal.toLowerCase()}">${intentVal}</span></td>
-        <td style="font-size:11px;color:var(--text-faint);white-space:nowrap">${dateVal ? aimFmtDate(dateVal) : ''}</td>
         <td><button data-sug-id="${p.id}" onclick="aimAddSuggestedPrompt(${p.id}, this)" style="padding:4px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Add</button></td>
       </tr>`;
     }).join('');
@@ -4911,7 +5187,7 @@ function aimRenderPromptsTable() {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
   const prompts = aimGetFilteredPrompts();
-  const colCount = aimPromptsTab === 'Inactive' ? 3 : 9;
+  const colCount = aimPromptsTab === 'Inactive' ? 5 : 9;
   if (!prompts.length) {
     tbody.innerHTML = `<tr><td colspan="${colCount}" class="aim-empty-state">No prompts to show</td></tr>`;
     return;
@@ -4924,10 +5200,15 @@ function aimRenderPromptsTable() {
     const sentInfo = aimSentimentLabel(sent);
     const checked = aimCheckedPrompts.has(p.id);
     if (aimPromptsTab === 'Inactive') {
+      const _topicColor = (AIM_TOPIC_COLORS && AIM_TOPIC_COLORS[p.topic]) || '#6b7280';
+      const _topicCell = p.topic ? `<span class="aim-topic-badge"><span style="color:${_topicColor};font-size:7px;line-height:1">●</span>${aimEscHtml(p.topic)}</span>` : `<span style="color:var(--text-faint);font-size:11px">—</span>`;
+      const _intentCell = p.intent ? `<span class="aim-intent-badge ${(p.intent||'').toLowerCase()}">${aimEscHtml(p.intent)}</span>` : `<span style="color:var(--text-faint);font-size:11px">—</span>`;
       return `<tr onclick="aimOpenPromptDetail(${p.id})" style="cursor:pointer">
         <td onclick="event.stopPropagation()"><input type="checkbox" ${checked?'checked':''} onchange="aimToggleCheck(${p.id},this.checked)" style="cursor:pointer;accent-color:var(--accent);width:13px;height:13px"></td>
         <td class="col-left" style="min-width:260px"><div class="aim-prompt-text">${aimEscHtml(p.text)}</div></td>
-        <td><button onclick="event.stopPropagation();aimActivatePrompt(${p.id})" style="padding:4px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Activate</button></td>
+        <td>${_topicCell}</td>
+        <td>${_intentCell}</td>
+        <td><button onclick="event.stopPropagation();aimActivatePrompt(${p.id})" style="padding:4px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Reactivate</button></td>
       </tr>`;
     }
     const _apId = 'ap' + (AIM_PROMPTS.findIndex(ap => ap.id === p.id) + 1);
@@ -5097,38 +5378,59 @@ function aimAddSuggestedPrompt(id, el) {
   el.style.background = 'var(--success)';
 }
 
+function aimApManAddRow() {
+  var tbody = document.getElementById('aim-ap-man-body');
+  if (!tbody) return;
+  var i = window._aimApManRowCount || 0;
+  window._aimApManRowCount = i + 1;
+  var topics  = Object.keys(AIM_TOPIC_COLORS);
+  var intents = ['Commercial','Informational','Transactional','Navigational'];
+  var topicSel  = _aimCtpBuildSelect('aim-ap-man-topic-'  + i, topics,  topics[0], '');
+  var intentSel = _aimCtpBuildSelect('aim-ap-man-intent-' + i, intents, 'Commercial', '');
+  var tr = document.createElement('tr');
+  tr.id = 'aim-ap-man-row-' + i;
+  tr.innerHTML =
+    '<td><textarea class="aim-ctp-tbl-input" id="aim-ap-man-text-' + i + '" rows="2" placeholder="Enter the question or phrase to monitor..."></textarea></td>'
+  + '<td style="width:168px;">' + topicSel + '</td>'
+  + '<td style="width:148px;">' + intentSel + '</td>'
+  + '<td style="width:36px;text-align:center;vertical-align:middle;"><button class="aim-ctp-tbl-rm" onclick="aimApManRemoveRow(' + i + ')" title="Remove">'
+  +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+  + '</button></td>';
+  tbody.appendChild(tr);
+  var ta = document.getElementById('aim-ap-man-text-' + i);
+  if (ta) ta.focus();
+}
+
+function aimApManRemoveRow(i) {
+  var row = document.getElementById('aim-ap-man-row-' + i);
+  if (row) row.remove();
+}
+
 function aimManualAddPrompt() {
-  const body = document.getElementById('aim-ap-body');
-  if (!body) return;
-  const textarea = body.querySelector('textarea');
-  const selects  = body.querySelectorAll('select');
-  const text = (textarea?.value || '').trim();
-  if (!text) {
-    if (textarea) { textarea.style.outline = '2px solid var(--danger)'; textarea.focus(); }
+  var rows = document.querySelectorAll('#aim-ap-man-body tr');
+  var added = 0;
+  var firstEmpty = null;
+  rows.forEach(function(row) {
+    var id = row.id.replace('aim-ap-man-row-', '');
+    var text   = (document.getElementById('aim-ap-man-text-'   + id) || {}).value || '';
+    var intentWrap = document.getElementById('aim-ap-man-intent-' + id);
+    var topicWrap  = document.getElementById('aim-ap-man-topic-'  + id);
+    var intent = (intentWrap && intentWrap.dataset.value) || 'Commercial';
+    var topic  = (topicWrap  && topicWrap.dataset.value)  || 'General';
+    text = text.trim();
+    if (!text) {
+      if (!firstEmpty) firstEmpty = document.getElementById('aim-ap-man-text-' + id);
+      return;
+    }
+    aimAddPromptToDb({ text: text, intent: intent, topic: topic });
+    added++;
+  });
+  if (!added) {
+    if (firstEmpty) { firstEmpty.style.outline = '2px solid var(--danger)'; firstEmpty.focus(); }
     return;
   }
-  const topic = selects[0]?.value || 'General';
-  const freq  = selects[1]?.value || 'daily';
-
-  const newId = AIM_PROMPTS.length + 1;
-  AIM_PROMPTS.push({
-    id: newId, text, topic, intent: 'Commercial',
-    models: ['ChatGPT','Gemini','Perplexity','Google AIO','Google AI Mode'],
-    visibility: 0, sentiment: 50, position: null, status: 'active',
-    frequency: freq, lastRun: null,
-  });
-  const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = {});
-  if (!snap.prompt_metrics) snap.prompt_metrics = [];
-  snap.prompt_metrics.push({
-    prompt_id: 'ap' + newId, prompt_text: text,
-    topic, intent: 'Commercial',
-    visibility_all: 0, sentiment_all: 50, position_all: null, last_run: null,
-  });
-
   aimUpdatePromptCounters();
   aimRebuildTopicDropdown();
-  aimStRenderPrompts();
-  if (aimPromptsTab === 'Active') aimRenderPromptsTable();
   aimCloseAddPrompts();
 }
 
@@ -5733,53 +6035,163 @@ function aimRenderCompSentimentTable() {
   if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
 }
 
+/* Comprehensive brand → canonical domain map for brands that appear in
+   snapshot matrix data but have no .d field set by the generator. */
 const _AIM_BRAND_DOMAIN_MAP = {
-  'ai peekaboo':'aipeekaboo.com','profound':'tryprofound.com','profound ai':'tryprofound.com',
-  'otterly ai':'otterly.ai','otterly.ai':'otterly.ai','otterlyai':'otterly.ai',
-  'scrunch':'scrunch.ai','scrunch ai':'scrunch.ai','peec':'peec.ai','peec ai':'peec.ai',
-  'peek ai':'peec.ai','peekaboo':'aipeekaboo.com','rankscale ai':'rankscale.ai',
-  'rankscale':'rankscale.ai','rankability':'rankability.com','siftly':'siftly.ai',
-  'nightwatch':'nightwatch.io','athenahq':'athenahq.com','airops':'airops.com',
-  'gracerai':'gracker.ai','grackerai':'gracker.ai','evertune':'evertune.com',
-  'goodie ai':'goodie.ai','brandlight.ai':'brandlight.ai','brandsnag':'brandsnag.com',
-  'brandi ai':'brandi.ai','llmrefs':'llmrefs.com','llm pulse':'llmpulse.io',
-  'promptwatch':'promptwatch.io','promptmonitor':'promptmonitor.com','promptrush':'promptrush.io',
-  'rankprompt':'rankprompt.com','sight ai':'trysight.ai','visibl':'visibl.com',
-  'visby ai':'visio.ai','vismore':'vismore.io','ziptie':'ziptie.dev','ziptie.dev':'ziptie.dev',
-  'ayzeo':'ayzeo.com','indexly':'indexly.io','finseo':'finseo.io','geneo':'geneo.ai',
-  'geoptie':'geoptie.com','radarkit.ai':'radarkit.ai','wellows':'wellows.com',
-  'camelai':'camel-ai.org','energent.ai':'energent.ai','querio':'querio.ai',
-  'knowatoa':'knowatoa.com','aiclicks':'aiclicks.com',
-  'se ranking':'seranking.com','semrush':'semrush.com','ahrefs':'ahrefs.com',
-  'ahrefs brand radar':'ahrefs.com','airefs':'ahrefs.com','moz pro':'moz.com',
-  'brightedge':'brightedge.com','conductor':'conductor.com','marketmuse':'marketmuse.com',
-  'neuronwriter':'neuronwriter.com','surfer seo':'surferseo.com','seomonitor':'seomonitor.com',
-  'authoritas':'authoritas.com','keyword.com':'keyword.com','ubersuggest':'ubersuggest.com',
-  'langsmith':'langsmith.com','appearly':'appearly.com','growthos':'growthos.com','brandwatch':'brandwatch.com','brand24':'brand24.com',
-  'brandcrowd':'brandcrowd.com','mention.ai':'mention.ai','mentionlytics':'mentionlytics.com',
-  'sprout social':'sproutsocial.com','meltwater':'meltwater.com',
-  'hubspot':'hubspot.com','hubspot aeo':'hubspot.com',
-  'chatgpt':'openai.com','claude':'claude.ai','gemini':'gemini.google.com',
-  'perplexity':'perplexity.ai','similarweb':'similarweb.com','funnel.io':'funnel.io',
-  'triple whale':'triplewhale.com','northbeam':'northbeam.io','improvado':'improvado.io',
-  'adverity':'adverity.com','cometly':'cometly.com','datadog':'datadoghq.com',
-  'metabase':'metabase.com','domo':'domo.com','zoho analytics':'zoho.com',
-  'gwi spark':'gwi.com','microsoft power bi':'powerbi.microsoft.com',
-  'google looker studio':'lookerstudio.google.com','google search console':'search.google.com',
-  'google earth pro':'earth.google.com','posthog':'posthog.com',
-  'writesonic':'writesonic.com','jasper':'jasper.ai','copy.ai':'copy.ai',
-  'frase':'frase.io','buffer':'buffer.com','canva':'canva.com',
-  'julius ai':'julius.ai','maxim ai':'getmaxim.ai','braintrust':'braintrustdata.com',
-  'langfuse':'langfuse.com','helicone':'helicone.ai','fiddler ai':'fiddler.ai',
-  'infranodus':'infranodus.com','polymer':'polymersearch.com',
-  'arcgis pro':'esri.com','qgis':'qgis.org','mapbox':'mapbox.com','grass gis':'grass.osgeo.org',
-  'namelix':'namelix.com','namify':'namify.com','namy.ai':'namy.ai',
-  'namecheap':'namecheap.com','looka':'looka.com','truic':'truic.com',
-  'namemancer':'namemancer.com','namesnack':'namesnack.com',
-  'uptimerobot':'uptimerobot.com','pingdom':'pingdom.com','visualping':'visualping.io',
-  'wp rocket':'wp-rocket.me','slate':'slate.com','scout':'scoutapm.com',
+  // AI visibility / SEO monitoring
+  'ai peekaboo':          'aipeekaboo.com',
+  'profound':             'tryprofound.com',
+  'profound ai':          'tryprofound.com',
+  'otterly ai':           'otterly.ai',
+  'otterly.ai':           'otterly.ai',
+  'otterly.ai':           'otterly.ai',
+  'otterlyai':            'otterly.ai',
+  'scrunch':              'scrunch.ai',
+  'scrunch ai':           'scrunch.ai',
+  'peec':                 'peec.ai',
+  'peec ai':              'peec.ai',
+  'peek ai':              'peec.ai',
+  'peekaboo':             'aipeekaboo.com',
+  'rankscale ai':         'rankscale.ai',
+  'rankscale':            'rankscale.ai',
+  'rankability':          'rankability.com',
+  'siftly':               'siftly.ai',
+  'nightwatch':           'nightwatch.io',
+  'athenahq':             'athenahq.com',
+  'airops':               'airops.com',
+  'gracerai':             'gracker.ai',
+  'grackerai':            'gracker.ai',
+  'evertune':             'evertune.com',
+  'goodie ai':            'goodie.ai',
+  'brandlight.ai':        'brandlight.ai',
+  'brandsnag':            'brandsnag.com',
+  'brandi ai':            'brandi.ai',
+  'llmrefs':              'llmrefs.com',
+  'llm pulse':            'llmpulse.io',
+  'promptwatch':          'promptwatch.io',
+  'promptmonitor':        'promptmonitor.com',
+  'promptrush':           'promptrush.io',
+  'rankprompt':           'rankprompt.com',
+  'sight ai':             'trysight.ai',
+  'visibl':               'visibl.com',
+  'visby ai':             'visio.ai',
+  'vismore':              'vismore.io',
+  'zipties':              'ziptie.dev',
+  'ziptie':               'ziptie.dev',
+  'ziptie.dev':           'ziptie.dev',
+  'ayzeo':                'ayzeo.com',
+  'indexly':              'indexly.io',
+  'finseo':               'finseo.io',
+  'geneo':                'geneo.ai',
+  'geoptie':              'geoptie.com',
+  'radarkit.ai':          'radarkit.ai',
+  'wellows':              'wellows.com',
+  'camélai':              'camel-ai.org',
+  'camelai':              'camel-ai.org',
+  'energent.ai':          'energent.ai',
+  'querio':               'querio.ai',
+  'knowatoa':             'knowatoa.com',
+  'aiclicks':             'aiclicks.com',
+  // SEO / content tools
+  'se ranking':           'seranking.com',
+  'semrush':              'semrush.com',
+  'ahrefs':               'ahrefs.com',
+  'ahrefs brand radar':   'ahrefs.com',
+  'airefs':               'ahrefs.com',
+  'moz pro':              'moz.com',
+  'brightedge':           'brightedge.com',
+  'conductor':            'conductor.com',
+  'marketmuse':           'marketmuse.com',
+  'neuronwriter':         'neuronwriter.com',
+  'surfer seo':           'surferseo.com',
+  'seomonitor':           'seomonitor.com',
+  'authoritas':           'authoritas.com',
+  'keyword.com':          'keyword.com',
+  'ubersuggest':          'ubersuggest.com',
+  'growthflare':          'growthflare.io',
+  'growthos':             'growthos.com',
+  'langsmith':            'langsmith.com',
+  'appearly':             'appearly.com',
+  // Brand monitoring / social
+  'brandwatch':           'brandwatch.com',
+  'brand24':              'brand24.com',
+  'brandcrowd':           'brandcrowd.com',
+  'mention.ai':           'mention.ai',
+  'mentionlytics':        'mentionlytics.com',
+  'sprout social':        'sproutsocial.com',
+  'meltwater':            'meltwater.com',
+  'hubspot':              'hubspot.com',
+  'hubspot aeo':          'hubspot.com',
+  // AI assistants / LLMs
+  'chatgpt':              'openai.com',
+  'claude':               'claude.ai',
+  'gemini':               'gemini.google.com',
+  'perplexity':           'perplexity.ai',
+  // Analytics / data
+  'similarweb':           'similarweb.com',
+  'semrush traffic analytics': 'semrush.com',
+  'funnel.io':            'funnel.io',
+  'triple whale':         'triplewhale.com',
+  'northbeam':            'northbeam.io',
+  'improvado':            'improvado.io',
+  'adverity':             'adverity.com',
+  'cometly':              'cometly.com',
+  'datadog':              'datadoghq.com',
+  'metabase':             'metabase.com',
+  'domo':                 'domo.com',
+  'zoho analytics':       'zoho.com',
+  'gwi spark':            'gwi.com',
+  'microsoft power bi':   'powerbi.microsoft.com',
+  'google looker studio': 'lookerstudio.google.com',
+  'google search console':'search.google.com',
+  'google earth pro':     'earth.google.com',
+  'posthog':              'posthog.com',
+  // AI / content creation
+  'writesonic':           'writesonic.com',
+  'jasper':               'jasper.ai',
+  'copy.ai':              'copy.ai',
+  'frase':                'frase.io',
+  'buffer':               'buffer.com',
+  'canva':                'canva.com',
+  'airops':               'airops.com',
+  'julius ai':            'julius.ai',
+  'maxim ai':             'getmaxim.ai',
+  'braintrust':           'braintrustdata.com',
+  'langfuse':             'langfuse.com',
+  'helicone':             'helicone.ai',
+  'fiddler ai':           'fiddler.ai',
+  'infranodus':           'infranodus.com',
+  'polymer':              'polymersearch.com',
+  // GIS / mapping
+  'arcgis pro':           'esri.com',
+  'qgis':                 'qgis.org',
+  'mapbox':               'mapbox.com',
+  'grass gis':            'grass.osgeo.org',
+  // Brand naming
+  'namelix':              'namelix.com',
+  'namify':               'namify.com',
+  'namy.ai':              'namy.ai',
+  'namecritic':           'namecritic.com',
+  'namesmash':            'namesmash.com',
+  'namecheap':            'namecheap.com',
+  'looka':                'looka.com',
+  'truic':                'truic.com',
+  'namemancer':           'namemancer.com',
+  'namemaker':            'namemaker.com',
+  'namesnack':            'namesnack.com',
+  // Uptime / monitoring
+  'uptimerobot':          'uptimerobot.com',
+  'pingdom':              'pingdom.com',
+  'visualping':           'visualping.io',
+  'wp rocket':            'wp-rocket.me',
+  // Misc
+  'slate':                'slate.com',
+  'conductor':            'conductor.com',
+  'scout':                'scoutapm.com',
+  'airmon':               'aimon.io',
 };
 
+/* Shared brand-name → domain resolver used by all favicon rendering paths. */
 function _aimBrandNameToDomain(name) {
   if (!name) return null;
   const n = name.trim();
@@ -5795,6 +6207,9 @@ function _aimResolveBrandDomain(brandObj) {
   return brandObj.d || _aimBrandNameToDomain(brandObj.n);
 }
 
+/* Globe-check for matrix and table favicons: Google S2 returns the generic
+   16px globe as a valid 200 for unknown domains, so onerror never fires.
+   Detect naturalWidth <= 16 and go straight to letter avatar. */
 function aimPmFavCheck(img) {
   if (img.naturalWidth <= 16) {
     const hasBn = !!img.dataset.bn;
@@ -6432,13 +6847,76 @@ window.AIM_SC_DATA = {
   ]
 };
 
+// Generate synthetic daily GSC data for the past N days from 2026-05-17
+function aimScDailyData(days) {
+  const TODAY = new Date('2026-05-17');
+  const rows = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(TODAY);
+    d.setDate(d.getDate() - i);
+    const dow = d.getDay();
+    const wMult = (dow === 0 || dow === 6) ? 0.45 : 1;
+    const t = days > 1 ? (days - 1 - i) / (days - 1) : 0;
+    const trend = 0.78 + t * 0.38;
+    const noise = ((i * 31 + 7) % 37) / 37;
+    const clicks = Math.max(1, Math.round((9 + noise * 9) * trend * wMult));
+    const imps   = Math.max(100, Math.round((8200 + noise * 2800) * trend * wMult));
+    const ctr    = +((clicks / imps) * 100).toFixed(2);
+    const pos    = +(27 + Math.sin(i * 0.6) * 3.5).toFixed(1);
+    rows.push({ label: d.toLocaleString('en-US', {month:'short'}) + ' ' + d.getDate(), clicks, imps, ctr, pos });
+  }
+  return rows;
+}
+
+function aimScWeeklyData(daily) {
+  const weeks = [];
+  for (let i = 0; i < daily.length; i += 7) {
+    const chunk = daily.slice(i, Math.min(i + 7, daily.length));
+    const clicks = chunk.reduce((s, r) => s + r.clicks, 0);
+    const imps   = chunk.reduce((s, r) => s + r.imps,   0);
+    const ctr    = +((clicks / imps) * 100).toFixed(2);
+    const pos    = +(chunk.reduce((s, r) => s + r.pos, 0) / chunk.length).toFixed(1);
+    weeks.push({ label: chunk[0].label, clicks, imps, ctr, pos });
+  }
+  return weeks;
+}
+
+function aimScGetChartRows() {
+  const daysMap = {'7d':7,'28d':28,'3m':91,'6m':182,'12m':365};
+  const days  = daysMap[window.AIM_SC_PERIOD || '28d'] || 28;
+  const daily = aimScDailyData(days);
+  return (window.AIM_SC_GRAN || 'daily') === 'weekly' ? aimScWeeklyData(daily) : daily;
+}
+
+function aimScComputeStats() {
+  const daysMap = {'7d':7,'28d':28,'3m':91,'6m':182,'12m':365};
+  const days = daysMap[window.AIM_SC_PERIOD || '28d'] || 28;
+  const cur  = aimScDailyData(days);
+  const prv  = aimScDailyData(days * 2).slice(0, days);
+  function agg(rows) {
+    const clicks = rows.reduce((s, r) => s + r.clicks, 0);
+    const imps   = rows.reduce((s, r) => s + r.imps,   0);
+    return { clicks, imps, ctr: +((clicks / imps) * 100).toFixed(2), pos: +(rows.reduce((s, r) => s + r.pos, 0) / rows.length).toFixed(1) };
+  }
+  const c = agg(cur), p = agg(prv);
+  const pct = (a, b) => b === 0 ? 0 : +((a - b) / b * 100).toFixed(1);
+  return {
+    clicks: c.clicks,      clicksChange: pct(c.clicks, p.clicks),           clicksUp: c.clicks >= p.clicks,
+    impressions: c.imps,   impressionsChange: pct(c.imps, p.imps),          impressionsUp: c.imps >= p.imps,
+    ctr: c.ctr,            ctrChange: pct(c.ctr, p.ctr),                    ctrUp: c.ctr >= p.ctr,
+    position: c.pos,       positionChange: Math.abs(pct(c.pos, p.pos)),     positionUp: c.pos <= p.pos
+  };
+}
+
 function initSearchConsole() {
   aimRenderTopbar();
-  window.AIM_SC_ACTIVE_TAB    = 'queries';
-  window.AIM_SC_ACTIVE_INTENT = 'All';
-  window.AIM_SC_SHOWN         = 15;
+  window.AIM_SC_ACTIVE_TAB     = 'queries';
+  window.AIM_SC_ACTIVE_INTENT  = 'All';
+  window.AIM_SC_SHOWN          = 15;
+  window.AIM_SC_PERIOD         = '28d';
+  window.AIM_SC_GRAN           = 'daily';
+  window.AIM_SC_ACTIVE_METRICS = new Set(['clicks', 'impressions']);
   aimRenderScStats();
-  aimRenderScSummary();
   aimRenderScChart();
   aimUpdateScIntentPills();
   aimRenderScTable();
@@ -6447,24 +6925,28 @@ function initSearchConsole() {
 function aimRenderScStats() {
   const grid = document.getElementById('aim-sc-stat-grid');
   if (!grid) return;
-  const s = window.AIM_SC_DATA.stats;
-  const upArrow   = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 8V2M2 5l3-3 3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const downArrow = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 2v6M2 5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  function card(label, val, change, up) {
-    const cls = up ? 'up' : 'down';
-    const arrow = up ? upArrow : downArrow;
-    const sign = up ? '+' : '';
-    return `<div class="aim-sc-stat-card">
-      <div class="aim-sc-stat-label">${label}</div>
-      <div class="aim-sc-stat-val">${typeof val === 'number' ? val.toLocaleString() : val}</div>
-      <div class="aim-sc-stat-change ${cls}">${arrow} ${sign}${Math.abs(change)}% vs prior period</div>
+  const s      = aimScComputeStats();
+  const active = window.AIM_SC_ACTIVE_METRICS || new Set(['clicks', 'impressions']);
+  const COLORS = { clicks:'#1a73e8', impressions:'#9334e6', ctr:'#0d904f', position:'#e37400' };
+
+  function card(key, label, val) {
+    const on    = active.has(key);
+    const color = COLORS[key];
+    const cls   = on ? 'aim-sc-stat-card aim-sc-card-on' : 'aim-sc-stat-card';
+    const bg    = on ? `background:${color};` : '';
+    const lblC  = on ? 'color:rgba(255,255,255,0.8);' : 'color:var(--text-muted);';
+    const valC  = on ? 'color:#fff;' : 'color:var(--text-muted);';
+    return `<div class="${cls}" id="aim-sc-card-${key}" onclick="aimToggleScMetric('${key}')" style="${bg}">
+      <div class="aim-sc-stat-label" style="${lblC}">${label}</div>
+      <div class="aim-sc-stat-val" style="${valC}">${typeof val==='number'?val.toLocaleString():val}</div>
     </div>`;
   }
+
   grid.innerHTML =
-    card('Total Clicks',      s.clicks,          s.clicksChange,      s.clicksUp)      +
-    card('Total Impressions', s.impressions,      s.impressionsChange, s.impressionsUp) +
-    card('Avg CTR',           s.ctr + '%',        s.ctrChange,         s.ctrUp)         +
-    card('Avg Position',      '#' + parseFloat(s.position).toFixed(1),   Math.abs(s.positionChange), !s.positionUp);
+    card('clicks',      'Total Clicks',      s.clicks)         +
+    card('impressions', 'Total Impressions',  s.impressions)    +
+    card('ctr',         'Avg CTR',            s.ctr + '%')      +
+    card('position',    'Avg Position',       '#' + parseFloat(s.position).toFixed(1));
 }
 
 function aimRenderScSummary() {
@@ -6476,99 +6958,95 @@ function aimRenderScSummary() {
 }
 
 function aimRenderScChart() {
-  const d      = window.AIM_SC_DATA;
   const canvas = document.getElementById('aim-sc-perf-chart');
   if (!canvas) return;
   if (aimChartInstances['sc-perf']) { aimChartInstances['sc-perf'].destroy(); delete aimChartInstances['sc-perf']; }
   const ctx = canvas.getContext('2d');
 
-  // GSC colors
+  const active = window.AIM_SC_ACTIVE_METRICS || new Set(['clicks', 'impressions']);
+  const rows   = aimScGetChartRows();
+  const labels = rows.map(r => r.label);
+  const dClicks = rows.map(r => r.clicks);
+  const dImps   = rows.map(r => r.imps);
+  const dCtr    = rows.map(r => r.ctr);
+  const dPos    = rows.map(r => r.pos);
+
   const C_CLICKS = '#1a73e8';
   const C_IMP    = '#9334e6';
   const C_CTR    = '#0d904f';
+  const C_POS    = '#e37400';
 
-  // Custom white-background tooltip (matches aim-chart-tooltip style used elsewhere in the dashboard)
+  const periodTicksMap = {'7d':7,'28d':14,'3m':13,'6m':12,'12m':12};
+  const maxTicks = periodTicksMap[window.AIM_SC_PERIOD || '28d'] || 14;
+
+  // Determine which right-side axis to display (priority: impressions > ctr > position)
+  const showImpAxis = active.has('impressions');
+  const showCtrAxis = !showImpAxis && active.has('ctr');
+  const showPosAxis = !showImpAxis && !showCtrAxis && active.has('position');
+
+  const lu = document.getElementById('aim-sc-last-updated');
+  if (lu) lu.textContent = 'Last updated: ' + window.AIM_SC_DATA.lastUpdated;
+
   function scTooltip({chart, tooltip}) {
     let el = document.getElementById('aim-sc-tt');
     if (!el) {
       el = document.createElement('div');
       el.id = 'aim-sc-tt';
       el.className = 'aim-chart-tooltip';
-      el.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;min-width:160px;';
+      el.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;min-width:175px;';
       document.body.appendChild(el);
     }
     if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
-    const dots = { 'Clicks': C_CLICKS, 'Impressions': C_IMP, 'CTR %': C_CTR };
+    const colorMap = { 'Clicks': C_CLICKS, 'Impressions': C_IMP, 'CTR %': C_CTR, 'Avg Position': C_POS };
     el.innerHTML = `<div class="aim-ct-title">${tooltip.title?.[0] || ''}</div>`
       + (tooltip.dataPoints || []).map(dp => {
-          const lbl = dp.dataset.label || '';
-          const color = dots[lbl] || '#6b7280';
+          const lbl   = dp.dataset.label || '';
+          const color = colorMap[lbl] || '#6b7280';
           let val = dp.raw;
-          if (lbl === 'CTR %')       val = val + '%';
+          if (lbl === 'CTR %')          val = val + '%';
           else if (lbl === 'Impressions') val = Number(val).toLocaleString();
-          return `<div class="aim-ct-row"><span style="color:${color};font-size:14px;line-height:1;flex-shrink:0;">●</span><span class="aim-ct-label">${lbl}</span><span class="aim-ct-val">${val}</span></div>`;
+          else if (lbl === 'Avg Position') val = '#' + val;
+          const dash = `<span style="display:inline-block;width:14px;height:3px;background:${color};border-radius:2px;flex-shrink:0;margin-top:1px;"></span>`;
+          return `<div class="aim-ct-row">${dash}<span class="aim-ct-label">${lbl}</span><span class="aim-ct-val">${val}</span></div>`;
         }).join('');
     el.style.opacity = '1';
     const rect = chart.canvas.getBoundingClientRect();
     let left = rect.left + tooltip.caretX + 14;
     let top  = rect.top  + tooltip.caretY - 10;
-    if (left + 200 > window.innerWidth - 8) left = rect.left + tooltip.caretX - 210;
+    if (left + 200 > window.innerWidth - 8) left = rect.left + tooltip.caretX - 220;
     left = Math.max(8, left);
-    top  = Math.max(8, Math.min(top, window.innerHeight - 150));
+    top  = Math.max(8, Math.min(top, window.innerHeight - 160));
     el.style.left = left + 'px';
     el.style.top  = top  + 'px';
+  }
+
+  function ds(label, data, color, bg, axisID, key) {
+    return {
+      label, data,
+      borderColor: color,
+      backgroundColor: bg,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: color,
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.35,
+      fill: false,
+      hidden: !active.has(key),
+      yAxisID: axisID
+    };
   }
 
   aimChartInstances['sc-perf'] = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: d.chartLabels,
+      labels,
       datasets: [
-        {
-          label: 'Clicks',
-          data: d.chartClicks,
-          borderColor: C_CLICKS,
-          backgroundColor: 'rgba(26,115,232,0.08)',
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: C_CLICKS,
-          pointHoverBorderColor: '#fff',
-          pointHoverBorderWidth: 2,
-          tension: 0.4,
-          fill: false,
-          yAxisID: 'yClicks'
-        },
-        {
-          label: 'Impressions',
-          data: d.chartImpressions,
-          borderColor: C_IMP,
-          backgroundColor: 'rgba(147,52,230,0.07)',
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: C_IMP,
-          pointHoverBorderColor: '#fff',
-          pointHoverBorderWidth: 2,
-          tension: 0.4,
-          fill: false,
-          yAxisID: 'yImpressions'
-        },
-        {
-          label: 'CTR %',
-          data: d.chartCtr,
-          borderColor: C_CTR,
-          backgroundColor: 'rgba(13,144,79,0.07)',
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: C_CTR,
-          pointHoverBorderColor: '#fff',
-          pointHoverBorderWidth: 2,
-          tension: 0.4,
-          fill: false,
-          yAxisID: 'yCTR'
-        }
+        ds('Clicks',      dClicks, C_CLICKS, 'rgba(26,115,232,0.06)',  'yClicks',      'clicks'),
+        ds('Impressions', dImps,   C_IMP,    'rgba(147,52,230,0.05)',  'yImpressions', 'impressions'),
+        ds('CTR %',       dCtr,    C_CTR,    'rgba(13,144,79,0.05)',   'yCTR',         'ctr'),
+        ds('Avg Position',dPos,    C_POS,    'rgba(227,116,0,0.05)',   'yPos',         'position')
       ]
     },
     options: {
@@ -6583,39 +7061,103 @@ function aimRenderScChart() {
       scales: {
         x: {
           grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-          ticks: { font: { size: 10 }, color: '#9ca3af', maxRotation: 0, maxTicksLimit: 8 }
+          ticks: { font: { size: 10 }, color: '#9ca3af', maxRotation: 0, maxTicksLimit: maxTicks }
         },
         yClicks: {
           position: 'left',
+          display: active.has('clicks'),
           grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
           ticks: {
-            font: { size: 10 },
-            color: C_CLICKS,
-            maxTicksLimit: 5,
+            font: { size: 10 }, color: C_CLICKS, maxTicksLimit: 5,
             callback: v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v
           }
         },
         yImpressions: {
           position: 'right',
+          display: showImpAxis,
           grid: { display: false, drawBorder: false },
           ticks: {
-            font: { size: 10 },
-            color: C_IMP,
-            maxTicksLimit: 5,
+            font: { size: 10 }, color: C_IMP, maxTicksLimit: 5,
             callback: v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v
           }
         },
         yCTR: {
           position: 'right',
-          display: false,
-          grid: { display: false },
-          ticks: {
-            callback: v => v + '%'
-          }
+          display: showCtrAxis,
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 10 }, color: C_CTR, maxTicksLimit: 5, callback: v => v + '%' }
+        },
+        yPos: {
+          position: 'right',
+          display: showPosAxis,
+          reverse: true,
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 10 }, color: C_POS, maxTicksLimit: 5, callback: v => '#' + v }
         }
       }
     }
   });
+}
+
+function aimSetScPeriod(p) {
+  window.AIM_SC_PERIOD = p;
+  document.querySelectorAll('.aim-sc-period-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.period === p));
+  aimRenderScStats();
+  aimRenderScChart();
+}
+
+function aimSetScGran(g) {
+  window.AIM_SC_GRAN = g;
+  const sel = document.getElementById('aim-sc-gran-select');
+  if (sel && sel.value !== g) sel.value = g;
+  aimRenderScChart();
+}
+
+function aimToggleScMetric(metric) {
+  if (!window.AIM_SC_ACTIVE_METRICS) window.AIM_SC_ACTIVE_METRICS = new Set(['clicks', 'impressions']);
+  const s = window.AIM_SC_ACTIVE_METRICS;
+  if (s.has(metric)) {
+    if (s.size > 1) s.delete(metric); // always keep at least one active
+  } else {
+    s.add(metric);
+  }
+  aimUpdateScCardStates();
+  aimUpdateScChartMetrics();
+}
+
+function aimUpdateScCardStates() {
+  const active = window.AIM_SC_ACTIVE_METRICS || new Set(['clicks', 'impressions']);
+  const COLORS = { clicks:'#1a73e8', impressions:'#9334e6', ctr:'#0d904f', position:'#e37400' };
+  ['clicks','impressions','ctr','position'].forEach(key => {
+    const card = document.getElementById('aim-sc-card-' + key);
+    if (!card) return;
+    const on  = active.has(key);
+    const col = COLORS[key];
+    card.className = on ? 'aim-sc-stat-card aim-sc-card-on' : 'aim-sc-stat-card';
+    card.style.background = on ? col : 'var(--surface)';
+    const lbl = card.querySelector('.aim-sc-stat-label');
+    const val = card.querySelector('.aim-sc-stat-val');
+    if (lbl) lbl.style.color = on ? 'rgba(255,255,255,0.8)' : 'var(--text-muted)';
+    if (val) val.style.color  = on ? '#fff' : 'var(--text-muted)';
+  });
+}
+
+function aimUpdateScChartMetrics() {
+  const chart = aimChartInstances['sc-perf'];
+  if (!chart) return;
+  const active = window.AIM_SC_ACTIVE_METRICS || new Set(['clicks', 'impressions']);
+  const idx = { clicks:0, impressions:1, ctr:2, position:3 };
+  Object.entries(idx).forEach(([key, i]) => { chart.data.datasets[i].hidden = !active.has(key); });
+  // Right axis priority: impressions > ctr > position
+  const showImp = active.has('impressions');
+  const showCtr = !showImp && active.has('ctr');
+  const showPos = !showImp && !showCtr && active.has('position');
+  chart.options.scales.yClicks.display     = active.has('clicks');
+  chart.options.scales.yImpressions.display = showImp;
+  chart.options.scales.yCTR.display         = showCtr;
+  chart.options.scales.yPos.display         = showPos;
+  chart.update('none');
 }
 
 function aimUpdateScIntentPills() {
@@ -6724,13 +7266,406 @@ function aimScShowMore() {
   aimRenderScTable();
 }
 
+/* ── Convert to Prompt panel ─────────────────────────── */
+window._aimCtpSourceBtn = null;
+
 function aimScConvertToPrompt(query, btn) {
-  const original = btn.textContent;
-  btn.textContent = 'Added!';
-  btn.style.color = 'var(--success)';
-  btn.style.borderColor = 'var(--success)';
-  btn.style.background = 'var(--success-light)';
-  setTimeout(() => { btn.textContent = original; btn.style.color = ''; btn.style.borderColor = ''; btn.style.background = ''; }, 2000);
+  window._aimCtpSourceBtn   = btn;
+  window._aimCtpSourceQuery = query;
+  var existing = document.getElementById('aim-sc-ctp-root');
+  if (existing) existing.remove();
+  var root = document.createElement('div');
+  root.id = 'aim-sc-ctp-root';
+  root.innerHTML = _aimBuildCtpHTML(query);
+  document.body.appendChild(root);
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var ov = document.getElementById('aim-sc-ctp-overlay');
+      var pn = document.getElementById('aim-sc-ctp-panel');
+      if (ov) ov.classList.add('open');
+      if (pn) pn.classList.add('open');
+    });
+  });
+}
+
+function aimCloseScCtp() {
+  var ov = document.getElementById('aim-sc-ctp-overlay');
+  var pn = document.getElementById('aim-sc-ctp-panel');
+  if (ov) ov.classList.remove('open');
+  if (pn) pn.classList.remove('open');
+  setTimeout(function(){ var r = document.getElementById('aim-sc-ctp-root'); if(r) r.remove(); }, 300);
+}
+
+function aimCtpToggleCard(idx) {
+  var card = document.getElementById('aim-sc-ctp-card-' + idx);
+  if (!card) return;
+  var isOn = card.classList.toggle('selected');
+  var cb = card.querySelector('.aim-sc-ctp-cb');
+  if (cb) cb.innerHTML = isOn ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+  _aimCtpUpdateBtn();
+}
+
+function _aimCtpUpdateBtn() {
+  var n   = document.querySelectorAll('#aim-sc-ctp-root .aim-sc-ctp-prompt-card.selected').length;
+  var lbl = document.getElementById('aim-sc-ctp-footer-lbl');
+  var btn = document.getElementById('aim-sc-ctp-add-btn');
+  if (lbl) lbl.textContent = n + ' prompt' + (n !== 1 ? 's' : '') + ' selected';
+  if (!btn) return;
+  var icoPlus = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+  btn.innerHTML = icoPlus + ' Add Prompt (' + n + ')';
+  btn.disabled  = (n === 0);
+}
+
+function aimCtpConfirmAdd() {
+  var cards = document.querySelectorAll('#aim-sc-ctp-root .aim-sc-ctp-prompt-card.selected');
+  if (!cards.length) return;
+  var selected = [];
+  cards.forEach(function(card) {
+    var textEl = card.querySelector('[style*="font-size:14px"]');
+    var catEl  = card.querySelector('.aim-sc-ctp-cat-tag');
+    if (textEl) selected.push({ text: textEl.textContent.trim(), cat: catEl ? catEl.textContent.trim() : 'General' });
+  });
+  aimCtpOpenDialog(selected);
+}
+
+/* Build a ct-custom-select for use inside the confirm/manual-add table.
+   Value is stored in wrapper.dataset.value so the confirm fn can read it. */
+var _aimCtpChevron = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function _aimCtpBuildSelect(wrapperId, options, defaultVal, placeholder) {
+  var labelText = placeholder || defaultVal || (options[0] || '');
+  var opts = options.map(function(o) {
+    var isSel = o === defaultVal;
+    return '<div class="ct-custom-option' + (isSel ? ' selected' : '') + '" onclick="aimCtpSelectOpt(\'' + wrapperId + '\',\'' + o.replace(/'/g, "\\'") + '\',this)">' + aimEscHtml(o) + '</div>';
+  }).join('');
+  return '<div class="ct-custom-select" id="' + wrapperId + '" data-value="' + aimEscHtml(defaultVal || '') + '">'
+    + '<button class="ct-custom-trigger" type="button" onclick="openCustomSelect(\'' + wrapperId + '\')">'
+    + '<span class="ct-trigger-label" id="' + wrapperId + '-lbl">' + aimEscHtml(labelText) + '</span>'
+    + _aimCtpChevron
+    + '</button>'
+    + '<div class="ct-custom-dropdown">' + opts + '</div>'
+    + '</div>';
+}
+
+function aimCtpSelectOpt(wrapperId, value, optEl) {
+  var wrapper = document.getElementById(wrapperId);
+  if (!wrapper) return;
+  wrapper.dataset.value = value;
+  var lbl = document.getElementById(wrapperId + '-lbl');
+  if (lbl) lbl.textContent = value;
+  wrapper.querySelectorAll('.ct-custom-option').forEach(function(o){ o.classList.remove('selected'); });
+  if (optEl) optEl.classList.add('selected');
+  wrapper.classList.remove('open');
+}
+
+function aimCtpOpenDialog(items) {
+  var existing = document.getElementById('aim-ctp-dialog-root');
+  if (existing) existing.remove();
+  if (!items || !items.length) return;
+
+  var topics  = ['Brand Visibility','AI Monitoring','Competitor Intel','SEO Tools','Content Strategy','Product Discovery','General'];
+  var intents = ['Commercial','Informational','Transactional','Navigational'];
+
+  var catToTopic  = { Discovery:'Brand Visibility', Education:'AI Monitoring', Validation:'AI Monitoring', Commercial:'SEO Tools' };
+  var sourceIntent = 'Informational';
+  var qs   = (window.AIM_SC_DATA && window.AIM_SC_DATA.queries) || [];
+  var gaps = (window.AIM_SC_DATA && window.AIM_SC_DATA.gaps)    || [];
+  if (window._aimCtpSourceQuery) {
+    var found = qs.find(function(q){ return q.query === window._aimCtpSourceQuery; })
+             || gaps.find(function(g){ return g.query === window._aimCtpSourceQuery; });
+    if (found) sourceIntent = found.intent || 'Informational';
+  }
+
+  var rows = items.map(function(item, i) {
+    var defIntent = sourceIntent;
+    // Topic: no default — placeholder forces user to pick
+    var topicSel  = _aimCtpBuildSelect('aim-ctp-topic-'  + i, topics,  '',         'Select topic…');
+    var intentSel = _aimCtpBuildSelect('aim-ctp-intent-' + i, intents, defIntent,  '');
+    return '<tr id="aim-ctp-row-' + i + '">'
+      + '<td><textarea class="aim-ctp-tbl-input" id="aim-ctp-text-' + i + '">' + aimEscHtml(item.text) + '</textarea></td>'
+      + '<td style="width:168px;">' + topicSel + '</td>'
+      + '<td style="width:148px;">' + intentSel + '</td>'
+      + '<td style="width:36px;text-align:center;vertical-align:middle;"><button class="aim-ctp-tbl-rm" onclick="aimCtpRemoveRow(' + i + ')" title="Remove">'
+      +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+      + '</button></td>'
+      + '</tr>';
+  }).join('');
+
+  var n = items.length;
+  var root = document.createElement('div');
+  root.id = 'aim-ctp-dialog-root';
+  root.innerHTML =
+    '<div class="aim-ctp-dialog-bg" id="aim-ctp-dialog-bg" onclick="aimCtpDialogBgClick(event)">'
+  +   '<div class="aim-ctp-dialog">'
+  +     '<div class="aim-ctp-dialog-header">'
+  +       '<div style="display:flex;align-items:center;gap:8px;">'
+  +         '<svg width="15" height="15" viewBox="0 0 24 24" fill="var(--accent)" stroke="none"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74L12 2z"/></svg>'
+  +         '<span style="font-size:15px;font-weight:700;color:#111827;">Confirm Prompts</span>'
+  +         '<span style="font-size:11px;color:#9ca3af;padding:2px 8px;background:#f3f4f6;border-radius:99px;">' + n + ' selected</span>'
+  +       '</div>'
+  +       '<div style="font-size:12px;color:#6b7280;margin-top:3px;">Review and edit each prompt, then confirm intent and topic before adding</div>'
+  +     '</div>'
+  +     '<div style="max-height:55vh;overflow-y:auto;">'
+  +       '<table class="aim-ctp-prompt-table" id="aim-ctp-prompt-tbl">'
+  +         '<thead><tr>'
+  +           '<th>Prompt text</th>'
+  +           '<th style="width:160px;">Topic</th>'
+  +           '<th style="width:140px;">Intent</th>'
+  +           '<th style="width:36px;"></th>'
+  +         '</tr></thead>'
+  +         '<tbody id="aim-ctp-tbl-body">' + rows + '</tbody>'
+  +       '</table>'
+  +     '</div>'
+  +     '<div class="aim-ctp-dialog-footer">'
+  +       '<button class="aim-ctp-dlg-cancel" onclick="aimCtpDialogCancel()">Cancel</button>'
+  +       '<button class="aim-ctp-dlg-confirm" id="aim-ctp-dlg-confirm-btn" onclick="aimCtpDialogConfirm()">Add ' + n + ' Prompt' + (n > 1 ? 's' : '') + '</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</div>';
+  document.body.appendChild(root);
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var bg = document.getElementById('aim-ctp-dialog-bg');
+      if (bg) bg.classList.add('open');
+    });
+  });
+}
+
+function aimCtpRemoveRow(i) {
+  var row = document.getElementById('aim-ctp-row-' + i);
+  if (row) row.remove();
+  var remaining = document.querySelectorAll('#aim-ctp-tbl-body tr').length;
+  var btn = document.getElementById('aim-ctp-dlg-confirm-btn');
+  if (btn) btn.textContent = 'Add ' + remaining + ' Prompt' + (remaining !== 1 ? 's' : '');
+  if (!remaining) aimCtpDialogCancel();
+}
+
+function aimCtpDialogBgClick(e) {
+  if (e.target === e.currentTarget) aimCtpDialogCancel();
+}
+
+function aimCtpDialogCancel() {
+  var bg = document.getElementById('aim-ctp-dialog-bg');
+  if (bg) bg.classList.remove('open');
+  setTimeout(function(){ var r = document.getElementById('aim-ctp-dialog-root'); if (r) r.remove(); }, 200);
+}
+
+function aimCtpDialogConfirm() {
+  var rows = document.querySelectorAll('#aim-ctp-tbl-body tr');
+  var added = 0;
+  rows.forEach(function(row) {
+    var id   = row.id.replace('aim-ctp-row-', '');
+    var text       = (document.getElementById('aim-ctp-text-'   + id) || {}).value || '';
+    var intentWrap = document.getElementById('aim-ctp-intent-' + id);
+    var topicWrap  = document.getElementById('aim-ctp-topic-'  + id);
+    var intent = (intentWrap && intentWrap.dataset.value) || 'Informational';
+    var topic  = (topicWrap  && topicWrap.dataset.value)  || 'General';
+    text = text.trim();
+    if (text) { aimAddPromptToDb({ text: text, intent: intent, topic: topic }); added++; }
+  });
+  aimCtpDialogCancel();
+  if (added > 0) {
+    setTimeout(function(){
+      aimCloseScCtp();
+      if (window._aimCtpSourceBtn) {
+        window._aimCtpSourceBtn.textContent = 'Added!';
+        window._aimCtpSourceBtn.classList.add('added');
+      }
+    }, 150);
+  }
+}
+
+function aimAddPromptToDb(opts) {
+  var newId  = Date.now();
+  var today  = new Date().toISOString().slice(0, 10);
+
+  // 1. Push into AIM_PROMPTS (Prompts view source)
+  AIM_PROMPTS.push({
+    id: newId,
+    text: opts.text,
+    topic: opts.topic || 'General',
+    intent: opts.intent || 'Informational',
+    status: 'active',
+    models: ['ChatGPT', 'Perplexity', 'Gemini'],
+    visibility: 0,
+    sentiment: 50,
+    position: null,
+    lastRun: '–',
+    frequency: 'daily',
+    _new: true
+  });
+
+  // 2. Push into _AIM_SNAPSHOT.prompt_metrics (Settings → Manage Prompts source)
+  var snap = window._AIM_SNAPSHOT || {};
+  if (!snap.prompt_metrics) snap.prompt_metrics = [];
+  snap.prompt_metrics.push({
+    prompt_id: 'ap' + newId,
+    prompt_text: opts.text,
+    topic: opts.topic || 'General',
+    intent: opts.intent || 'Informational',
+    visibility_all: 0,
+    by_provider: {},
+    _new: true
+  });
+
+  // 3. Re-render whichever views are currently mounted
+  if (typeof aimRenderPromptsTable === 'function') {
+    try { aimRenderPromptsTable(); } catch(e) {}
+  }
+  if (typeof aimStRenderPrompts === 'function') {
+    try { aimStRenderPrompts(); } catch(e) {}
+  }
+
+  // 4. Update prompts count badge
+  var usedEl = document.getElementById('aim-pr-used-count');
+  var barEl  = document.getElementById('aim-pr-used-bar');
+  if (usedEl) {
+    var active = AIM_PROMPTS.filter(function(p){ return p.status === 'active'; }).length;
+    usedEl.textContent = active;
+    if (barEl) barEl.style.width = Math.min(100, Math.round(active / 100 * 100)) + '%';
+  }
+  var stBadge = document.getElementById('aim-st-prompt-count-badge');
+  if (stBadge) {
+    var total = (snap.prompt_metrics || []).length;
+    stBadge.textContent = total + '/100';
+  }
+}
+
+function _aimCtpGeneratePrompts(query, intent) {
+  var q   = query.trim();
+  var cap = q.charAt(0).toUpperCase() + q.slice(1);
+  if (intent === 'Navigational') {
+    return [
+      { text:'How can I access the ' + cap + ' platform for the first time?',             desc:'This prompt directly addresses the user\'s need to navigate to the platform, testing its visibility as a brand.',                         cat:'Discovery'  },
+      { text:'What features does ' + cap + ' offer for users?',                            desc:'This inquiry seeks detailed information about the brand\'s offerings, allowing assessment of its visibility in feature-driven searches.',   cat:'Education'  },
+      { text:'Where can I find documentation or support for ' + cap + '?',                 desc:'This prompt tests the effectiveness of support and resource visibility for users seeking help directly related to the brand.',              cat:'Discovery'  },
+      { text:'Can you provide a brief overview of the services provided by ' + cap + '?',  desc:'This prompt invites a comprehensive overview, allowing evaluation of how well the brand is represented in informational contexts.',          cat:'Education'  },
+      { text:'What are the latest updates or news regarding ' + cap + '?',                 desc:'This prompt assesses how current and relevant information about the brand is presented in news-related searches.',                           cat:'Validation' },
+    ];
+  } else if (intent === 'Transactional') {
+    return [
+      { text:'What is the pricing for ' + q + '?',                                         desc:'Tests whether the brand appears when users are ready to buy and are comparing prices.',                                                    cat:'Commercial' },
+      { text:'Which ' + q + ' plan is best for small businesses?',                          desc:'Targets high-purchase-intent queries where AI recommendations carry significant weight.',                                                   cat:'Commercial' },
+      { text:'How do I sign up or get started with ' + q + '?',                             desc:'Measures onboarding visibility — how often the brand is recommended as the first step.',                                                    cat:'Discovery'  },
+      { text:'Are there any discounts or free trials for ' + q + '?',                       desc:'Tests promotional visibility and whether the brand surfaces in cost-sensitive purchase journeys.',                                           cat:'Commercial' },
+      { text:'What are the top-rated alternatives to ' + q + '?',                           desc:'Surfaces competitor presence and tests how well the brand positions itself against substitutes.',                                            cat:'Validation' },
+    ];
+  } else if (intent === 'Informational') {
+    return [
+      { text:'What is ' + q + ' and how does it work?',                                     desc:'A foundational prompt that tests brand presence in top-of-funnel educational searches.',                                                   cat:'Education'  },
+      { text:'Why is ' + q + ' important for modern businesses?',                            desc:'Tests visibility in strategic and advisory contexts where AI plays a thought-leadership role.',                                             cat:'Education'  },
+      { text:'What are the main benefits of using ' + q + '?',                               desc:'Measures how effectively the brand\'s value proposition is represented in benefit-oriented queries.',                                       cat:'Validation' },
+      { text:'How do companies typically implement ' + q + '?',                               desc:'Targets implementation-stage searches where expert recommendations influence decision-making.',                                              cat:'Discovery'  },
+      { text:'What are the best tools or platforms for ' + q + '?',                           desc:'A direct commercial prompt that measures how often the brand appears in tool-comparison searches.',                                         cat:'Commercial' },
+    ];
+  } else {
+    return [
+      { text:'What are the best ' + q + ' tools available in 2025?',                         desc:'A high-volume commercial prompt that directly tests brand visibility against top competitors.',                                            cat:'Commercial' },
+      { text:'Which ' + q + ' platform would you recommend for a SaaS company?',              desc:'Tests presence in personalized recommendation queries, where AI responses have high purchase influence.',                                   cat:'Commercial' },
+      { text:'How do leading companies approach ' + q + '?',                                   desc:'Measures brand authority in strategic guidance searches targeted at decision-makers.',                                                     cat:'Education'  },
+      { text:'What should I look for when choosing a ' + q + ' solution?',                     desc:'Tests visibility in evaluation-criteria searches — a critical stage in the buyer journey.',                                               cat:'Validation' },
+      { text:'What are common challenges with ' + q + ' and how are they solved?',             desc:'Measures how the brand appears in problem-solution searches where expertise and trust matter most.',                                       cat:'Discovery'  },
+    ];
+  }
+}
+
+function _aimBuildCtpHTML(query) {
+  var qs   = (window.AIM_SC_DATA && window.AIM_SC_DATA.queries) || [];
+  var gaps = (window.AIM_SC_DATA && window.AIM_SC_DATA.gaps)    || [];
+  var found = qs.find(function(r){ return r.query === query; }) || gaps.find(function(r){ return r.query === query; }) || {};
+  var intent   = found.intent   || 'Commercial';
+  var clicks   = found.clicks   != null ? found.clicks   : null;
+  var position = found.position != null ? found.position : null;
+  var ctr      = found.ctr      != null ? found.ctr      : null;
+
+  var snap    = window._AIM_SNAPSHOT || {};
+  var pmCount = (snap.prompt_metrics || []).length || 38;
+  var pmMax   = 100;
+
+  var suggestions = _aimCtpGeneratePrompts(query, intent);
+
+  var icoPlus     = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+  var icoSparkle  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="var(--accent)" stroke="none"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74L12 2z"/></svg>';
+  var icoMsg      = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+
+  var intentColors = { Commercial:'#1a73e8', Informational:'#0d904f', Transactional:'#e37400', Navigational:'#7c3aed' };
+  var intentBgs    = { Commercial:'#e8f0fe', Informational:'#e6f4ea', Transactional:'#fef3e2', Navigational:'#ede9fe' };
+  var iColor = intentColors[intent] || '#6b7280';
+  var iBg    = intentBgs[intent]    || '#f3f4f6';
+
+  var metaParts = ['<span style="font-size:11px;font-weight:700;letter-spacing:.05em;padding:2px 8px;border-radius:4px;background:' + iBg + ';color:' + iColor + ';">' + intent.toUpperCase() + '</span>'];
+  if (clicks   != null) metaParts.push('<span style="font-size:12px;color:#374151;">Clicks: <strong>' + clicks + '</strong></span>');
+  if (position != null) metaParts.push('<span style="font-size:12px;color:#374151;">Position: <strong>' + parseFloat(position).toFixed(1) + '</strong></span>');
+  if (ctr      != null) metaParts.push('<span style="font-size:12px;color:#374151;">CTR: <strong>' + ctr + '%</strong></span>');
+
+  var cards = suggestions.map(function(s, i) {
+    return '<div class="aim-sc-ctp-prompt-card" id="aim-sc-ctp-card-' + i + '" onclick="aimCtpToggleCard(' + i + ')">'
+      + '<div class="aim-sc-ctp-cb"></div>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:14px;font-weight:500;color:#111827;line-height:1.45;">' + aimEscHtml(s.text) + '</div>'
+      + '<div style="font-size:12px;color:#6b7280;margin-top:5px;line-height:1.5;">' + aimEscHtml(s.desc) + '</div>'
+      + '<span class="aim-sc-ctp-cat-tag">' + s.cat + '</span>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  return '<div class="aim-sc-ctp-overlay" id="aim-sc-ctp-overlay" onclick="aimCloseScCtp()"></div>'
+    + '<div class="aim-sc-ctp-panel" id="aim-sc-ctp-panel">'
+
+    // Header
+    + '<div style="padding:18px 20px 14px;border-bottom:1px solid #f3f4f6;flex-shrink:0;">'
+    +   '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">'
+    +     '<div>'
+    +       '<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">'
+    +         icoSparkle
+    +         '<span style="font-size:16px;font-weight:700;color:#111827;">Convert to AI Prompts</span>'
+    +       '</div>'
+    +       '<div style="font-size:12px;color:#6b7280;">Transform your high-performing search query into AI-optimized prompts</div>'
+    +     '</div>'
+    +     '<button style="width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:16px;flex-shrink:0;margin-top:1px;" onclick="aimCloseScCtp()" onmouseover="this.style.background=\'#f3f4f6\';this.style.color=\'#374151\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'#9ca3af\'">&#x2715;</button>'
+    +   '</div>'
+    +   '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;">'
+    +     '<span style="font-size:12px;color:#374151;">Custom Plan Plan</span>'
+    +     '<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;border:1.5px solid var(--accent);color:var(--accent);">'
+    +       icoMsg + ' ' + pmCount + '/' + pmMax
+    +     '</span>'
+    +   '</div>'
+    + '</div>'
+
+    // Search query card
+    + '<div style="padding:14px 20px;border-bottom:1px solid #f3f4f6;flex-shrink:0;">'
+    +   '<div style="background:#f5f3ff;border-radius:10px;padding:14px 16px;">'
+    +     '<div style="font-size:11px;color:#6b7280;margin-bottom:5px;">Search Query</div>'
+    +     '<div style="font-size:17px;font-weight:700;color:#111827;margin-bottom:8px;">' + aimEscHtml(query) + '</div>'
+    +     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+    +       '<span style="font-size:11px;color:#6b7280;">Intent:</span>'
+    +       metaParts.join('')
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+
+    // Suggested prompts header
+    + '<div style="padding:12px 20px 10px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">'
+    +   '<span style="font-size:14px;font-weight:600;color:#111827;">Suggested Prompts (' + suggestions.length + ')</span>'
+    +   '<span style="font-size:12px;color:#9ca3af;">Select prompts to add to your settings</span>'
+    + '</div>'
+
+    // Scrollable cards
+    + '<div style="flex:1;overflow-y:auto;padding:14px 20px;">'
+    +   cards
+    + '</div>'
+
+    // Footer
+    + '<div class="aim-sc-ctp-footer">'
+    +   '<span class="aim-sc-ctp-footer-label" id="aim-sc-ctp-footer-lbl">0 prompts selected</span>'
+    +   '<button class="aim-sc-ctp-cancel-btn" onclick="aimCloseScCtp()">Cancel</button>'
+    +   '<button class="aim-sc-ctp-add-btn" id="aim-sc-ctp-add-btn" onclick="aimCtpConfirmAdd()" disabled>'
+    +     icoPlus + ' Add Prompt (0)'
+    +   '</button>'
+    + '</div>'
+
+    + '</div>';
 }
 
 function aimScRefresh(btn) {
@@ -6827,7 +7762,146 @@ var _aimStCatColors = {
 function aimStGetCatColor(topic) {
   if (!topic) return '#6b7280';
   var t = (topic || '').trim();
-  return _aimStCatColors[t] || '#6366f1';
+  return AIM_TOPIC_COLORS[t] || _aimStCatColors[t] || '#6366f1';
+}
+
+function aimStRenderPrompts() {
+  _aimStVisiblePromptIds = [];
+  var snap = window._AIM_SNAPSHOT || {};
+  var inactiveIds = new Set(
+    AIM_PROMPTS.filter(function(p) { return p.status === 'inactive'; })
+               .map(function(p) { return 'ap' + p.id; })
+  );
+  var metrics = (snap.prompt_metrics || []).filter(function(m) {
+    return !inactiveIds.has(m.prompt_id);
+  });
+
+  // Respect global topic/intent filters
+  if (typeof aimFilterTopic !== 'undefined' && aimFilterTopic !== 'all' && aimFilterTopic !== '') {
+    metrics = metrics.filter(function(m) { return m.topic === aimFilterTopic; });
+  }
+  if (typeof aimFilterIntent !== 'undefined' && aimFilterIntent !== 'all' && aimFilterIntent !== '') {
+    metrics = metrics.filter(function(m) { return m.intent === aimFilterIntent; });
+  }
+
+  var search = (document.getElementById('aim-st-prompt-search') || {}).value || '';
+  search = search.toLowerCase();
+  var badge = document.getElementById('aim-st-prompt-count-badge');
+  if (badge) badge.textContent = AIM_PROMPTS.filter(function(p) { return p.status !== 'inactive'; }).length + '/100';
+
+  var filtered = search
+    ? metrics.filter(function(m) { return (m.prompt_text || '').toLowerCase().includes(search); })
+    : metrics;
+
+  var grouped = {};
+  filtered.forEach(function(m) {
+    var cat = m.topic || 'General';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(m);
+  });
+
+  var topicKeys = Object.keys(AIM_TOPIC_COLORS);
+  // Include any topic found in data that isn't already in AIM_TOPIC_COLORS
+  filtered.forEach(function(m) {
+    if (m.topic && topicKeys.indexOf(m.topic) === -1) topicKeys.push(m.topic);
+  });
+  var intentOpts = ['Commercial', 'Informational', 'Transactional', 'Navigational'].concat(window._aimCustomIntents || []);
+
+  var list = document.getElementById('aim-st-prompts-list');
+  if (!list) return;
+  var html = '';
+  // column header
+  if (filtered.length) {
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:4px 10px 6px 10px;border-bottom:2px solid var(--border);margin-bottom:8px;">' +
+      '<span style="width:13px;flex-shrink:0;"></span>' +
+      '<span style="flex:1;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Prompt</span>' +
+      '<span style="width:130px;min-width:130px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Topic</span>' +
+      '<span style="width:115px;min-width:115px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Intent</span>' +
+      '<span style="width:50px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;text-align:right;">Vis %</span>' +
+      '<span style="width:30px;flex-shrink:0;"></span>' +
+    '</div>';
+  }
+  Object.keys(grouped).sort().forEach(function(cat) {
+    var color = aimStGetCatColor(cat);
+    html += '<div style="margin-bottom:14px;">';
+    html += '<div style="font-size:12px;font-weight:700;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">' +
+      '<span style="display:flex;align-items:center;gap:6px;"><span style="color:' + color + ';font-size:8px;">●</span>' + aimEscHtml(cat) + ' <span style="font-size:10.5px;font-weight:500;color:var(--text-muted);margin-left:2px;">' + grouped[cat].length + ' prompts</span></span>' +
+      '</div>';
+    grouped[cat].forEach(function(m) {
+      var vis = Math.round(m.visibility_all || 0);
+      var numId = parseInt((m.prompt_id || '').replace('ap', '')) || 0;
+      var curTopic = m.topic || '';
+      var curIntent = m.intent || '';
+
+      var topicSel = '<select onclick="event.stopPropagation()" onchange="aimStSetPromptTopic(' + numId + ',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;width:130px;min-width:130px;max-width:130px;">' +
+        topicKeys.map(function(t) {
+          return '<option value="' + t.replace(/"/g,'&quot;') + '"' + (curTopic === t ? ' selected' : '') + '>' + t + '</option>';
+        }).join('') +
+        '<option value=""' + (!curTopic ? ' selected' : '') + '>— no topic —</option>' +
+        '</select>';
+
+      var intentSel = '<select onclick="event.stopPropagation()" onchange="aimStSetPromptIntent(' + numId + ',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;width:115px;min-width:115px;max-width:115px;">' +
+        intentOpts.map(function(i) {
+          return '<option value="' + i + '"' + (curIntent === i ? ' selected' : '') + '>' + i + '</option>';
+        }).join('') +
+        '<option value=""' + (!curIntent ? ' selected' : '') + '>— none —</option>' +
+        '</select>';
+
+      _aimStVisiblePromptIds.push(numId);
+      var _isChk = _aimStSelectedPromptIds.has(numId);
+      html += '<div class="aim-st-prompt-row">' +
+        '<input type="checkbox" data-pid="' + numId + '"' + (_isChk ? ' checked' : '') + ' onclick="event.stopPropagation();aimStToggleSelect(' + numId + ',this)" style="width:13px;height:13px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;" />' +
+        '<div class="aim-st-prompt-text">' + aimEscHtml(m.prompt_text || '') + '</div>' +
+        topicSel +
+        intentSel +
+        '<span style="font-size:11px;color:var(--text-muted);flex-shrink:0;width:50px;text-align:right;">' + vis + '%</span>' +
+        '<div style="display:flex;gap:4px;flex-shrink:0;width:30px;" onclick="event.stopPropagation()">' +
+          '<button onclick="aimStDeletePrompt(' + numId + ')" class="aim-st-btn-danger" style="padding:4px 8px;" title="Deactivate"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' +
+        '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+  });
+
+  if (!filtered.length) {
+    html = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:12px;">No prompts match your search</div>';
+  }
+
+  // Inactive / deleted prompts section
+  var inactivePrompts = AIM_PROMPTS.filter(function(p) { return p.status === 'inactive'; });
+  if (inactivePrompts.length) {
+    html += '<div style="margin-top:28px;border:1px solid var(--border);border-radius:10px;overflow:hidden;">';
+    html += '<div id="aim-st-inactive-hdr" onclick="aimStToggleInactive()" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface-alt);user-select:none;">' +
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>' +
+      '<span style="font-size:12px;font-weight:700;color:var(--text-muted);flex:1;">Inactive Prompts</span>' +
+      '<span style="font-size:10.5px;font-weight:500;color:var(--text-faint);margin-right:4px;">(' + inactivePrompts.length + ')</span>' +
+      '<svg id="aim-st-inactive-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</div>';
+    html += '<div id="aim-st-inactive-body" style="display:none;">';
+    html += '<div style="padding:8px 14px 2px;font-size:11px;color:var(--text-muted);">These prompts are deactivated. Restore them to resume tracking.</div>';
+    inactivePrompts.forEach(function(p) {
+      var topicColor = (AIM_TOPIC_COLORS && AIM_TOPIC_COLORS[p.topic]) || '#6b7280';
+      html += '<div class="aim-st-prompt-row" style="padding:10px 14px;opacity:.75;">' +
+        '<div class="aim-st-prompt-text" style="color:var(--text-muted);">' + aimEscHtml(p.text || '') + '</div>' +
+        (p.topic ? '<span class="aim-topic-badge" style="flex-shrink:0;"><span style="color:' + topicColor + ';font-size:7px;line-height:1">●</span>' + aimEscHtml(p.topic) + '</span>' : '') +
+        (p.intent ? '<span class="aim-intent-badge ' + (p.intent||'').toLowerCase() + '" style="flex-shrink:0;">' + aimEscHtml(p.intent) + '</span>' : '') +
+        '<button onclick="aimActivatePrompt(' + p.id + ')" class="aim-st-btn-primary" style="padding:5px 14px;font-size:11px;font-weight:600;flex-shrink:0;" title="Restore prompt">Restore</button>' +
+        '</div>';
+    });
+    html += '</div>';
+    html += '</div>';
+  }
+
+  list.innerHTML = html;
+  // Sync select-all checkbox state
+  var _saChk = document.getElementById('aim-st-select-all');
+  if (_saChk) {
+    var _tot = _aimStVisiblePromptIds.length;
+    var _sel = _aimStVisiblePromptIds.filter(function(id){ return _aimStSelectedPromptIds.has(id); }).length;
+    _saChk.checked = _sel === _tot && _tot > 0;
+    _saChk.indeterminate = _sel > 0 && _sel < _tot;
+  }
+  aimStUpdateBulkBar();
 }
 
 function aimStSetPromptTopic(numId, topic) {
@@ -6849,110 +7923,205 @@ function aimStSetPromptIntent(numId, intent) {
   aimStRenderPrompts();
 }
 
-function aimStRenderPrompts() {
+/* ══ Bulk selection + actions ══ */
+function aimStToggleInactive() {
+  var b = document.getElementById('aim-st-inactive-body');
+  if (!b) return;
+  var open = b.style.display !== 'none';
+  b.style.display = open ? 'none' : 'block';
+  var hdr = document.getElementById('aim-st-inactive-hdr');
+  if (hdr) hdr.style.borderBottom = open ? '1px solid transparent' : '1px solid var(--border)';
+  var chev = document.getElementById('aim-st-inactive-chev');
+  if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+function aimStToggleSelect(numId, el) {
+  if (el.checked) _aimStSelectedPromptIds.add(numId);
+  else            _aimStSelectedPromptIds.delete(numId);
+  aimStUpdateBulkBar();
+  var allChk = document.getElementById('aim-st-select-all');
+  if (allChk) {
+    var tot = _aimStVisiblePromptIds.length;
+    var sel = _aimStVisiblePromptIds.filter(function(id){ return _aimStSelectedPromptIds.has(id); }).length;
+    allChk.checked = sel === tot && tot > 0;
+    allChk.indeterminate = sel > 0 && sel < tot;
+  }
+}
+function aimStUpdateBulkBar() {
+  var n   = _aimStSelectedPromptIds.size;
+  var bar = document.getElementById('aim-st-bulk-bar');
+  var cnt = document.getElementById('aim-st-bulk-count');
+  if (bar) bar.style.display = n > 0 ? 'flex' : 'none';
+  if (cnt) cnt.textContent = n + ' prompt' + (n===1?'':'s') + ' selected';
+}
+function aimStSelectAll(el) {
+  if (el.checked) _aimStVisiblePromptIds.forEach(function(id){ _aimStSelectedPromptIds.add(id); });
+  else            _aimStVisiblePromptIds.forEach(function(id){ _aimStSelectedPromptIds.delete(id); });
+  _aimStVisiblePromptIds.forEach(function(id) {
+    var chk = document.querySelector('input[data-pid="' + id + '"]');
+    if (chk) chk.checked = el.checked;
+  });
+  aimStUpdateBulkBar();
+}
+function aimStClearSelection() {
+  _aimStSelectedPromptIds.clear();
+  var allChk = document.getElementById('aim-st-select-all');
+  if (allChk) { allChk.checked = false; allChk.indeterminate = false; }
+  _aimStVisiblePromptIds.forEach(function(id) {
+    var chk = document.querySelector('input[data-pid="' + id + '"]');
+    if (chk) chk.checked = false;
+  });
+  aimStUpdateBulkBar();
+}
+function _aimStClose() { var r=document.getElementById('aim-st-sm-root'); if(r) r.remove(); }
+function aimStBulkTopic()  { _aimStShowBulkPicker('topic'); }
+function aimStBulkIntent() { _aimStShowBulkPicker('intent'); }
+function _aimStShowBulkPicker(type) {
+  var n = _aimStSelectedPromptIds.size;
+  if (!n) return;
+  _aimStClose();
+  var isT  = type === 'topic';
+  var opts = isT ? Object.keys(AIM_TOPIC_COLORS) : ['Commercial','Informational','Transactional','Navigational'].concat(window._aimCustomIntents||[]);
+  var rows = opts.map(function(o) {
+    var dot = isT ? '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + (AIM_TOPIC_COLORS[o]||'#6b7280') + ';flex-shrink:0;margin-right:4px;"></span>' : '';
+    var safe = o.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return '<div class="aim-st-pick-row" data-type="' + type + '" data-val="' + safe + '" onclick="aimStBulkApply(this.dataset.type,this.dataset.val)">' + dot + '<span>' + aimEscHtml(o) + '</span></div>';
+  }).join('');
+  var root = document.createElement('div');
+  root.id = 'aim-st-sm-root';
+  var bg = root.appendChild(document.createElement('div'));
+  bg.className = 'aim-st-sm-modal-bg';
+  bg.onclick = function(e){ if(e.target===bg) _aimStClose(); };
+  var modal = bg.appendChild(document.createElement('div'));
+  modal.className = 'aim-st-sm-modal';
+  modal.innerHTML = '<div class="aim-st-sm-modal-hd"><span class="aim-st-sm-modal-title">Change ' + (isT?'Topic':'Intent') + ' \u2014 ' + n + ' prompt' + (n===1?'':'s') + '</span>'
+    + '<button onclick="_aimStClose()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button></div>'
+    + '<div class="aim-st-sm-modal-body" style="padding:8px 12px;max-height:320px;overflow-y:auto;">' + rows + '</div>';
+  document.body.appendChild(root);
+}
+function aimStBulkApply(type, value) {
   var snap = window._AIM_SNAPSHOT || {};
-  var inactiveIds = new Set(
-    AIM_PROMPTS.filter(function(p) { return p.status === 'inactive'; })
-               .map(function(p) { return 'ap' + p.id; })
-  );
-  var metrics = (snap.prompt_metrics || []).filter(function(m) {
-    return !inactiveIds.has(m.prompt_id);
+  _aimStSelectedPromptIds.forEach(function(numId) {
+    var p = AIM_PROMPTS.find(function(q){ return q.id === numId; });
+    if (p) p[type === 'topic' ? 'topic' : 'intent'] = value;
+    var m = (snap.prompt_metrics||[]).find(function(m){ return m.prompt_id === 'ap' + numId; });
+    if (m) m[type === 'topic' ? 'topic' : 'intent'] = value;
   });
-
-  if (typeof aimFilterTopic !== 'undefined' && aimFilterTopic !== 'all' && aimFilterTopic !== '') {
-    metrics = metrics.filter(function(m) { return m.topic === aimFilterTopic; });
-  }
-  if (typeof aimFilterIntent !== 'undefined' && aimFilterIntent !== 'all' && aimFilterIntent !== '') {
-    metrics = metrics.filter(function(m) { return m.intent === aimFilterIntent; });
-  }
-
-  var search = (document.getElementById('aim-st-prompt-search') || {}).value || '';
-  search = search.toLowerCase();
-  var badge = document.getElementById('aim-st-prompt-count-badge');
-  if (badge) badge.textContent = AIM_PROMPTS.filter(function(p) { return p.status !== 'inactive'; }).length + '/100';
-  var filtered = search
-    ? metrics.filter(function(m) { return (m.prompt_text || '').toLowerCase().includes(search); })
-    : metrics;
-
-  var grouped = {};
-  filtered.forEach(function(m) {
-    var cat = m.topic || 'General';
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(m);
+  if (type === 'topic') aimRebuildTopicDropdown();
+  _aimStClose();
+  aimStRenderPrompts();
+}
+function aimStBulkDelete() {
+  var n = _aimStSelectedPromptIds.size;
+  if (!n) return;
+  _aimStClose();
+  var root = document.createElement('div');
+  root.id = 'aim-st-sm-root';
+  var bg = root.appendChild(document.createElement('div'));
+  bg.className = 'aim-st-sm-modal-bg';
+  bg.onclick = function(e){ if(e.target===bg) _aimStClose(); };
+  var modal = bg.appendChild(document.createElement('div'));
+  modal.className = 'aim-st-sm-modal';
+  modal.innerHTML = '<div class="aim-st-sm-modal-hd"><span class="aim-st-sm-modal-title">Deactivate ' + n + ' prompt' + (n===1?'':'s') + '?</span>'
+    + '<button onclick="_aimStClose()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button></div>'
+    + '<div class="aim-st-sm-modal-body"><p style="font-size:13px;color:#374151;margin:0;line-height:1.6;">The selected prompts will be deactivated. You can restore them from the Inactive section at any time.</p></div>'
+    + '<div class="aim-st-sm-modal-footer">'
+    + '<button onclick="_aimStClose()" class="aim-ctp-dlg-cancel">Cancel</button>'
+    + '<button onclick="aimStBulkDeleteConfirm()" style="padding:8px 20px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Deactivate ' + n + ' Prompt' + (n===1?'':'s') + '</button>'
+    + '</div>';
+  document.body.appendChild(root);
+}
+function aimStBulkDeleteConfirm() {
+  _aimStSelectedPromptIds.forEach(function(numId) {
+    var p = AIM_PROMPTS.find(function(q){ return q.id === numId; });
+    if (p) p.status = 'inactive';
   });
+  aimUpdatePromptCounters();
+  aimRebuildTopicDropdown();
+  _aimStSelectedPromptIds.clear();
+  _aimStClose();
+  aimStRenderPrompts();
+  aimRenderPromptsTable();
+}
 
-  var topicKeys = Object.keys(AIM_TOPIC_COLORS);
-  var intentOpts = ['Commercial', 'Informational', 'Transactional', 'Navigational'];
+/* \u2550\u2550 Add Topic modal \u2550\u2550 */
+function aimStOpenAddTopic() {
+  _aimStClose();
+  var palette = ['#b352b3','#2563eb','#f59e0b','#10b981','#8b5cf6','#ef4444','#0891b2','#d97706','#65a30d','#e11d48','#0284c7','#7c3aed','#374151','#9333ea'];
+  var swatches = palette.map(function(c,i){
+    return '<div class="aim-st-color-swatch' + (i===0?' selected':'') + '" style="background:' + c + '" data-color="' + c + '" onclick="aimStPickColor(this)"></div>';
+  }).join('');
+  var root = document.createElement('div');
+  root.id = 'aim-st-sm-root';
+  var bg = root.appendChild(document.createElement('div'));
+  bg.className = 'aim-st-sm-modal-bg';
+  bg.onclick = function(e){ if(e.target===bg) _aimStClose(); };
+  var modal = bg.appendChild(document.createElement('div'));
+  modal.className = 'aim-st-sm-modal';
+  modal.innerHTML = '<div class="aim-st-sm-modal-hd"><span class="aim-st-sm-modal-title">Add Topic</span>'
+    + '<button onclick="_aimStClose()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button></div>'
+    + '<div class="aim-st-sm-modal-body">'
+    + '<label class="aim-st-sm-label">Topic name</label>'
+    + '<input class="aim-st-sm-input" id="aim-st-new-topic" placeholder="e.g. Reputation Management">'
+    + '<div style="margin-top:14px;"><label class="aim-st-sm-label">Color</label>'
+    + '<div class="aim-st-color-row" id="aim-st-swatches">' + swatches + '</div></div>'
+    + '</div>'
+    + '<div class="aim-st-sm-modal-footer">'
+    + '<button onclick="_aimStClose()" class="aim-ctp-dlg-cancel">Cancel</button>'
+    + '<button onclick="aimStSaveNewTopic()" class="aim-ctp-dlg-confirm">Add Topic</button>'
+    + '</div>';
+  document.body.appendChild(root);
+  var inp = document.getElementById('aim-st-new-topic');
+  if (inp) { inp.focus(); inp.onkeydown = function(e){ if(e.key==='Enter') aimStSaveNewTopic(); }; }
+}
+function aimStPickColor(el) {
+  document.querySelectorAll('#aim-st-swatches .aim-st-color-swatch').forEach(function(s){ s.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+function aimStSaveNewTopic() {
+  var inp  = document.getElementById('aim-st-new-topic');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) { if (inp) { inp.style.borderColor='var(--danger)'; inp.focus(); } return; }
+  if (AIM_TOPIC_COLORS[name]) { if (inp) { inp.style.borderColor='var(--danger)'; inp.focus(); } return; }
+  var sel   = document.querySelector('#aim-st-swatches .aim-st-color-swatch.selected');
+  AIM_TOPIC_COLORS[name] = sel ? sel.dataset.color : '#b352b3';
+  aimRebuildTopicDropdown();
+  _aimStClose();
+  aimStRenderPrompts();
+}
 
-  var list = document.getElementById('aim-st-prompts-list');
-  if (!list) return;
-  var html = '';
-  Object.keys(grouped).sort().forEach(function(cat) {
-    var color = aimStGetCatColor(cat);
-    html += '<div style="margin-bottom:14px;">';
-    html += '<div style="font-size:12px;font-weight:700;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">' +
-      '<span style="display:flex;align-items:center;gap:6px;"><span style="color:' + color + ';font-size:8px;">●</span>' + cat + ' <span style="font-size:10.5px;font-weight:500;color:var(--text-muted);margin-left:2px;">' + grouped[cat].length + ' prompts</span></span>' +
-      '</div>';
-    grouped[cat].forEach(function(m) {
-      var vis = Math.round(m.visibility_all || 0);
-      var numId = parseInt((m.prompt_id || '').replace('ap', '')) || 0;
-      var curTopic = m.topic || '';
-      var curIntent = m.intent || '';
-
-      var topicSel = '<select onclick="event.stopPropagation()" onchange="aimStSetPromptTopic(' + numId + ',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;max-width:130px;">' +
-        topicKeys.map(function(t) {
-          return '<option value="' + t.replace(/"/g,'&quot;') + '"' + (curTopic === t ? ' selected' : '') + '>' + t + '</option>';
-        }).join('') +
-        '<option value=""' + (!curTopic ? ' selected' : '') + '>— no topic —</option>' +
-        '</select>';
-
-      var intentSel = '<select onclick="event.stopPropagation()" onchange="aimStSetPromptIntent(' + numId + ',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;max-width:120px;">' +
-        intentOpts.map(function(i) {
-          return '<option value="' + i + '"' + (curIntent === i ? ' selected' : '') + '>' + i + '</option>';
-        }).join('') +
-        '<option value=""' + (!curIntent ? ' selected' : '') + '>— none —</option>' +
-        '</select>';
-
-      html += '<div class="aim-st-prompt-row">' +
-        '<input type="checkbox" onclick="event.stopPropagation()" style="width:13px;height:13px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;" />' +
-        '<div class="aim-st-prompt-text">' + aimEscHtml(m.prompt_text || '') + '</div>' +
-        topicSel +
-        intentSel +
-        '<span style="font-size:11px;color:var(--text-muted);flex-shrink:0;">' + vis + '%</span>' +
-        '<div style="display:flex;gap:4px;flex-shrink:0;" onclick="event.stopPropagation()">' +
-          '<button onclick="aimOpenPromptDetail(' + numId + ')" class="aim-st-btn-outlined" style="padding:4px 8px;" title="Edit"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
-          '<button onclick="aimStDeletePrompt(' + numId + ')" class="aim-st-btn-danger" style="padding:4px 8px;" title="Deactivate"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' +
-        '</div>' +
-        '</div>';
-    });
-    html += '</div>';
-  });
-
-  if (!filtered.length) {
-    html = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:12px;">No prompts match your search</div>';
-  }
-
-  var inactivePrompts = AIM_PROMPTS.filter(function(p) { return p.status === 'inactive'; });
-  if (inactivePrompts.length) {
-    html += '<div style="margin-top:28px;">';
-    html += '<div style="font-size:12px;font-weight:700;color:var(--text-muted);padding:6px 0;border-top:2px dashed var(--border);margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>' +
-      'Inactive Prompts' +
-      '<span style="font-size:10.5px;font-weight:500;color:var(--text-faint);margin-left:2px;">(' + inactivePrompts.length + ')</span>' +
-      '</div>';
-    inactivePrompts.forEach(function(p) {
-      var topicColor = (AIM_TOPIC_COLORS && AIM_TOPIC_COLORS[p.topic]) || '#6b7280';
-      html += '<div class="aim-st-prompt-row" style="opacity:.65;">' +
-        '<div class="aim-st-prompt-text" style="color:var(--text-muted);">' + aimEscHtml(p.text || '') + '</div>' +
-        (p.topic ? '<span class="aim-topic-badge" style="flex-shrink:0;"><span style="color:' + topicColor + ';font-size:7px;line-height:1">●</span>' + aimEscHtml(p.topic) + '</span>' : '') +
-        (p.intent ? '<span class="aim-intent-badge ' + (p.intent||'').toLowerCase() + '" style="flex-shrink:0;">' + aimEscHtml(p.intent) + '</span>' : '') +
-        '<button onclick="aimActivatePrompt(' + p.id + ')" class="aim-st-btn-primary" style="padding:4px 12px;font-size:11px;flex-shrink:0;" title="Restore prompt">Restore</button>' +
-        '</div>';
-    });
-    html += '</div>';
-  }
-
-  list.innerHTML = html;
+/* \u2550\u2550 Add Intent modal \u2550\u2550 */
+function aimStOpenAddIntent() {
+  _aimStClose();
+  var root = document.createElement('div');
+  root.id = 'aim-st-sm-root';
+  var bg = root.appendChild(document.createElement('div'));
+  bg.className = 'aim-st-sm-modal-bg';
+  bg.onclick = function(e){ if(e.target===bg) _aimStClose(); };
+  var modal = bg.appendChild(document.createElement('div'));
+  modal.className = 'aim-st-sm-modal';
+  modal.innerHTML = '<div class="aim-st-sm-modal-hd"><span class="aim-st-sm-modal-title">Add Intent</span>'
+    + '<button onclick="_aimStClose()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button></div>'
+    + '<div class="aim-st-sm-modal-body">'
+    + '<label class="aim-st-sm-label">Intent name</label>'
+    + '<input class="aim-st-sm-input" id="aim-st-new-intent" placeholder="e.g. Local Search">'
+    + '<div style="margin-top:10px;font-size:11.5px;color:var(--text-muted);line-height:1.6;">This intent will appear as an option when assigning search intent to prompts.</div>'
+    + '</div>'
+    + '<div class="aim-st-sm-modal-footer">'
+    + '<button onclick="_aimStClose()" class="aim-ctp-dlg-cancel">Cancel</button>'
+    + '<button onclick="aimStSaveNewIntent()" class="aim-ctp-dlg-confirm">Add Intent</button>'
+    + '</div>';
+  document.body.appendChild(root);
+  var inp = document.getElementById('aim-st-new-intent');
+  if (inp) { inp.focus(); inp.onkeydown = function(e){ if(e.key==='Enter') aimStSaveNewIntent(); }; }
+}
+function aimStSaveNewIntent() {
+  var inp  = document.getElementById('aim-st-new-intent');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) { if (inp) { inp.style.borderColor='var(--danger)'; inp.focus(); } return; }
+  if (!window._aimCustomIntents) window._aimCustomIntents = [];
+  if (window._aimCustomIntents.indexOf(name) === -1) window._aimCustomIntents.push(name);
+  _aimStClose();
+  aimStRenderPrompts();
 }
 
 function aimStRenderShareLinks() {
@@ -7158,11 +8327,33 @@ function aimRenderUrlsTable() {
 }
 
 /* ── ADD PROMPTS MODAL ───────────────────────────────────────────── */
-function aimOpenAddPrompts() {
+function aimToggleAddMenu(menuId, e) {
+  if (e) e.stopPropagation();
+  var menu = document.getElementById(menuId);
+  if (!menu) return;
+  var isOpen = menu.classList.contains('open');
+  aimCloseAddMenus();
+  if (!isOpen) menu.classList.add('open');
+}
+function aimCloseAddMenus() {
+  document.querySelectorAll('.aim-add-menu.open').forEach(function(m){ m.classList.remove('open'); });
+}
+document.addEventListener('click', function(){ aimCloseAddMenus(); });
+
+var _aimMpRowIdx = 0;
+var _aimStSelectedPromptIds = new Set();
+var _aimStVisiblePromptIds  = [];
+var _aimAiGenSelectedIntents = new Set(['Commercial','Informational']);
+var _aimAiGenUrlSelectedIntents = new Set(['Informational','Navigational','Commercial','Investigational','Transactional','Sentiment','Branded']);
+
+function aimOpenAddPrompts(mode) {
+  mode = mode || 'ai';
   const modal = document.getElementById('aim-ap-modal');
   if (modal) modal.style.display = 'flex';
-  aimCurrentApTab = 'ai';
-  aimApTab('ai');
+  const titleEl = document.getElementById('aim-ap-title');
+  if (titleEl) titleEl.textContent = mode === 'ai' ? 'AI Prompt Generation' : 'Add Manual Prompts';
+  aimCurrentApTab = mode;
+  aimApTab(mode);
 }
 
 function aimCloseAddPrompts() {
@@ -7172,43 +8363,546 @@ function aimCloseAddPrompts() {
 
 function aimApTab(tab) {
   aimCurrentApTab = tab;
-  const aiBtn = document.getElementById('aim-ap-tab-ai');
-  const manBtn = document.getElementById('aim-ap-tab-manual');
-  if (aiBtn) aiBtn.classList.toggle('active', tab === 'ai');
-  if (manBtn) manBtn.classList.toggle('active', tab === 'manual');
-  const body = document.getElementById('aim-ap-body');
+  const body   = document.getElementById('aim-ap-body');
   const footer = document.getElementById('aim-ap-footer');
   if (!body) return;
-  if (tab === 'ai') {
-    body.innerHTML = `<div style="margin-bottom:10px;font-size:12px;color:var(--text-muted)">AI-suggested prompts based on your industry:</div>` +
-      AIM_AP_SUGGESTED.map(p => `
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:7px">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-            <div style="flex:1">
-              <div style="font-size:12px;line-height:1.4;margin-bottom:4px">${aimEscHtml(p.text)}</div>
-              ${aimTopicBadge(p.topic)}
-              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${aimEscHtml(p.rationale || '')}</div>
-            </div>
-            <button onclick="aimAddSuggestedPrompt(${p.id}, this)" style="flex-shrink:0;padding:4px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Add</button>
+
+  const sparkle13 = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
+  const checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const chevSvg  = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const plusCircle = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>';
+
+  /* ── intent definitions (shared) ── */
+  const intents = [
+    { key:'Informational',   label:'Informational',   desc:'Learning & understanding', color:'#3b82f6', bg:'rgba(59,130,246,.12)',
+      icon:'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { key:'Navigational',    label:'Navigational',    desc:'Finding specific pages',   color:'#0ea5e9', bg:'rgba(14,165,233,.12)',
+      icon:'<circle cx="12" cy="12" r="10" stroke="#0ea5e9" stroke-width="2"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { key:'Commercial',      label:'Commercial',      desc:'Researching & comparing',  color:'#f97316', bg:'rgba(249,115,22,.12)',
+      icon:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { key:'Investigational', label:'Investigational', desc:'Deep comparisons',          color:'#818cf8', bg:'rgba(129,140,248,.12)',
+      icon:'<circle cx="11" cy="11" r="8" stroke="#818cf8" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>' },
+    { key:'Transactional',   label:'Transactional',   desc:'Ready to buy/sign up',     color:'#22c55e', bg:'rgba(34,197,94,.12)',
+      icon:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="#22c55e" stroke-width="2"/><path d="M16 10a4 4 0 0 1-8 0" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>' },
+    { key:'Sentiment',       label:'Sentiment',       desc:'Reviews & opinions',        color:'#a855f7', bg:'rgba(168,85,247,.12)',
+      icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { key:'Branded',         label:'Branded',         desc:'Brand reputation',          color:'#ef4444', bg:'rgba(239,68,68,.12)',
+      icon:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7.01" y2="7" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>' }
+  ];
+
+  /* ── intent card grid builder ── */
+  function _intentGrid(selSet, toggleFn) {
+    return `<div class="aim-ai-gen-grid">
+      ${intents.map(it => {
+        const sel = selSet.has(it.key);
+        return `<div class="aim-ai-gen-card${sel?' selected':''}" onclick="${toggleFn}('${it.key}',this)">
+          <div class="aim-ai-gen-card-icon" style="background:${it.bg}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">${it.icon}</svg>
           </div>
-        </div>`).join('');
-    if (footer) footer.innerHTML = '';
-  } else {
-    body.innerHTML = `
-      <div class="aim-ap-field"><label class="aim-ap-label">Prompt text</label>
-        <textarea class="aim-ap-input" rows="3" placeholder="Enter the question or phrase to monitor..."></textarea></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="aim-ap-field"><label class="aim-ap-label">Topic</label>
-          <select class="aim-ap-select">${Object.keys(AIM_TOPIC_COLORS).map(t=>`<option>${t}</option>`).join('')}</select></div>
-        <div class="aim-ap-field"><label class="aim-ap-label">Frequency</label>
-          <select class="aim-ap-select"><option>daily</option><option>weekly</option><option>monthly</option></select></div>
-      </div>
-      <div class="aim-ap-field"><label class="aim-ap-label">Monitor in models</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">${['ChatGPT','Perplexity','Gemini','Claude'].map(m=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--accent)"> ${m}</label>`).join('')}</div>
-      </div>`;
-    if (footer) footer.innerHTML = `<button onclick="aimCloseAddPrompts()" style="padding:6px 14px;background:var(--surface-alt);border:1px solid var(--border);border-radius:5px;font-size:12px;cursor:pointer;font-family:var(--font)">Cancel</button>
-      <button onclick="aimManualAddPrompt()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">Add Prompt</button>`;
+          <div>
+            <div class="aim-ai-gen-card-name">${it.label}</div>
+            <div class="aim-ai-gen-card-desc">${it.desc}</div>
+          </div>
+          <div class="aim-ai-gen-card-cb">${sel?checkSvg:''}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
   }
+
+  /* ── intent multi-select dropdown (URL tab) ── */
+  function _intentMultiSelect() {
+    const n = _aimAiGenUrlSelectedIntents.size;
+    const lbl = n === 0 ? 'No intents selected' : n === intents.length ? `All ${n} intents selected` : `${n} intent${n===1?'':'s'} selected`;
+    const rows = intents.map(it => {
+      const sel = _aimAiGenUrlSelectedIntents.has(it.key);
+      return `<div class="aim-intent-ms-row${sel?' selected':''}" onclick="aimToggleIntentMsItem('${it.key}',this)">
+        <div class="aim-intent-ms-cb">${sel?checkSvg:''}</div>
+        <div class="aim-intent-ms-icon" style="background:${it.bg}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">${it.icon}</svg>
+        </div>
+        <div>
+          <div class="aim-intent-ms-name">${it.label}</div>
+          <div class="aim-intent-ms-desc">${it.desc}</div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="aim-intent-ms-wrap">
+      <button type="button" class="aim-intent-ms-trigger" onclick="aimToggleIntentMs(event,'aim-aig-url-ms-dd')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span class="ms-lbl" id="aim-aig-url-ms-lbl">${lbl}</span>
+        <span class="ms-chev">${chevSvg}</span>
+      </button>
+      <div class="aim-intent-ms-dd" id="aim-aig-url-ms-dd">${rows}</div>
+    </div>`;
+  }
+
+  /* ── intent multi-select dropdown (By Search Intent tab) ── */
+  function _intentMultiSelectBI() {
+    const n   = _aimAiGenSelectedIntents.size;
+    const tot = intents.length;
+    const lbl = n === 0 ? 'No intents selected' : n === tot ? `All ${n} intents selected` : `${n} intent${n===1?'':'s'} selected`;
+    const rows = intents.map(it => {
+      const sel = _aimAiGenSelectedIntents.has(it.key);
+      return `<div class="aim-intent-ms-row${sel?' selected':''}" onclick="aimToggleIntentMsItemBI('${it.key}',this)">
+        <div class="aim-intent-ms-cb">${sel?checkSvg:''}</div>
+        <div class="aim-intent-ms-icon" style="background:${it.bg}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">${it.icon}</svg>
+        </div>
+        <div>
+          <div class="aim-intent-ms-name">${it.label}</div>
+          <div class="aim-intent-ms-desc">${it.desc}</div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="aim-intent-ms-wrap">
+      <button type="button" class="aim-intent-ms-trigger" onclick="aimToggleIntentMs(event,'aim-aig-int-ms-dd')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span class="ms-lbl" id="aim-aig-int-ms-lbl">${lbl}</span>
+        <span class="ms-chev">${chevSvg}</span>
+      </button>
+      <div class="aim-intent-ms-dd" id="aim-aig-int-ms-dd">${rows}</div>
+    </div>`;
+  }
+
+  /* ── Advanced Business Context ── */
+  function _advHtml(idPrefix) {
+    const bizOpts   = ['B2B (Business to Business)','B2C (Business to Consumer)','B2B2C (Both)','Marketplace / Platform'];
+    const offerOpts = ['Software / SaaS','Professional Services','E-commerce / Retail','Media / Content','Other'];
+    const geoOpts   = ['Global','North America','Europe','Asia Pacific','Latin America'];
+    const priceOpts = ['Budget / Free','Mid-market','Premium / Enterprise'];
+    function field(label, id, opts) {
+      return `<div><label class="aim-ai-gen-adv-label">${label}</label>${_aimCtpBuildSelect(id, opts, '', 'Select...')}</div>`;
+    }
+    return `
+      <div class="aim-ai-gen-info-banner">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Optional: Provide business context to generate more targeted prompts that match your specific market position.
+      </div>
+      <div class="aim-ai-gen-adv-grid">
+        ${field('Business Type',    idPrefix+'-biz',   bizOpts)}
+        ${field('Offering Type',    idPrefix+'-offer', offerOpts)}
+        ${field('Geographic Scope', idPrefix+'-geo',   geoOpts)}
+        ${field('Price Position',   idPrefix+'-price', priceOpts)}
+      </div>`;
+  }
+
+  /* ── Language + slider ── */
+  function _langSliderHtml(sliderId, sliderValId) {
+    const langs = ['English','Portuguese','Spanish','French','German'];
+    const slots   = Math.max(5, 100 - AIM_PROMPTS.length);
+    const initVal = Math.min(10, slots);
+    const initPct = slots > 5 ? Math.round(100 * (initVal - 5) / (slots - 5)) : 100;
+    const trackBg = `linear-gradient(to right,#111827 ${initPct}%,#e5e7eb ${initPct}%)`;
+    return `<div class="aim-ai-gen-bottom-row">
+      <div>
+        <label class="aim-ai-gen-label">Language</label>
+        ${_aimCtpBuildSelect(sliderId+'-lang', langs, 'English', '')}
+      </div>
+      <div>
+        <label class="aim-ai-gen-label">Number of Prompts: <span id="${sliderValId}">${initVal}</span></label>
+        <input type="range" class="aim-ai-gen-slider" id="${sliderId}" min="5" max="${slots}" value="${initVal}"
+          style="background:${trackBg}"
+          oninput="(function(el){var v=+el.value,mn=5,mx=${slots},pct=mx>mn?Math.round(100*(v-mn)/(mx-mn)):100;el.style.background='linear-gradient(to right,#111827 '+pct+'%,#e5e7eb '+pct+'%)';document.getElementById('${sliderValId}').textContent=v;})(this)">
+        <div class="aim-ai-gen-slider-labels"><span>5</span><span>${slots} slots available</span><span>${slots}</span></div>
+      </div>
+    </div>`;
+  }
+
+  /* ═══════════════════════════════════════════════
+     AI PROMPT GENERATION tab
+  ═══════════════════════════════════════════════ */
+  if (tab === 'ai') {
+    const selCount = _aimAiGenSelectedIntents.size;
+
+    body.innerHTML = `
+      <div class="aim-ai-gen-sub-tabs">
+        <button class="aim-ai-gen-sub-tab active" id="aim-aig-tab-intent" onclick="aimAiGenSubTab('intent')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          By Search Intent
+        </button>
+        <button class="aim-ai-gen-sub-tab" id="aim-aig-tab-url" onclick="aimAiGenSubTab('url')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          From URL
+        </button>
+      </div>
+
+      <!-- ── By Search Intent ── -->
+      <div id="aim-aig-intent-tab">
+        <div style="margin-bottom:16px;">
+          <label class="aim-ai-gen-label" style="margin-bottom:6px;display:block;">Search Intents</label>
+          ${_intentMultiSelectBI()}
+        </div>
+        <hr class="aim-ai-gen-divider">
+        ${_langSliderHtml('aim-aig-slider','aim-aig-slider-val')}
+        <div class="aim-ai-gen-adv" id="aim-aig-adv">
+          <button class="aim-ai-gen-adv-btn" onclick="aimAiGenToggleAdv()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93L17.66 6.34M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M17.66 17.66l1.41 1.41M6.34 17.66l-1.41 1.41"/></svg>
+            Advanced Business Context
+            <svg id="aim-aig-adv-chev" width="10" height="10" viewBox="0 0 10 10" fill="none" style="margin-left:auto;transition:transform .15s"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="aim-ai-gen-adv-body" id="aim-aig-adv-body">${_advHtml('aim-aig-int')}</div>
+        </div>
+        <label class="aim-ai-gen-check-row">
+          <input type="checkbox" class="aim-ai-gen-checkbox" checked> Avoid generating prompts similar to existing ones
+        </label>
+      </div>
+
+      <!-- ── From URL ── -->
+      <div id="aim-aig-url-tab" style="display:none;">
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">Page URL</div>
+        <div class="aim-ai-gen-section-sub">Enter a category page, service page, or product page URL. We'll analyze the content and generate relevant prompts.</div>
+        <input class="aim-ap-input" id="aim-aig-url-input" placeholder="https://example.com/products/category" style="margin-bottom:18px;">
+
+        <div class="aim-ai-gen-section-hd" style="margin-bottom:4px;">
+          <div class="aim-ai-gen-section-title" style="font-size:14px;">Focus on these intents</div>
+        </div>
+        <div class="aim-ai-gen-section-sub">Choose which intent types to generate prompts for.</div>
+        ${_intentMultiSelect()}
+        <hr class="aim-ai-gen-divider">
+        ${_langSliderHtml('aim-aig-url-slider','aim-aig-url-slider-val')}
+        <div class="aim-ai-gen-adv" id="aim-aig-url-adv">
+          <button class="aim-ai-gen-adv-btn" onclick="aimAiGenToggleUrlAdv()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93L17.66 6.34M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M17.66 17.66l1.41 1.41M6.34 17.66l-1.41 1.41"/></svg>
+            Advanced Business Context
+            <svg id="aim-aig-url-adv-chev" width="10" height="10" viewBox="0 0 10 10" fill="none" style="margin-left:auto;transition:transform .15s"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="aim-ai-gen-adv-body" id="aim-aig-url-adv-body">${_advHtml('aim-aig-url')}</div>
+        </div>
+        <label class="aim-ai-gen-check-row">
+          <input type="checkbox" class="aim-ai-gen-checkbox" checked> Avoid generating prompts similar to existing ones
+        </label>
+      </div>`;
+
+    footer.innerHTML = `
+      <button onclick="aimCloseAddPrompts()" class="aim-ctp-dlg-cancel">Cancel</button>
+      <button onclick="aimAiGenGenerate()" class="aim-ctp-dlg-confirm" style="display:flex;align-items:center;gap:6px;" id="aim-aig-gen-btn">
+        ${sparkle13} Generate Prompts
+      </button>`;
+
+  /* ═══════════════════════════════════════════════
+     ADD MANUAL PROMPTS tab
+  ═══════════════════════════════════════════════ */
+  } else {
+    const topics      = Object.keys(AIM_TOPIC_COLORS);
+    const intentList  = ['Commercial','Informational','Transactional','Navigational'];
+    _aimMpRowIdx = 1;
+    var _mp1t  = _aimCtpBuildSelect('aim-mp-topic-1',  topics, topics[0], '');
+    var _mp1i  = _aimCtpBuildSelect('aim-mp-intent-1', intentList, 'Commercial', 'Select intent…');
+    var _mpRm1 = '<button class="aim-ctp-tbl-rm" onclick="aimMpRemoveRow(1)" title="Remove"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+
+    body.innerHTML = `
+      <div class="aim-ai-gen-sub-tabs" style="margin-bottom:16px;">
+        <button class="aim-ai-gen-sub-tab active" id="aim-mp-tab-single" onclick="aimManualSubTab('single')">Single Prompt</button>
+        <button class="aim-ai-gen-sub-tab" id="aim-mp-tab-bulk"   onclick="aimManualSubTab('bulk')">Bulk Prompts</button>
+      </div>
+
+      <!-- Single Prompt (table-based) -->
+      <div id="aim-mp-single-view">
+        <table class="aim-ctp-prompt-table" id="aim-mp-tbl">
+          <thead><tr>
+            <th>Prompt</th>
+            <th style="width:155px">Category</th>
+            <th style="width:155px">Search Intent</th>
+            <th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="aim-mp-tbl-body">
+            <tr id="aim-mp-row-1">
+              <td><textarea class="aim-ctp-tbl-input aim-mp-tbl-input" id="aim-mp-text-1" placeholder="Enter prompt..." oninput="aimMpUpdateCount()"></textarea></td>
+              <td>${_mp1t}</td>
+              <td>${_mp1i}</td>
+              <td style="width:36px;text-align:center;vertical-align:middle;">${_mpRm1}</td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="aim-mp-add-row-btn" onclick="aimMpAddRow()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add Prompt
+        </button>
+      </div>
+
+      <!-- Bulk Prompts -->
+      <div id="aim-mp-bulk-view" class="aim-mp-card" style="display:none;">
+        <div class="aim-mp-card-title">Add Multiple Prompts</div>
+        <label class="aim-mp-label">Prompts (one per line)</label>
+        <textarea id="aim-bulk-text" class="aim-bulk-textarea" placeholder="Enter multiple prompts, one per line..."
+          style="min-height:140px;" oninput="aimBulkUpdateCount()"></textarea>
+        <div id="aim-bulk-count-label" class="aim-mp-count-line">0 prompts parsed &bull; 62 slots available</div>
+        <div class="aim-mp-grid">
+          <div>
+            <label class="aim-mp-label">Default Category</label>
+            ${_aimCtpBuildSelect('aim-bulk-topic', topics, topics[0], '')}
+          </div>
+          <div>
+            <label class="aim-mp-label">Default Search Intent</label>
+            ${_aimCtpBuildSelect('aim-bulk-intent', intentList, '', 'Select default intent (optional)')}
+          </div>
+        </div>
+      </div>`;
+
+    footer.innerHTML = `
+      <button onclick="aimCloseAddPrompts()" class="aim-ctp-dlg-cancel">Cancel</button>
+      <button onclick="aimMpConfirm()" class="aim-ctp-dlg-confirm" id="aim-mp-confirm-btn" style="display:flex;align-items:center;gap:6px;">
+        ${plusCircle} <span id="aim-mp-confirm-txt">Add 1 Prompt</span>
+      </button>`;
+  }
+}
+
+/* ── Intent multi-select dropdown helpers ── */
+function aimToggleIntentMs(e, ddId) {
+  e.stopPropagation();
+  var dd = document.getElementById(ddId);
+  if (!dd) return;
+  var isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.aim-intent-ms-dd.open').forEach(function(d){ d.classList.remove('open'); });
+  if (!isOpen) {
+    var rect = e.currentTarget.getBoundingClientRect();
+    dd.style.top   = (rect.bottom + 4) + 'px';
+    dd.style.left  = rect.left + 'px';
+    dd.style.width = rect.width + 'px';
+    dd.classList.add('open');
+  }
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.aim-intent-ms-wrap')) {
+    document.querySelectorAll('.aim-intent-ms-dd.open').forEach(function(d){ d.classList.remove('open'); });
+  }
+});
+
+function aimToggleIntentMsItem(key, el) {
+  var checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var cb = el.querySelector('.aim-intent-ms-cb');
+  if (_aimAiGenUrlSelectedIntents.has(key)) {
+    _aimAiGenUrlSelectedIntents.delete(key);
+    el.classList.remove('selected');
+    if (cb) cb.innerHTML = '';
+  } else {
+    _aimAiGenUrlSelectedIntents.add(key);
+    el.classList.add('selected');
+    if (cb) cb.innerHTML = checkSvg;
+  }
+  var n   = _aimAiGenUrlSelectedIntents.size;
+  var tot = 7;
+  var lbl = document.getElementById('aim-aig-url-ms-lbl');
+  if (lbl) lbl.textContent = n === 0 ? 'No intents selected' : n === tot ? 'All ' + tot + ' intents selected' : n + ' intent' + (n===1?'':'s') + ' selected';
+}
+
+/* ── Manual sub-tab toggle ── */
+function aimManualSubTab(tab) {
+  var sBtn = document.getElementById('aim-mp-tab-single');
+  var bBtn = document.getElementById('aim-mp-tab-bulk');
+  var sView = document.getElementById('aim-mp-single-view');
+  var bView = document.getElementById('aim-mp-bulk-view');
+  if (sBtn) sBtn.classList.toggle('active', tab==='single');
+  if (bBtn) bBtn.classList.toggle('active', tab==='bulk');
+  if (sView) sView.style.display = tab==='single' ? '' : 'none';
+  if (bView) bView.style.display = tab==='bulk'   ? '' : 'none';
+  var footer = document.getElementById('aim-ap-footer');
+  if (!footer) return;
+  var sparkle13 = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
+  var plusCircle = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>';
+  if (tab === 'single') {
+    var _mpN = 0;
+    document.querySelectorAll('#aim-mp-tbl-body tr').forEach(function(row){
+      var id = row.id.replace('aim-mp-row-','');
+      var ta = document.getElementById('aim-mp-text-'+id);
+      if (ta && ta.value.trim()) _mpN++;
+    });
+    footer.innerHTML = '<button onclick="aimCloseAddPrompts()" class="aim-ctp-dlg-cancel">Cancel</button>'
+      + '<button onclick="aimMpConfirm()" class="aim-ctp-dlg-confirm" id="aim-mp-confirm-btn" style="display:flex;align-items:center;gap:6px;">'
+      + plusCircle + ' <span id="aim-mp-confirm-txt">Add ' + _mpN + ' Prompt' + (_mpN===1?'':'s') + '</span></button>';
+  } else {
+    var n = 0;
+    var ta = document.getElementById('aim-bulk-text');
+    if (ta && ta.value) n = ta.value.split('\n').map(function(l){return l.trim();}).filter(Boolean).length;
+    footer.innerHTML = '<button onclick="aimCloseAddPrompts()" class="aim-ctp-dlg-cancel">Cancel</button>'
+      + '<button onclick="aimBulkImportPrompts()" class="aim-ctp-dlg-confirm" id="aim-bulk-add-btn" style="display:flex;align-items:center;gap:6px;">'
+      + plusCircle + ' <span id="aim-bulk-btn-txt">Add ' + n + ' Prompt' + (n===1?'':'s') + '</span></button>';
+  }
+}
+
+/* ── Bulk count update ── */
+function aimBulkUpdateCount() {
+  var txt   = (document.getElementById('aim-bulk-text')||{}).value || '';
+  var lines = txt.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var n     = lines.length;
+  var lbl   = document.getElementById('aim-bulk-count-label');
+  if (lbl) lbl.textContent = n + ' prompt' + (n===1?'':'s') + ' parsed • 62 slots available';
+  var btnTxt = document.getElementById('aim-bulk-btn-txt');
+  if (btnTxt) btnTxt.textContent = 'Add ' + n + ' Prompt' + (n===1?'':'s');
+}
+
+/* ── Add single prompt ── */
+function aimAddSinglePrompt() {
+  var ta   = document.getElementById('aim-sp-text');
+  var text = ta ? ta.value.trim() : '';
+  if (!text) {
+    if (ta) { ta.style.outline='2px solid var(--danger)'; ta.focus(); }
+    return;
+  }
+  var topicWrap  = document.getElementById('aim-sp-topic');
+  var intentWrap = document.getElementById('aim-sp-intent');
+  var topic  = (topicWrap  && topicWrap.dataset.value)  || Object.keys(AIM_TOPIC_COLORS)[0];
+  var intent = (intentWrap && intentWrap.dataset.value) || 'Commercial';
+  if (!topic)  topic  = Object.keys(AIM_TOPIC_COLORS)[0];
+  if (!intent) intent = 'Commercial';
+  aimCloseAddPrompts();
+  aimCtpOpenDialog([{ text: text }], intent);
+}
+
+/* ── Bulk import ── */
+function aimBulkImportPrompts() {
+  var txt   = (document.getElementById('aim-bulk-text')||{}).value || '';
+  var lines = txt.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  if (!lines.length) {
+    var ta = document.getElementById('aim-bulk-text');
+    if (ta) { ta.style.outline='2px solid var(--danger)'; ta.focus(); }
+    return;
+  }
+  aimCloseAddPrompts();
+  aimCtpOpenDialog(lines.map(function(l){ return { text: l }; }), '');
+}
+
+/* ── Manual prompt table helpers ── */
+function _aimMpBuildRowHtml(i, topics, intentList) {
+  var tSel = _aimCtpBuildSelect('aim-mp-topic-'  + i, topics, topics[0], '');
+  var iSel = _aimCtpBuildSelect('aim-mp-intent-' + i, intentList, 'Commercial', 'Select intent…');
+  var rm   = '<button class="aim-ctp-tbl-rm" onclick="aimMpRemoveRow(' + i + ')" title="Remove">'
+    + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+  return '<tr id="aim-mp-row-' + i + '">'
+    + '<td><textarea class="aim-ctp-tbl-input aim-mp-tbl-input" id="aim-mp-text-' + i + '" placeholder="Enter prompt..." oninput="aimMpUpdateCount()"></textarea></td>'
+    + '<td style="width:155px;">' + tSel + '</td>'
+    + '<td style="width:155px;">' + iSel + '</td>'
+    + '<td style="width:36px;text-align:center;vertical-align:middle;">' + rm + '</td>'
+    + '</tr>';
+}
+function aimMpAddRow() {
+  var tbody = document.getElementById('aim-mp-tbl-body');
+  if (!tbody) return;
+  var tops = Object.keys(AIM_TOPIC_COLORS);
+  var ints = ['Commercial','Informational','Transactional','Navigational'];
+  _aimMpRowIdx++;
+  tbody.insertAdjacentHTML('beforeend', _aimMpBuildRowHtml(_aimMpRowIdx, tops, ints));
+  aimMpUpdateCount();
+  var ta = document.getElementById('aim-mp-text-' + _aimMpRowIdx);
+  if (ta) ta.focus();
+}
+function aimMpRemoveRow(i) {
+  var row = document.getElementById('aim-mp-row-' + i);
+  if (row) row.remove();
+  aimMpUpdateCount();
+}
+function aimMpUpdateCount() {
+  var rows = document.querySelectorAll('#aim-mp-tbl-body tr');
+  var n = 0;
+  rows.forEach(function(row) {
+    var id = row.id.replace('aim-mp-row-', '');
+    var ta = document.getElementById('aim-mp-text-' + id);
+    if (ta && ta.value.trim()) n++;
+  });
+  var txt = document.getElementById('aim-mp-confirm-txt');
+  if (txt) txt.textContent = 'Add ' + n + ' Prompt' + (n===1?'':'s');
+  var btn = document.getElementById('aim-mp-confirm-btn');
+  if (btn) btn.disabled = (n === 0);
+}
+function aimMpConfirm() {
+  var rows = document.querySelectorAll('#aim-mp-tbl-body tr');
+  var added = 0;
+  rows.forEach(function(row) {
+    var id     = row.id.replace('aim-mp-row-', '');
+    var ta     = document.getElementById('aim-mp-text-' + id);
+    var text   = ta ? ta.value.trim() : '';
+    if (!text) return;
+    var tWrap  = document.getElementById('aim-mp-topic-'  + id);
+    var iWrap  = document.getElementById('aim-mp-intent-' + id);
+    var topic  = (tWrap  && tWrap.dataset.value)  || Object.keys(AIM_TOPIC_COLORS)[0];
+    var intent = (iWrap  && iWrap.dataset.value)  || 'Commercial';
+    aimAddPromptToDb({ text: text, topic: topic, intent: intent });
+    added++;
+  });
+  if (added) aimCloseAddPrompts();
+}
+
+/* ── AI gen helpers ── */
+function aimAiGenSubTab(tab) {
+  var iTab  = document.getElementById('aim-aig-tab-intent');
+  var uTab  = document.getElementById('aim-aig-tab-url');
+  var iBody = document.getElementById('aim-aig-intent-tab');
+  var uBody = document.getElementById('aim-aig-url-tab');
+  if (iTab)  iTab.classList.toggle('active', tab==='intent');
+  if (uTab)  uTab.classList.toggle('active', tab==='url');
+  if (iBody) iBody.style.display = tab==='intent' ? '' : 'none';
+  if (uBody) uBody.style.display = tab==='url'    ? '' : 'none';
+}
+
+function aimAiGenToggleAdv() {
+  var body = document.getElementById('aim-aig-adv-body');
+  var chev = document.getElementById('aim-aig-adv-chev');
+  if (!body) return;
+  body.classList.toggle('open');
+  if (chev) chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+function aimAiGenToggleUrlAdv() {
+  var body = document.getElementById('aim-aig-url-adv-body');
+  var chev = document.getElementById('aim-aig-url-adv-chev');
+  if (!body) return;
+  body.classList.toggle('open');
+  if (chev) chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+function aimToggleIntentMsItemBI(key, el) {
+  var checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var cb = el.querySelector('.aim-intent-ms-cb');
+  if (_aimAiGenSelectedIntents.has(key)) {
+    _aimAiGenSelectedIntents.delete(key);
+    el.classList.remove('selected');
+    if (cb) cb.innerHTML = '';
+  } else {
+    _aimAiGenSelectedIntents.add(key);
+    el.classList.add('selected');
+    if (cb) cb.innerHTML = checkSvg;
+  }
+  var n   = _aimAiGenSelectedIntents.size;
+  var lbl = document.getElementById('aim-aig-int-ms-lbl');
+  if (lbl) lbl.textContent = n === 0 ? 'No intents selected' : n === 7 ? 'All 7 intents selected' : n + ' intent' + (n===1?'':'s') + ' selected';
+}
+
+function aimAiGenToggleIntent(key, el) {
+  var checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  if (_aimAiGenSelectedIntents.has(key)) {
+    _aimAiGenSelectedIntents.delete(key);
+    el.classList.remove('selected');
+    el.querySelector('.aim-ai-gen-card-cb').innerHTML = '';
+  } else {
+    _aimAiGenSelectedIntents.add(key);
+    el.classList.add('selected');
+    el.querySelector('.aim-ai-gen-card-cb').innerHTML = checkSvg;
+  }
+  var n2  = _aimAiGenSelectedIntents.size;
+  var lbl2 = document.getElementById('aim-aig-int-ms-lbl');
+  if (lbl2) lbl2.textContent = n2 === 0 ? 'No intents selected' : n2 === 7 ? 'All 7 intents selected' : n2 + ' intent' + (n2===1?'':'s') + ' selected';
+}
+
+function aimAiGenGenerate() {
+  var isUrl = document.getElementById('aim-aig-url-tab') && document.getElementById('aim-aig-url-tab').style.display !== 'none';
+  var selSet = isUrl ? _aimAiGenUrlSelectedIntents : _aimAiGenSelectedIntents;
+  if (selSet.size === 0) {
+    var c = document.getElementById(isUrl ? 'aim-aig-url-ms-lbl' : 'aim-aig-int-ms-lbl');
+    if (c) { c.textContent = 'Select at least one intent'; c.style.color = 'var(--danger)'; }
+    return;
+  }
+  var btn = document.getElementById('aim-aig-gen-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:aim-spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generating...';
+  }
+  var sliderId = isUrl ? 'aim-aig-url-slider' : 'aim-aig-slider';
+  var count = parseInt((document.getElementById(sliderId)||{}).value||10, 10);
+  setTimeout(function() {
+    aimCloseAddPrompts();
+    var items = AIM_AP_SUGGESTED.slice(0, Math.min(count, AIM_AP_SUGGESTED.length)).map(function(p){ return { text: p.text }; });
+    aimCtpOpenDialog(items, '');
+  }, 1400);
 }
 
 /* ── CALENDAR ────────────────────────────────────────────────────── */
@@ -8222,6 +9916,108 @@ function aimCloseBrandManager() {
   setTimeout(function(){ var r = document.getElementById('aim-mgr-root'); if(r) r.remove(); }, 300);
 }
 
+/* ── Search Console: Change Property panel ───────────── */
+function aimOpenScProperty() {
+  var existing = document.getElementById('aim-sc-prop-root');
+  if (existing) existing.remove();
+  var root = document.createElement('div');
+  root.id = 'aim-sc-prop-root';
+  root.innerHTML = _aimBuildScPropertyHTML();
+  document.body.appendChild(root);
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var overlay = document.getElementById('aim-sc-prop-overlay');
+      var panel   = document.getElementById('aim-sc-prop-panel');
+      if (overlay) overlay.classList.add('open');
+      if (panel)   panel.classList.add('open');
+    });
+  });
+  var inp = document.getElementById('aim-sc-prop-search');
+  if (inp) inp.addEventListener('input', function(){ _aimScPropFilter(this.value); });
+}
+
+function aimCloseScProperty() {
+  var overlay = document.getElementById('aim-sc-prop-overlay');
+  var panel   = document.getElementById('aim-sc-prop-panel');
+  if (overlay) overlay.classList.remove('open');
+  if (panel)   panel.classList.remove('open');
+  setTimeout(function(){ var r = document.getElementById('aim-sc-prop-root'); if(r) r.remove(); }, 300);
+}
+
+function aimSelectScProperty(domain) {
+  var label = document.getElementById('aim-sc-domain-label');
+  if (label) {
+    var favUrl = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=32';
+    label.innerHTML = '<img src="' + favUrl + '" style="width:14px;height:14px;border-radius:3px;flex-shrink:0;" onerror="this.style.display=\'none\'">' + domain;
+  }
+  aimCloseScProperty();
+}
+
+function _aimScPropFilter(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('#aim-sc-prop-list .aim-sc-prop-row').forEach(function(row){
+    var d = (row.getAttribute('data-domain') || '').toLowerCase();
+    row.style.display = (!q || d.indexOf(q) !== -1) ? '' : 'none';
+  });
+}
+
+function _aimBuildScPropertyHTML() {
+  var currentDomain = (document.getElementById('aim-sc-domain-label') || {}).textContent || 'aipeekaboo.com';
+  var properties = [
+    { domain: 'aipeekaboo.com',     type: 'Domain property',   verified: true },
+    { domain: 'www.aipeekaboo.com', type: 'URL prefix property', verified: true },
+    { domain: 'blog.aipeekaboo.com',type: 'URL prefix property', verified: false },
+  ];
+
+  var icoSearch = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+  var icoPlus   = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+  var icoGlobe  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+  var icoCheck  = '<svg class="aim-sc-prop-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  var rows = properties.map(function(p) {
+    var isActive = p.domain === currentDomain;
+    var favUrl = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(p.domain) + '&sz=64';
+    var verifiedBadge = p.verified
+      ? '<span style="display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px;background:#d1fae5;color:#065f46;margin-left:6px;">Verified</span>'
+      : '<span style="display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px;background:#fef9c3;color:#713f12;margin-left:6px;">Unverified</span>';
+    return '<div class="aim-sc-prop-row' + (isActive ? ' active' : '') + '" data-domain="' + p.domain + '" onclick="aimSelectScProperty(\'' + p.domain + '\')">'
+      + '<img class="aim-sc-prop-favicon" src="' + favUrl + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+      + '<div style="display:none;width:32px;height:32px;border-radius:7px;background:#e5e7eb;align-items:center;justify-content:center;flex-shrink:0;">' + icoGlobe + '</div>'
+      + '<div class="aim-sc-prop-info">'
+      +   '<div class="aim-sc-prop-domain">' + p.domain + verifiedBadge + '</div>'
+      +   '<div class="aim-sc-prop-type">' + p.type + '</div>'
+      + '</div>'
+      + (isActive ? icoCheck : '')
+      + '</div>';
+  }).join('');
+
+  return '<div class="aim-sc-prop-overlay" id="aim-sc-prop-overlay" onclick="aimCloseScProperty()"></div>'
+    + '<div class="aim-sc-prop-panel" id="aim-sc-prop-panel">'
+    +   '<div style="padding:20px 24px 14px;border-bottom:1px solid #f3f4f6;flex-shrink:0;">'
+    +     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
+    +       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+    +       '<span style="font-size:18px;font-weight:700;color:#111827;flex:1;">Change Property</span>'
+    +       '<button style="width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:18px;line-height:1;" onclick="aimCloseScProperty()" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'transparent\'">&#x2715;</button>'
+    +     '</div>'
+    +     '<div style="font-size:13px;color:#6b7280;">Select a Search Console property to view</div>'
+    +   '</div>'
+    +   '<div style="padding:12px 24px;border-bottom:1px solid #f3f4f6;flex-shrink:0;position:relative;">'
+    +     '<span style="position:absolute;left:36px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;">' + icoSearch + '</span>'
+    +     '<input id="aim-sc-prop-search" type="text" placeholder="Search properties..." style="width:100%;padding:9px 12px 9px 36px;border:1px solid #e5e7eb;border-radius:8px;font-size:13.5px;font-family:var(--font);outline:none;color:#111827;background:#fff;box-sizing:border-box;">'
+    +   '</div>'
+    +   '<div style="padding:12px 16px 6px;font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;">Your Properties</div>'
+    +   '<div id="aim-sc-prop-list" style="flex:1;overflow-y:auto;padding:0 8px 8px;">'
+    +     rows
+    +   '</div>'
+    +   '<div style="padding:12px 8px;border-top:1px solid #f3f4f6;flex-shrink:0;">'
+    +     '<button class="aim-sc-prop-add-btn" onclick="alert(\'Connect a new property in Google Search Console first, then refresh.\')">'
+    +       icoPlus
+    +       'Connect new property'
+    +     '</button>'
+    +   '</div>'
+    + '</div>';
+}
+
 function _aimBuildMgrHTML() {
   var brands = (window._AIM_SNAPSHOT && window._AIM_SNAPSHOT.all_brands) || [];
   var activeN = brands.filter(function(b){ return (window._aimMgrToggles[b.id] !== undefined ? window._aimMgrToggles[b.id] : b.analysisEnabled !== false); }).length;
@@ -8318,6 +10114,7 @@ function aimMgrToggle(brandId, isOn) {
   var totalN  = brands.filter(function(b){ return !window._aimMgrDeleted[b.id]; }).length;
   var statsEl = document.querySelector('.aim-mgr-stats');
   if (statsEl) statsEl.textContent = activeN + '/' + totalN + ' active brands • ' + (totalN - activeN) + ' paused • Custom Plan';
+  // Refresh topbar count and CTA
   if (typeof aimRenderTopbar === 'function') aimRenderTopbar();
 }
 
@@ -8332,6 +10129,7 @@ function aimMgrDelete(brandId) {
   var totalN  = brands.filter(function(b){ return !window._aimMgrDeleted[b.id]; }).length;
   var statsEl = document.querySelector('.aim-mgr-stats');
   if (statsEl) statsEl.textContent = activeN + '/' + totalN + ' active brands • ' + (totalN - activeN) + ' paused • Custom Plan';
+  // Refresh topbar count and CTA
   if (typeof aimRenderTopbar === 'function') aimRenderTopbar();
 }
 
@@ -8344,6 +10142,7 @@ function _aimMgrFilter(q) {
   });
 }
 // ── end Manage Brands ──────────────────────────────────────────────────────
+
 // ── Add New Brand wizard ────────────────────────────────────────────────────
 
 var _aimNewBrand = {
@@ -9125,7 +10924,6 @@ function _aimNbCreateBrand() {
 }
 
 // ── end Add New Brand ───────────────────────────────────────────────────────
-
 
 </script>
 </body>
