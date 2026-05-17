@@ -4111,12 +4111,22 @@ function aimHideFaviconTip() {
   if (tip) tip.style.opacity = '0';
 }
 
+const _AIM_LETTER_PALETTE = ['#b352b3','#10b981','#2563eb','#8b5cf6','#64748b','#06b6d4','#f59e0b','#f472b6','#38bdf8','#94a3b8'];
+function _aimLetterBg(name) {
+  let h = 0; for (let i = 0; i < (name||'').length; i++) h = (h * 31 + (name||'').charCodeAt(i)) & 0xffff;
+  return _AIM_LETTER_PALETTE[h % _AIM_LETTER_PALETTE.length];
+}
+
 function aimFavError(img) {
   const span = document.createElement('span');
   span.className = img.className.replace('aim-pm-fav', 'aim-pm-fav-letter');
   span.title = img.alt;
   span.dataset.bn = img.dataset.bn;
-  span.textContent = (img.alt || '??').substring(0, 2).toUpperCase();
+  const name = img.alt || '??';
+  span.textContent = name.substring(0, 2).toUpperCase();
+  span.style.background = _aimLetterBg(name);
+  span.style.color = '#fff';
+  span.style.borderColor = 'transparent';
   span.onmouseenter = () => aimShowFaviconTip(span, span.dataset.bn);
   span.onmouseleave = () => aimHideFaviconTip();
   img.replaceWith(span);
@@ -5448,8 +5458,8 @@ const _AIM_BRAND_DOMAIN_MAP = {
   'ahrefs brand radar':'ahrefs.com','airefs':'ahrefs.com','moz pro':'moz.com',
   'brightedge':'brightedge.com','conductor':'conductor.com','marketmuse':'marketmuse.com',
   'neuronwriter':'neuronwriter.com','surfer seo':'surferseo.com','seomonitor':'seomonitor.com',
-  'authoritas':'authoritas.com','keyword.com':'keyword.com','ubersuggest':'neilpatel.com',
-  'growthos':'growthos.com','brandwatch':'brandwatch.com','brand24':'brand24.com',
+  'authoritas':'authoritas.com','keyword.com':'keyword.com','ubersuggest':'ubersuggest.com',
+  'langsmith':'langsmith.com','appearly':'appearly.com','growthos':'growthos.com','brandwatch':'brandwatch.com','brand24':'brand24.com',
   'brandcrowd':'brandcrowd.com','mention.ai':'mention.ai','mentionlytics':'mentionlytics.com',
   'sprout social':'sproutsocial.com','meltwater':'meltwater.com',
   'hubspot':'hubspot.com','hubspot aeo':'hubspot.com',
@@ -5533,7 +5543,8 @@ function aimRenderCompPromptMatrix() {
       const safeName = b.n.replace(/"/g, '&quot;');
       const domain = _aimResolveBrandDomain(b);
       if (!domain) {
-        html += `<td><span class="aim-pm-fav-letter${isMain ? ' is-main' : ''}" title="${safeName}" data-bn="${safeName}" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()">${b.n.substring(0, 2).toUpperCase()}</span></td>`;
+        const _lbg = _aimLetterBg(b.n);
+        html += `<td><span class="aim-pm-fav-letter${isMain ? ' is-main' : ''}" style="background:${_lbg};color:#fff;border-color:transparent" title="${safeName}" data-bn="${safeName}" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()">${b.n.substring(0, 2).toUpperCase()}</span></td>`;
         return;
       }
       html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${safeName}" data-bn="${safeName}" data-domain="${domain}" loading="lazy" onload="aimPmFavCheck(this)" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
