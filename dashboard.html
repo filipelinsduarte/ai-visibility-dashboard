@@ -4627,8 +4627,7 @@ function aimRenderPromptsTable() {
     const _pd = _aimGetPromptData(p.id, _apId);
     // Mentions column: top 3 brand favicons, each with white popup tooltip
     const _brandFavs = (_pd?.topBrands || []).map(name => {
-      const b = AI_BRANDS.find(br => br.name === name || br.name.toLowerCase() === name.toLowerCase());
-      const domain = b ? b.domain : (typeof _entityDomain === 'function' ? _entityDomain(name) : null);
+      const domain = _aimBrandNameToDomain(name);
       const icon = aimBrandIcon(domain, name, 18);
       const safe = name.replace(/'/g, '&#39;');
       return `<span onmouseenter="aimShowFaviconTip(this,'${safe}')" onmouseleave="aimHideFaviconTip()" style="display:inline-flex;flex-shrink:0;cursor:default">${icon}</span>`;
@@ -4639,7 +4638,7 @@ function aimRenderPromptsTable() {
       : `<span style="color:var(--text-faint);font-size:11px">–</span>`;
     // Citations column: top 3 source domain favicons, each with white popup tooltip
     const _citeFavs = (_pd?.topDomains || []).map(domain =>
-      `<span onmouseenter="aimShowFaviconTip(this,'${domain}')" onmouseleave="aimHideFaviconTip()" style="display:inline-flex;flex-shrink:0;cursor:default"><img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" style="width:18px;height:18px;border-radius:3px;display:block"></span>`
+      `<span onmouseenter="aimShowFaviconTip(this,'${domain}')" onmouseleave="aimHideFaviconTip()" style="display:inline-flex;flex-shrink:0;cursor:default"><img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" data-domain="${domain}" style="width:18px;height:18px;border-radius:3px;display:block" onload="aimPmFavCheck(this)" onerror="this.style.display='none'"></span>`
     );
     const _citeExtra = Math.max(0, (_pd?.totalDomains || 0) - (_pd?.topDomains || []).length);
     const _citeCell = _citeFavs.length
@@ -5475,15 +5474,30 @@ const _AIM_BRAND_DOMAIN_MAP = {
   'wp rocket':'wp-rocket.me','slate':'slate.com','scout':'scoutapm.com',
 };
 
-function _aimResolveBrandDomain(brandObj) {
-  if (brandObj.d) return brandObj.d;
-  const name = (brandObj.n || '').trim();
-  const exact = AI_BRANDS.find(b => b.name === name);
+function _aimBrandNameToDomain(name) {
+  if (!name) return null;
+  const n = name.trim();
+  const exact = AI_BRANDS.find(b => b.name === n);
   if (exact && exact.domain) return exact.domain;
-  const norm = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const norm = n.toLowerCase().replace(/[^a-z0-9]/g, '');
   const normed = AI_BRANDS.find(b => b.name.toLowerCase().replace(/[^a-z0-9]/g, '') === norm);
   if (normed && normed.domain) return normed.domain;
-  return _AIM_BRAND_DOMAIN_MAP[name.toLowerCase()] || null;
+  return _AIM_BRAND_DOMAIN_MAP[n.toLowerCase()] || null;
+}
+
+function _aimResolveBrandDomain(brandObj) {
+  return brandObj.d || _aimBrandNameToDomain(brandObj.n);
+}
+
+function aimPmFavCheck(img) {
+  if (img.naturalWidth <= 16 && !img.dataset.fb) {
+    img.dataset.fb = '1';
+    const domain = img.dataset.domain;
+    const hasBn = !!img.dataset.bn;
+    img.onload  = function() { if (this.naturalWidth <= 16) { hasBn ? aimFavError(this) : (this.style.display = 'none'); } };
+    img.onerror = function() { hasBn ? aimFavError(this) : (this.style.display = 'none'); };
+    img.src = 'https://icons.duckduckgo.com/ip3/' + domain + '.ico';
+  }
 }
 
 function aimRenderCompPromptMatrix() {
@@ -5522,7 +5536,7 @@ function aimRenderCompPromptMatrix() {
         html += `<td><span class="aim-pm-fav-letter${isMain ? ' is-main' : ''}" title="${safeName}" data-bn="${safeName}" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()">${b.n.substring(0, 2).toUpperCase()}</span></td>`;
         return;
       }
-      html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" alt="${safeName}" data-bn="${safeName}" loading="lazy" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
+      html += `<td><img class="aim-pm-fav${isMain ? ' is-main' : ''}" src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${safeName}" data-bn="${safeName}" data-domain="${domain}" loading="lazy" onload="aimPmFavCheck(this)" onerror="aimFavError(this)" onmouseenter="aimShowFaviconTip(this,this.dataset.bn)" onmouseleave="aimHideFaviconTip()" /></td>`;
     });
     html += '</tr>';
   });
