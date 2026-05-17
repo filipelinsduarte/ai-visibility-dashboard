@@ -4714,9 +4714,9 @@ function aimUpdatePromptCounters() {
   const barEl   = document.getElementById('aim-pr-used-bar');
   if (usedEl)  usedEl.textContent  = active;
   if (totalEl) totalEl.textContent = total;
-  if (barEl)   barEl.style.width   = Math.min(100, Math.round(active / Math.max(1, total) * 100)) + '%';
+  if (barEl)   barEl.style.width   = Math.min(100, active) + '%';
   const badge = document.getElementById('aim-st-prompt-count-badge');
-  if (badge)   badge.textContent   = total + '/' + total;
+  if (badge)   badge.textContent   = active + '/100';
 }
 
 function aimAddSuggestedPrompt(id, el) {
@@ -6411,11 +6411,17 @@ function aimStGetCatColor(topic) {
 
 function aimStRenderPrompts() {
   var snap = window._AIM_SNAPSHOT || {};
-  var metrics = snap.prompt_metrics || [];
+  var inactiveIds = new Set(
+    AIM_PROMPTS.filter(function(p) { return p.status === 'inactive'; })
+               .map(function(p) { return 'ap' + p.id; })
+  );
+  var metrics = (snap.prompt_metrics || []).filter(function(m) {
+    return !inactiveIds.has(m.prompt_id);
+  });
   var search = (document.getElementById('aim-st-prompt-search') || {}).value || '';
   search = search.toLowerCase();
   var badge = document.getElementById('aim-st-prompt-count-badge');
-  if (badge) badge.textContent = metrics.length + '/' + metrics.length;
+  if (badge) badge.textContent = metrics.length + '/100';
   var filtered = search
     ? metrics.filter(function(m) { return (m.prompt_text || '').toLowerCase().includes(search); })
     : metrics;
@@ -7316,14 +7322,13 @@ function aimApplySnapshot(snap) {
   }
 
   // Update "prompts used" count chip and progress bar from real data
-  const _totalPromptCount  = AIM_PROMPTS.length;
-  const _activePromptCount = AIM_PROMPTS.filter(p => p.status !== 'inactive').length || _totalPromptCount;
+  const _activePromptCount = AIM_PROMPTS.filter(p => p.status !== 'inactive').length || AIM_PROMPTS.length;
   const _usedCountEl  = document.getElementById('aim-pr-used-count');
   const _totalCountEl = document.getElementById('aim-pr-total-count');
   const _usedBarEl    = document.getElementById('aim-pr-used-bar');
   if (_usedCountEl)  _usedCountEl.textContent  = _activePromptCount;
-  if (_totalCountEl) _totalCountEl.textContent = _totalPromptCount;
-  if (_usedBarEl)    _usedBarEl.style.width = Math.min(100, Math.round(_activePromptCount / Math.max(1, _totalPromptCount) * 100)) + '%';
+  if (_totalCountEl) _totalCountEl.textContent = 100;
+  if (_usedBarEl)    _usedBarEl.style.width = Math.min(100, _activePromptCount) + '%';
 
   // Rebuild URL domain filter dropdown from real top source URL domains
   const _urlDomDrop = document.getElementById('aim-url-domain-dropdown');
