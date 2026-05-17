@@ -2039,6 +2039,32 @@ button[onclick="aimOpenAddPrompts()"] {
 .aim-nb-prompt-item-clickable { cursor: pointer; }
 .aim-nb-prompt-item-clickable:hover { border-color: var(--accent); background: #f5f3ff; }
 .aim-nb-prompt-item-clickable:hover .aim-nb-prompt-text { color: var(--accent); }
+.aim-nb-sel-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.aim-nb-sel-tag {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  background: var(--surface-alt); border-radius: 6px; border: 1px solid var(--border);
+}
+.aim-nb-sel-fav { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; object-fit: cover; }
+.aim-nb-sel-tag-name { flex: 1; font-size: 12.5px; color: var(--text); font-weight: 500; }
+.aim-nb-sel-tag-domain { font-size: 11px; color: var(--text-muted); }
+.aim-nb-prompt-edit-row { cursor: default !important; }
+.aim-nb-prompt-edit-row:hover { border-color: var(--border) !important; background: var(--surface-alt) !important; }
+.aim-nb-prompt-edit-row:hover .aim-nb-prompt-text { color: var(--text) !important; }
+.aim-nb-prompt-edit-inp {
+  flex: 1; font-size: 12px; padding: 4px 8px; margin: 0; min-width: 0;
+  border: 1px solid var(--border); border-radius: 5px; font-family: var(--font);
+  color: var(--text); outline: none; background: #fff;
+}
+.aim-nb-prompt-edit-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+.aim-nb-prompt-action-btn {
+  background: none; cursor: pointer; font-size: 11px; font-weight: 600;
+  padding: 3px 9px; flex-shrink: 0; font-family: var(--font); transition: all .1s;
+  border-radius: 5px;
+}
+.aim-nb-prompt-save-btn { color: #059669; border: 1.5px solid #6ee7b7; }
+.aim-nb-prompt-save-btn:hover { background: #ecfdf5; }
+.aim-nb-prompt-cancel-btn { color: var(--text-muted); border: 1.5px solid var(--border); }
+.aim-nb-prompt-cancel-btn:hover { background: var(--surface-alt); }
 /* ── end Add New Brand ─────────────────────────────────── */
 
 </style>
@@ -8326,7 +8352,6 @@ var _AIM_LANGUAGES = [
   'Portuguese','Romanian','Russian','Spanish','Swedish','Thai','Turkish','Ukrainian','Vietnamese'
 ];
 var _AIM_LOCATIONS = [
-  {v:'Global',          l:'🌐 Global'},
   {v:'Argentina',       l:'🇦🇷 Argentina'},
   {v:'Australia',       l:'🇦🇺 Australia'},
   {v:'Austria',         l:'🇦🇹 Austria'},
@@ -8515,16 +8540,42 @@ function _aimNbCompCard(c, isSel) {
     + '</div>';
 }
 
+function _aimNbSelTagHtml(c, type, key) {
+  var favUrl = c.domain ? 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(c.domain) + '&sz=64' : '';
+  var fl = (c.name[0]||'?').toUpperCase();
+  var fc = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6'][c.name.charCodeAt(0)%6];
+  var rmKey = key.replace(/'/g,"\\'");
+  return '<div class="aim-nb-sel-tag">'
+    + (favUrl
+        ? '<img class="aim-nb-sel-fav" src="' + favUrl + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+          + '<div style="display:none;width:18px;height:18px;border-radius:4px;flex-shrink:0;background:' + fc + ';align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">' + fl + '</div>'
+        : '<div style="width:18px;height:18px;border-radius:4px;flex-shrink:0;background:' + fc + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">' + fl + '</div>')
+    + '<span class="aim-nb-sel-tag-name">' + aimEscHtml(c.name) + '</span>'
+    + (c.domain ? '<span class="aim-nb-sel-tag-domain">' + c.domain + '</span>' : '')
+    + '<button class="aim-nb-manual-tag-del" onclick="aimNbRemoveComp(\'' + type + '\',\'' + rmKey + '\')">&#x2715;</button>'
+    + '</div>';
+}
+
+function _aimNbRenderSelectedList() {
+  var nb = _aimNewBrand;
+  var items = [];
+  Object.keys(nb.selectedComps).forEach(function(k) { items.push(_aimNbSelTagHtml(nb.selectedComps[k], 'g', k)); });
+  nb.manualComps.forEach(function(c, i) { items.push(_aimNbSelTagHtml(c, 'm', String(i))); });
+  var hd  = document.getElementById('aim-nb-sel-hd');
+  var lst = document.getElementById('aim-nb-sel-list');
+  var show = items.length > 0;
+  if (hd)  { hd.style.display  = show ? '' : 'none'; var sp = hd.querySelector('.aim-nb-sel-count'); if (sp) sp.textContent = '(' + items.length + ')'; }
+  if (lst) { lst.style.display = show ? '' : 'none'; lst.innerHTML = items.join(''); }
+}
+
 function _aimNbStep2Html() {
   var nb = _aimNewBrand;
   var sugg = nb._compsGenerated ? nb._compsGenerated : _aimNbGetSuggestedComps();
   var compCards = sugg.map(function(c) { return _aimNbCompCard(c, !!nb.selectedComps[c.name]); }).join('');
-  var manualTags = nb.manualComps.map(function(c, i) {
-    return '<div class="aim-nb-manual-tag">'
-      + '<span class="aim-nb-manual-tag-name">' + aimEscHtml(c.name) + (c.domain ? '<span style="color:var(--text-muted);font-size:11px;margin-left:6px;">' + c.domain + '</span>' : '') + '</span>'
-      + '<button class="aim-nb-manual-tag-del" onclick="aimNbRemoveManualComp(' + i + ')">&#x2715;</button>'
-      + '</div>';
-  }).join('');
+  var selItems = [];
+  Object.keys(nb.selectedComps).forEach(function(k) { selItems.push(_aimNbSelTagHtml(nb.selectedComps[k], 'g', k)); });
+  nb.manualComps.forEach(function(c, i) { selItems.push(_aimNbSelTagHtml(c, 'm', String(i))); });
+  var hasSelected = selItems.length > 0;
 
   return '<div class="aim-nb-section-hd">'
     +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
@@ -8537,6 +8588,11 @@ function _aimNbStep2Html() {
     +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>'
     +   'Generate new competitors with AI'
     + '</button>'
+    + '<div class="aim-nb-section-hd" id="aim-nb-sel-hd"' + (hasSelected ? '' : ' style="display:none"') + '>'
+    +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    +   'Selected <span class="aim-nb-sel-count">(' + selItems.length + ')</span>'
+    + '</div>'
+    + '<div class="aim-nb-sel-list" id="aim-nb-sel-list"' + (hasSelected ? '' : ' style="display:none"') + '>' + selItems.join('') + '</div>'
     + '<div class="aim-nb-section-hd" style="margin-top:4px;">'
     +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
     +   'Add Manually'
@@ -8545,8 +8601,7 @@ function _aimNbStep2Html() {
     +   '<input id="aim-nb-comp-name-inp" class="aim-nb-input" type="text" placeholder="Brand name (optional)">'
     +   '<input id="aim-nb-comp-url-inp" class="aim-nb-input" type="text" placeholder="Website URL" onkeydown="if(event.key===\'Enter\')aimNbAddManualComp()">'
     + '</div>'
-    + '<button class="aim-nb-add-row-btn" style="margin-bottom:8px;" onclick="aimNbAddManualComp()">Add Competitor</button>'
-    + (manualTags ? '<div class="aim-nb-manual-list">' + manualTags + '</div>' : '');
+    + '<button class="aim-nb-add-row-btn" style="margin-bottom:8px;" onclick="aimNbAddManualComp()">Add Competitor</button>';
 }
 
 function _aimNbComboHtml(id, items, selectedVal, placeholder) {
@@ -8607,7 +8662,7 @@ function _aimNbStep3Html() {
     return '<button class="aim-nb-intent-pill' + (active ? ' active' : '') + '" onclick="aimNbToggleIntent(\'' + intent + '\')">' + intent + '</button>';
   }).join('');
   var promptItems = nb.prompts.map(function(pt, i) {
-    return '<div class="aim-nb-prompt-item aim-nb-prompt-item-clickable" title="Click to edit" onclick="aimNbEditPrompt(\'' + aimEscHtml(pt).replace(/'/g,'&#39;') + '\',' + i + ')">'
+    return '<div class="aim-nb-prompt-item aim-nb-prompt-item-clickable" id="aim-nb-pi-' + i + '" title="Click to edit" onclick="aimNbEditPrompt(' + i + ')">'
       + '<span class="aim-nb-prompt-text">' + aimEscHtml(pt) + '</span>'
       + '<button class="aim-nb-prompt-del" onclick="event.stopPropagation();aimNbRemovePrompt(' + i + ')">&#x2715;</button>'
       + '</div>';
@@ -8708,7 +8763,6 @@ function aimNbToggleComp(name, domain) {
   } else {
     _aimNewBrand.selectedComps[name] = { name: name, domain: domain };
   }
-  // Update just this card visually
   var card = document.querySelector('.aim-nb-comp-card[data-comp-name="' + name.replace(/"/g,'&quot;') + '"]');
   if (card) {
     var isSel = !!_aimNewBrand.selectedComps[name];
@@ -8716,6 +8770,24 @@ function aimNbToggleComp(name, domain) {
     var chk = card.querySelector('.aim-nb-comp-check');
     if (chk) chk.innerHTML = isSel ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
   }
+  _aimNbRenderSelectedList();
+}
+
+function aimNbRemoveComp(type, key) {
+  var nb = _aimNewBrand;
+  if (type === 'g') {
+    delete nb.selectedComps[key];
+    var card = document.querySelector('.aim-nb-comp-card[data-comp-name="' + key.replace(/"/g,'&quot;') + '"]');
+    if (card) {
+      card.classList.remove('selected');
+      var chk = card.querySelector('.aim-nb-comp-check');
+      if (chk) chk.innerHTML = '';
+    }
+  } else {
+    var idx = parseInt(key, 10);
+    nb.manualComps.splice(idx, 1);
+  }
+  _aimNbRenderSelectedList();
 }
 
 function aimNbAddManualComp() {
@@ -8730,7 +8802,7 @@ function aimNbAddManualComp() {
   _aimNewBrand.manualComps.push({ name: name, domain: domain });
   if (nameInp) nameInp.value = '';
   if (urlInp)  urlInp.value  = '';
-  _aimNbRender();
+  _aimNbRenderSelectedList();
 }
 
 function aimNbGenerateComps() {
@@ -8762,27 +8834,41 @@ function aimNbGenerateComps() {
   }, 1400);
 }
 
-function aimNbEditPrompt(text, idx) {
-  var inp = document.getElementById('aim-nb-prompt-inp');
-  if (!inp) return;
-  inp.value = text;
-  inp.focus();
-  inp.select();
-  _aimNewBrand.prompts.splice(idx, 1);
-  var list = document.querySelector('.aim-nb-prompt-list');
-  if (list) {
-    list.innerHTML = _aimNewBrand.prompts.map(function(pt, i) {
-      return '<div class="aim-nb-prompt-item aim-nb-prompt-item-clickable" title="Click to edit" onclick="aimNbEditPrompt(\'' + aimEscHtml(pt).replace(/'/g,'&#39;') + '\',' + i + ')">'
-        + '<span class="aim-nb-prompt-text">' + aimEscHtml(pt) + '</span>'
-        + '<button class="aim-nb-prompt-del" onclick="event.stopPropagation();aimNbRemovePrompt(' + i + ')">&#x2715;</button>'
-        + '</div>';
-    }).join('');
+function aimNbEditPrompt(idx) {
+  var item = document.getElementById('aim-nb-pi-' + idx);
+  if (!item || item.dataset.editing) return;
+  item.dataset.editing = '1';
+  item.classList.remove('aim-nb-prompt-item-clickable');
+  item.classList.add('aim-nb-prompt-edit-row');
+  item.onclick = null;
+  item.innerHTML = '<input class="aim-nb-prompt-edit-inp" id="aim-nb-edit-' + idx + '">'
+    + '<button class="aim-nb-prompt-action-btn aim-nb-prompt-save-btn" onclick="aimNbSavePromptEdit(' + idx + ')">Save</button>'
+    + '<button class="aim-nb-prompt-action-btn aim-nb-prompt-cancel-btn" onclick="aimNbCancelPromptEdit(' + idx + ')">Cancel</button>';
+  var inp = document.getElementById('aim-nb-edit-' + idx);
+  if (inp) {
+    inp.value = _aimNewBrand.prompts[idx] || '';
+    inp.focus();
+    inp.select();
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter')  { e.preventDefault(); aimNbSavePromptEdit(idx); }
+      if (e.key === 'Escape') aimNbCancelPromptEdit(idx);
+    });
   }
 }
 
-function aimNbRemoveManualComp(i) {
-  _aimNewBrand.manualComps.splice(i, 1);
+function aimNbSavePromptEdit(idx) {
+  var inp = document.getElementById('aim-nb-edit-' + idx);
+  var val = inp ? inp.value.trim() : '';
+  if (val) _aimNewBrand.prompts[idx] = val;
   _aimNbRender();
+}
+
+function aimNbCancelPromptEdit(idx) {
+  _aimNbRender();
+}
+
+function aimNbRemoveManualComp(i) {
+  aimNbRemoveComp('m', String(i));
 }
 
 function aimNbToggleIntent(intent) {
@@ -8816,8 +8902,8 @@ function aimNbGeneratePrompts() {
       gen.push('Who is ' + name + ' best suited for?');
     }
     if (nb.intents.indexOf('Transactional') !== -1) {
-      gen.push(name + ' pricing — what does it cost?');
-      gen.push(name + ' free trial — how to get started');
+      gen.push(name + ' pricing: what does it cost?');
+      gen.push(name + ' free trial: how to get started');
       gen.push(name + ' discount codes and deals');
       gen.push('How to sign up for ' + name);
     }
