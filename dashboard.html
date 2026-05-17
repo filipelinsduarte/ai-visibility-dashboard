@@ -981,7 +981,7 @@ tbody td { padding: 9px 12px; }
 .aim-vis-pct { font-weight: 700; font-size: 13px; }
 .aim-vis-pct.high { color: #16a34a; }
 .aim-vis-pct.mid  { color: #d97706; }
-.aim-vis-pct.low  { color: #dc2626; }
+.aim-vis-pct.low  { color: #6b7280; }
 
 .aim-sent-badge {
   font-size: 11px; font-weight: 600;
@@ -1536,10 +1536,10 @@ button[onclick="aimOpenAddPrompts()"] {
   #aim-pr-tabs { width: 100%; }
 
   /* ── Prompts table: hide lower-priority columns on medium screens ── */
-  #aim-pr-active-table th:nth-child(6),
-  #aim-pr-active-table td:nth-child(6),
-  #aim-pr-active-table th:nth-child(7),
-  #aim-pr-active-table td:nth-child(7) { display: none; }
+  #aim-pr-active-table th:nth-child(8),
+  #aim-pr-active-table td:nth-child(8),
+  #aim-pr-active-table th:nth-child(9),
+  #aim-pr-active-table td:nth-child(9) { display: none; }
 
   /* ── Sources domain toolbar ── */
   .aim-search-input { width: 130px; }
@@ -1651,14 +1651,14 @@ button[onclick="aimOpenAddPrompts()"] {
   }
 
   /* ── Prompts tables: hide lower-priority columns on mobile ── */
-  #aim-pr-active-table th:nth-child(4),
-  #aim-pr-active-table td:nth-child(4),
-  #aim-pr-active-table th:nth-child(5),
-  #aim-pr-active-table td:nth-child(5),
   #aim-pr-active-table th:nth-child(6),
   #aim-pr-active-table td:nth-child(6),
   #aim-pr-active-table th:nth-child(7),
-  #aim-pr-active-table td:nth-child(7) { display: none; }
+  #aim-pr-active-table td:nth-child(7),
+  #aim-pr-active-table th:nth-child(8),
+  #aim-pr-active-table td:nth-child(8),
+  #aim-pr-active-table th:nth-child(9),
+  #aim-pr-active-table td:nth-child(9) { display: none; }
 
   #aim-pr-suggested-table th:nth-child(4),
   #aim-pr-suggested-table td:nth-child(4) { display: none; }
@@ -2012,6 +2012,8 @@ button[onclick="aimOpenAddPrompts()"] {
               <thead><tr>
                 <th style="width:30px;"><input type="checkbox" id="aim-pr-select-all" onchange="aimSelectAllPrompts(this.checked)" style="width:13px;height:13px;cursor:pointer;accent-color:var(--accent);"></th>
                 <th onclick="aimSortPrompts('text')" class="col-left" style="min-width:260px;cursor:pointer;">Prompt <span id="aim-sort-text"></span></th>
+                <th onclick="aimSortPrompts('topic')" style="width:100px;cursor:pointer;">Topic <span id="aim-sort-topic"></span></th>
+                <th onclick="aimSortPrompts('intent')" style="width:100px;cursor:pointer;">Intent <span id="aim-sort-intent"></span></th>
                 <th onclick="aimSortPrompts('visibility')" style="width:90px;cursor:pointer;">Visibility <span id="aim-sort-vis"></span></th>
                 <th onclick="aimSortPrompts('sentiment')" style="width:85px;cursor:pointer;">Sentiment <span id="aim-sort-sen"></span></th>
                 <th onclick="aimSortPrompts('position')" style="width:80px;cursor:pointer;">Position <span id="aim-sort-pos"></span></th>
@@ -4595,7 +4597,7 @@ function aimRenderPromptsTable() {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
   const prompts = aimGetFilteredPrompts();
-  const colCount = aimPromptsTab === 'Inactive' ? 3 : 7;
+  const colCount = aimPromptsTab === 'Inactive' ? 3 : 9;
   if (!prompts.length) {
     tbody.innerHTML = `<tr><td colspan="${colCount}" class="aim-empty-state">No prompts to show</td></tr>`;
     return;
@@ -4638,6 +4640,8 @@ function aimRenderPromptsTable() {
     return `<tr onclick="aimOpenPromptDetail(${p.id})" style="cursor:pointer">
       <td onclick="event.stopPropagation()"><input type="checkbox" ${checked?'checked':''} onchange="aimToggleCheck(${p.id},this.checked)" style="cursor:pointer;accent-color:var(--accent);width:13px;height:13px"></td>
       <td class="col-left" style="min-width:260px"><div class="aim-prompt-text">${aimEscHtml(p.text)}</div></td>
+      <td><span style="font-size:11px;color:var(--text-muted)">${p.topic || '–'}</span></td>
+      <td><span style="font-size:11px;color:var(--text-muted)">${p.intent || '–'}</span></td>
       <td><span class="aim-vis-pct ${vis>=60?'high':vis>=35?'mid':'low'}">${vis}%</span></td>
       <td><span class="aim-sent-badge ${sentInfo.cls}">${sentInfo.label}</span></td>
       <td><span class="aim-pos-val">${pos != null ? '#' + parseFloat(pos).toFixed(1) : '–'}</span></td>
