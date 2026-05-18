@@ -101,9 +101,9 @@ Use a `.env` file for local development (see `.env.example`).
 | **Overview** | Visibility score card, daily trend chart, sentiment/position breakdown, recent AI chat responses |
 | **Competitors** | All brands by visibility score, sentiment, avg. position — paginated, sortable |
 | **Prompts** | Per-prompt visibility, sentiment, position across all 5 AI models |
-| **Sources** | Top cited domains and URLs — heatmap (domain x model), bar chart, URL line chart |
+| **Sources** | All cited domains (1,000+) and URLs (3,000+) sourced from full response history — domain table, heatmap (domain x model), bar chart, URL table with page-type classification |
 | **Sentiment** | Feature Mentions table (prompt categories grouped by topic, mention rate + sentiment bar), Sentiment Overview donut (distribution of positive/neutral/negative across responses where brand is mentioned), Sentiment by Competitor (10 per page, pos/neu/neg split + strength/weakness) |
-| **AI Suggestions** | AI-generated recommendations from the Peekaboo API |
+| **Action Plan** | Dynamically generated action items (up to 17) derived from the snapshot data — competitor gaps, zero-visibility prompts, top citation domains, model gaps, Reddit strategy, schema opportunities, press coverage, original research, and more |
 | **Integrations** | API key generator (read/read+write permissions), API docs with sticky sidebar (AI agent guide, quickstart, REST reference, rate limits, error codes), MCP server config |
 
 ---
@@ -140,8 +140,8 @@ The snapshot is injected as `window._AIM_SNAPSHOT` between the HTML comments:
   "prompt_analysis": {...},              // Top brand/citation per prompt
   "brand_timeline": {...},               // {brandName: [{date, visibility}]}
   "brand_timeline_by_provider": {...},   // {brandName: {chatgpt: [{date, visibility}]}}
-  "top_sources": [...],                   // [{domain, citation_count, run_count}] top 20
-  "top_source_urls": [...],              // [{url, domain, citation_count, share, by_provider}]
+  "top_sources": [...],                   // [{domain, citation_count, run_count}] top 20 domains (runtime IIFE extends to all)
+  "top_source_urls": [...],              // [{url, domain, citation_count, share, by_provider}] top 300 URLs
   "sources_by_date": {...},             // {isoDate: [{domain, citation_count}]}
   "sources_by_provider": {...},         // {chatgpt: [{domain, citation_count}]}
   "brand_global_vis": {...},            // {brandName: visibilityScore} — all brands seen across all responses
@@ -310,7 +310,7 @@ aimApplySnapshot(snap)     ← parses snapshot into runtime JS globals:
        ▼
 showView(viewName)         ← renders one of 5 views:
                               'overview' | 'ai-competitors' | 'ai-prompts'
-                              'ai-sources' | 'ai-suggestions'
+                              'ai-sources' | 'ai-todos'
 ```
 
 **Key globals set by `aimApplySnapshot`:**

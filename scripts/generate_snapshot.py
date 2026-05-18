@@ -545,7 +545,7 @@ def main():
           'by_provider':    dict(source_url_prov_raw.get(url, {}))}
          for url, count in source_url_count.items()],
         key=lambda x: -x['citation_count']
-    )[:20]
+    )[:300]
 
     # ── Recent responses ──────────────────────────────────────────────────
     recent_sorted       = sorted(all_responses_flat, key=lambda r: r.get('date', ''), reverse=True)
