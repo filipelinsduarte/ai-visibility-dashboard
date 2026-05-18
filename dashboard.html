@@ -13117,13 +13117,21 @@ const _aimTdIconMap = {
 function aimTdIcon(name) { return _aimTdIconMap[name] || _aimTdIconMap.target; }
 
 function _aimExpandTodo(parent) {
-  // The parent todo is always the primary action item
   var parentOut = {};
   for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) parentOut[k] = parent[k]; }
   parentOut.suggestions = null;
-  var result = [parentOut];
-  // Each item in suggestions[] is a genuinely independent sub-campaign
+  var result = [];
+  // Only include the parent row if it has execution steps to show — if steps is
+  // empty, the sub-campaign children are the real action items and the parent
+  // would just be an empty placeholder.
+  if (!parent.steps || parent.steps.length > 0) {
+    result.push(parentOut);
+  }
+  // Each item in suggestions[] is a genuinely independent sub-campaign.
+  // Its "why" reasoning inherits the parent context so the detail view explains
+  // which goal this action addresses.
   var sugs = parent.suggestions || [];
+  var parentShortTitle = parent.title.split(':')[0];
   sugs.forEach(function(sug, i) {
     var child = {};
     for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) child[k] = parent[k]; }
@@ -13133,6 +13141,7 @@ function _aimExpandTodo(parent) {
     child._groupLabel = parent.title;
     child.suggestions = null;
     child.steps       = sugs.filter(function(_, j){ return j !== i; });
+    child.reasoning   = 'Part of the action plan to address: "' + parentShortTitle + '". ' + parent.reasoning;
     result.push(child);
   });
   return result;
