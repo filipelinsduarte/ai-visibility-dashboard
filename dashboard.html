@@ -2392,6 +2392,7 @@ tr.aim-td-row-done td:first-child { opacity: 1; }
 .aim-td-sn3 { background: #f5f3ff; color: #6d28d9; }
 .aim-td-sn4 { background: #ecfdf5; color: #065f46; }
 .aim-td-sn0 { background: #eef2ff; color: #4338ca; }
+.aim-td-sn-step { background: #374151; color: #fff; }
 .aim-td-step-num { width: 20px; height: 20px; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
 /* ── end To-do's ─────────────────────────────────────────── */
 
@@ -12598,8 +12599,7 @@ function aimRenderSigChip(text, favDomain, expand) {
 }
 
 function aimRenderStepRow(text, idx, expandItems) {
-  var snColors = ['aim-td-sn1','aim-td-sn2','aim-td-sn3','aim-td-sn4','aim-td-sn0'];
-  var snClass = snColors[idx % snColors.length];
+  var snClass = 'aim-td-sn-step';
   var hasExpand = expandItems && expandItems.length > 0;
 
   var expandBtn = hasExpand
@@ -13183,8 +13183,15 @@ function aimTdIcon(name) { return _aimTdIconMap[name] || _aimTdIconMap.target; }
 function _aimExpandTodo(parent) {
   var sugs = parent.suggestions;
   if (!sugs || !sugs.length) return [parent];
-  return sugs.map(function(sug, i) {
-    var steps = sugs.filter(function(_, j){ return j !== i; });
+  // Remove dashboard-navigation, monitoring, and KPI bullet points — these are
+  // internal steps, not standalone action items a marketer would put on a to-do list.
+  var _metaRe = /^(?:open\s+(?:sources|prompts|competitors)|track\s+|monitor\s+|after\s+(?:each\s+mention|[0-9])|first\s+ai\s+mentions\s+typically|target:\s|milestone:\s|check\s+competitors\s+view|compare\s+those\s+domains\s+to|identify\s+the\s+(?:content\s+format|[0-9]))/i;
+  var filtered = sugs.filter(function(s) {
+    return !_metaRe.test(s.trim()) && !/^for\s+each.+\bopen\s+sources\s+view/i.test(s.trim());
+  });
+  if (!filtered.length) filtered = sugs;
+  return filtered.map(function(sug, i) {
+    var steps = filtered.filter(function(_, j){ return j !== i; });
     var child = {};
     for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) child[k] = parent[k]; }
     child.id          = parent.id + '-s' + i;
