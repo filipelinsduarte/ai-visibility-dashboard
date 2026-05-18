@@ -133,6 +133,55 @@ def _entity_domain(name):
     slug = re.sub(r'[^a-z0-9]', '', name.lower())
     return f"{slug}.com"
 
+def build_se(all_responses_flat, prompt_metrics, brand_name):
+    """Build SE (Sentiment Entries) from all response history where brand is mentioned.
+    Called at snapshot generation time so the result is injected as aim_se,
+    eliminating the need for any browser-to-API calls in the dashboard."""
+    import re as _re
+    brand_low = (brand_name or '').lower()
+    pid_topic, pid_text = {}, {}
+    for pm in prompt_metrics:
+        pid = pm.get('prompt_id', '')
+        if pid:
+            pid_topic[pid] = pm.get('topic', 'General') or 'General'
+            pid_text[pid]  = pm.get('prompt_text', '') or ''
+    _mkey = {
+        'ChatGPT': 'chatgpt', 'Gemini': 'gemini', 'Perplexity': 'perplexity',
+        'Google AIO': 'googleaio', 'Google AI Mode': 'googleaimode',
+    }
+    def _reason(text):
+        if not text: return ''
+        for s in _re.split(r'(?<=[.!?])\s+|\n+', text):
+            if brand_low and brand_low in s.lower():
+                s = s.strip()
+                return (s[:240] + '...') if len(s) > 240 else s
+        return text[:180].strip()
+    SE = {'positive': [], 'negative': [], 'neutral': [], 'uncertain': []}
+    seen = set()
+    for r in all_responses_flat:
+        if not r.get('is_mentioned'):
+            continue
+        pid     = r.get('prompt_id', '')
+        mk      = _mkey.get(r.get('model', ''), (r.get('model') or '').lower().replace(' ', ''))
+        dk      = r.get('date', '')
+        key     = f"{pid}|{mk}|{dk}"
+        if key in seen: continue
+        seen.add(key)
+        label = (r.get('sentiment_label') or 'neutral').lower()
+        stype = 'positive' if label == 'positive' else ('negative' if label == 'negative' else 'neutral')
+        SE[stype].append({
+            'runId':    key,
+            'prompt':   r.get('prompt_text') or pid_text.get(pid, ''),
+            'promptId': pid,
+            'model':    mk,
+            'category': pid_topic.get(pid, 'General'),
+            'sentiment': stype,
+            'reason':   _reason(r.get('text', '') or ''),
+            'date':     dk,
+        })
+    return SE
+
+
 # ── Main ──────────────────────────────────────────────────────────────────
 def main():
     dry_run  = '--dry-run' in sys.argv
@@ -665,6 +714,8 @@ def main():
         'ai_suggestions':      ai_suggestions,
         'aim_real_hm_data':    aim_real_hm_data,
         'aim_real_matrix_data': prompt_matrix_data,
+        'aim_se':            build_se(all_responses_flat, prompt_metrics,
+                                   next((b['name'] for b in all_brands if b['id'] == BRAND_ID), '')),
     }
 
     # ── Output ────────────────────────────────────────────────────────────
@@ -678,6 +729,8 @@ def main():
         print(f"  Competitors:         {len(competitor_entities)}")
         print(f"  Top sources:         {len(top_sources)}")
         print(f"  Brand timeline:      {len(brand_timeline)} brands")
+        _se = build_se(all_responses_flat, prompt_metrics, next((b['name'] for b in all_brands if b['id'] == BRAND_ID), ''))
+        print(f"  SE entries:          pos={len(_se['positive'])} neg={len(_se['negative'])} neu={len(_se['neutral'])}")
         if daily_trend:
             print(f"  Date range:          {daily_trend[0]['iso_date']} – {daily_trend[-1]['iso_date']}")
         return

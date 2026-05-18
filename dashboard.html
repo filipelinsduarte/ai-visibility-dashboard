@@ -7685,6 +7685,9 @@ function _aimNormModelKey(m) {
 function aimBuildSE() {
   var snap = window._AIM_SNAPSHOT;
   if (!snap) return null;
+  // Use pre-built SE injected by generate_snapshot.py (server-side, full history)
+  if (snap.aim_se) return snap.aim_se;
+  // Fallback: build client-side from embedded snapshot data
   var brand = snap.brand || '';
   var brandLow = brand.toLowerCase();
   var SE = { positive: [], negative: [], neutral: [], uncertain: [] };
