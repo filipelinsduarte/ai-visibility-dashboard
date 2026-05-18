@@ -2941,24 +2941,41 @@ window.AIM_INJECTED_DATA = {
   <div id="view-ai-sentiment" class="view">
     <div class="page-content">
 
-      <!-- Chart grid: left (bar chart) | right (donut) -->
-      <div class="aim-sr-chart-grid" style="display:grid;grid-template-columns:1fr 280px;gap:18px;margin-bottom:18px;align-items:start;">
+      <!-- Top row: Competitor chart | Sentiment over time | Donut -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 240px;gap:18px;margin-bottom:18px;align-items:stretch;">
 
-        <!-- Left: Positive Rate by Category -->
-        <div class="card">
-          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <!-- Col 1: Sentiment by Competitor (paginated bar chart) -->
+        <div class="card" style="display:flex;flex-direction:column;">
+          <div class="card-header" style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
             <div>
-              <div class="card-title">Positive Rate by Category</div>
-              <div class="card-desc">% of classified AI responses per topic that are positive</div>
+              <div class="card-title">Sentiment by Competitor</div>
+              <div class="card-desc">Positive / neutral / negative split per brand</div>
             </div>
-            <div id="aim-sf-cats-inline" class="aim-sent-pills" style="flex-shrink:0;"></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);">
+              <button id="aim-snt-comp-prev" onclick="aimSntCompPage(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <span id="aim-snt-comp-range" style="min-width:55px;text-align:center;">1–10</span>
+              <button id="aim-snt-comp-next" onclick="aimSntCompPage(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
           </div>
-          <div class="card-body" style="padding-top:8px;">
-            <div style="height:180px;position:relative;"><canvas id="aim-snt-cat-chart"></canvas></div>
+          <div class="card-body" style="padding-top:8px;flex:1;">
+            <div style="position:relative;height:220px;"><canvas id="aim-snt-comp-chart"></canvas></div>
           </div>
         </div>
 
-        <!-- Right: Sentiment Overview donut -->
+        <!-- Col 2: Sentiment over time -->
+        <div class="card" style="display:flex;flex-direction:column;">
+          <div class="card-header" style="flex-shrink:0;">
+            <div>
+              <div class="card-title">Sentiment over time</div>
+              <div class="card-desc">Daily positive rate across all classified AI responses</div>
+            </div>
+          </div>
+          <div class="card-body" style="padding-top:8px;flex:1;">
+            <div style="position:relative;height:220px;"><canvas id="aim-snt-trend-chart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Col 3: Sentiment overview donut with legend labels (no counts) -->
         <div class="card" style="display:flex;flex-direction:column;">
           <div class="card-header" style="flex-shrink:0;">
             <div>
@@ -2966,44 +2983,45 @@ window.AIM_INJECTED_DATA = {
               <div class="card-desc">Among responses where your brand is mentioned</div>
             </div>
           </div>
-          <div class="card-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding-top:12px;flex:1;">
-            <div style="position:relative;width:160px;height:160px;flex-shrink:0;">
-              <canvas id="aim-snt-donut" width="160" height="160"></canvas>
+          <div class="card-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-top:12px;flex:1;">
+            <div style="position:relative;width:130px;height:130px;flex-shrink:0;">
+              <canvas id="aim-snt-donut" width="130" height="130"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
                 <div id="aim-snt-donut-pct" style="font-size:22px;font-weight:700;color:var(--text);line-height:1;">—</div>
                 <div style="font-size:9px;color:var(--text-faint);margin-top:3px;">positive</div>
               </div>
             </div>
+            <div id="aim-snt-legend" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
           </div>
         </div>
+
       </div>
 
-      <!-- Expandable sentiment groups -->
-      <div id="aim-snt-groups" style="margin-bottom:16px;"></div>
-
-      <!-- Sentiment by Competitor -->
+      <!-- Sentiment entries table (flat, paginated) -->
       <div class="card" style="overflow:hidden;">
-        <div class="card-header">
-          <div><div class="card-title">Sentiment by Competitor</div><div class="card-desc">Positive / neutral / negative split per brand with key strengths and weaknesses</div></div>
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="card-title">Sentiment entries</div>
+            <div class="card-desc">All classified AI responses mentioning your brand</div>
+          </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);">
-            <button id="aim-cp-sent-prev" onclick="aimCpSentPage(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <span id="aim-cp-sent-range" style="min-width:55px;text-align:center;">1–10 of 20</span>
-            <button id="aim-cp-sent-next" onclick="aimCpSentPage(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button id="aim-snt-ent-prev" onclick="aimSntEntriesPageDir(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <span id="aim-snt-ent-range" style="min-width:55px;text-align:center;">1–20</span>
+            <button id="aim-snt-ent-next" onclick="aimSntEntriesPageDir(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
         </div>
         <div class="card-body" style="padding:0;">
-          <div class="aim-table-wrap" style="overflow-x:auto;">
-            <table class="aim-comp-table" style="min-width:720px;">
+          <div style="overflow-x:auto;">
+            <table class="aim-comp-table" style="min-width:700px;">
               <thead>
                 <tr>
-                  <th style="min-width:180px;">Brand</th>
-                  <th style="width:200px;">Sentiment Split</th>
-                  <th style="width:80px;">Visibility</th>
-                  <th style="min-width:180px;">Strength</th>
-                  <th style="min-width:180px;">Weakness</th>
+                  <th style="width:100px;">Sentiment</th>
+                  <th style="min-width:200px;">Reason</th>
+                  <th style="min-width:180px;">Prompt</th>
+                  <th style="width:110px;">Model</th>
                 </tr>
               </thead>
-              <tbody id="aim-cp-sent-tbody"></tbody>
+              <tbody id="aim-snt-ent-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -7631,6 +7649,10 @@ var _aimSentFilters = { cat: 'all' };
 var _aimSentDonut2 = null;
 var _aimSentCatChart2 = null;
 var _aimSentOpenGroups = {};
+var _aimSentCompChart = null;
+var _aimSentTrendChart = null;
+var aimSntCompPageIdx = 0;
+var aimSntEntriesPageIdx = 0;
 
 var _AIM_SENT_MODEL_LABELS = {
   chatgpt: 'ChatGPT', gemini: 'Gemini', perplexity: 'Perplexity',
@@ -7818,8 +7840,9 @@ function aimUpdateSentiment() {
   var posRate = classified ? Math.round(counts.positive / classified * 100) : 0;
 
   aimRenderSentDonut2(counts, posRate);
-  aimRenderSentCatChart2();
-  aimRenderSentGroups();
+  aimRenderCompSentimentChart();
+  aimRenderSentOverTime();
+  aimRenderSentEntriesTable();
 }
 
 function aimRenderSentDonut2(counts, posRate) {
@@ -7840,6 +7863,232 @@ function aimRenderSentDonut2(counts, posRate) {
     },
     options: { cutout: '68%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
   });
+
+  var legend = document.getElementById('aim-snt-legend');
+  if (legend) {
+    var legendItems = [
+      { label: 'Positive',  color: '#16a34a' },
+      { label: 'Negative',  color: '#dc2626' },
+      { label: 'Neutral',   color: '#6b7280' },
+      { label: 'Uncertain', color: '#d97706' }
+    ];
+    legend.innerHTML = legendItems.map(function(item) {
+      return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">' +
+        '<span style="width:8px;height:8px;border-radius:50%;background:' + item.color + ';flex-shrink:0;display:inline-block;"></span>' +
+        '<span>' + item.label + '</span>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+/* ── Competitor Sentiment Chart ───────────────────────────────────────────── */
+var AIM_SNT_COMP_PAGE_SIZE = 10;
+
+function aimSntCompPage(dir) {
+  var sorted = [...AI_BRANDS].sort(function(a, b) {
+    return aimGetBrandMetrics(b).vis - aimGetBrandMetrics(a).vis;
+  });
+  var maxPage = Math.ceil(sorted.length / AIM_SNT_COMP_PAGE_SIZE) - 1;
+  aimSntCompPageIdx = Math.max(0, Math.min(maxPage, aimSntCompPageIdx + dir));
+  aimRenderCompSentimentChart();
+}
+
+function aimRenderCompSentimentChart() {
+  var canvas = document.getElementById('aim-snt-comp-chart');
+  if (!canvas) return;
+  var sorted = [...AI_BRANDS].sort(function(a, b) {
+    return aimGetBrandMetrics(b).vis - aimGetBrandMetrics(a).vis;
+  });
+  var total = sorted.length;
+  var start = aimSntCompPageIdx * AIM_SNT_COMP_PAGE_SIZE;
+  var end = Math.min(start + AIM_SNT_COMP_PAGE_SIZE, total);
+  var slice = sorted.slice(start, end);
+
+  var labels = slice.map(function(b) { return b.name; });
+  var posData = slice.map(function(b) { return aimCompSentSplit(b.sentiment).pos; });
+  var neuData = slice.map(function(b) { return aimCompSentSplit(b.sentiment).neu; });
+  var negData = slice.map(function(b) { return aimCompSentSplit(b.sentiment).neg; });
+
+  if (_aimSentCompChart) { _aimSentCompChart.destroy(); _aimSentCompChart = null; }
+  _aimSentCompChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Positive', data: posData, backgroundColor: '#16a34a', borderWidth: 0, borderRadius: 2 },
+        { label: 'Neutral',  data: neuData, backgroundColor: '#d1d5db', borderWidth: 0 },
+        { label: 'Negative', data: negData, backgroundColor: '#dc2626', borderWidth: 0 }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.dataset.label + ': ' + ctx.raw + '%'; }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          max: 100,
+          ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } },
+          grid: { color: 'rgba(0,0,0,0.04)' }
+        },
+        y: { stacked: true, ticks: { font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  var rangeEl = document.getElementById('aim-snt-comp-range');
+  if (rangeEl) rangeEl.textContent = (start + 1) + '–' + end + ' of ' + total;
+  var prevBtn = document.getElementById('aim-snt-comp-prev');
+  var nextBtn = document.getElementById('aim-snt-comp-next');
+  if (prevBtn) prevBtn.style.opacity = aimSntCompPageIdx === 0 ? '.35' : '1';
+  if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
+}
+
+/* ── Sentiment Over Time Chart ───────────────────────────────────────────── */
+function aimRenderSentOverTime() {
+  var canvas = document.getElementById('aim-snt-trend-chart');
+  if (!canvas) return;
+  var SE = _aimSE || {};
+  var byDate = {};
+  ['positive','negative','neutral','uncertain'].forEach(function(stype) {
+    (SE[stype] || []).forEach(function(x) {
+      var d = x.date || '';
+      if (!d) return;
+      if (!byDate[d]) byDate[d] = { pos: 0, neg: 0, neu: 0, unc: 0 };
+      if (stype === 'positive') byDate[d].pos++;
+      else if (stype === 'negative') byDate[d].neg++;
+      else if (stype === 'neutral') byDate[d].neu++;
+      else byDate[d].unc++;
+    });
+  });
+  var dates = Object.keys(byDate).sort();
+  var values = dates.map(function(d) {
+    var v = byDate[d];
+    var tot = v.pos + v.neg + v.neu + v.unc;
+    return tot ? Math.round(v.pos / tot * 100) : 0;
+  });
+  // If SE has no date data, fall back to daily_trend visibility as proxy
+  if (!dates.length) {
+    var snap = window._AIM_SNAPSHOT;
+    (snap && snap.daily_trend || []).forEach(function(day) {
+      dates.push(day.date || day.iso_date || '');
+      values.push(0);
+    });
+  }
+  var labels = dates.map(function(d) {
+    if (!d) return '';
+    var parts = d.split('-');
+    if (parts.length === 3) return (parts[1] + '/' + parts[2]);
+    return d;
+  });
+  if (_aimSentTrendChart) { _aimSentTrendChart.destroy(); _aimSentTrendChart = null; }
+  _aimSentTrendChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Positive rate',
+        data: values,
+        borderColor: '#b352b3',
+        backgroundColor: 'rgba(179,82,179,0.08)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: labels.length > 14 ? 0 : 3,
+        pointHoverRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.raw + '% positive'; } } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } },
+        y: { min: 0, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } }
+      }
+    }
+  });
+}
+
+/* ── SE Entries Table ───────────────────────────────────────────────────── */
+var AIM_SNT_ENT_PAGE_SIZE = 20;
+
+function aimSntEntriesPageDir(dir) {
+  var all = aimSEGetAllFlat();
+  var maxPage = Math.ceil(all.length / AIM_SNT_ENT_PAGE_SIZE) - 1;
+  aimSntEntriesPageIdx = Math.max(0, Math.min(maxPage, aimSntEntriesPageIdx + dir));
+  aimRenderSentEntriesTable();
+}
+
+function aimSEGetAllFlat() {
+  var SE = aimSEGetFiltered();
+  var all = [];
+  ['positive','negative','neutral','uncertain'].forEach(function(stype) {
+    (SE[stype] || []).forEach(function(x) { all.push({ stype: stype, item: x }); });
+  });
+  all.sort(function(a, b) {
+    var da = a.item.date || '';
+    var db = b.item.date || '';
+    return db < da ? -1 : db > da ? 1 : 0;
+  });
+  return all;
+}
+
+function aimRenderSentEntriesTable() {
+  var tbody = document.getElementById('aim-snt-ent-tbody');
+  if (!tbody) return;
+  var all = aimSEGetAllFlat();
+  var total = all.length;
+  var start = aimSntEntriesPageIdx * AIM_SNT_ENT_PAGE_SIZE;
+  var end = Math.min(start + AIM_SNT_ENT_PAGE_SIZE, total);
+  var slice = all.slice(start, end);
+
+  var sentColors = { positive: '#16a34a', negative: '#dc2626', neutral: '#6b7280', uncertain: '#d97706' };
+  var sentBgs    = { positive: '#dcfce7', negative: '#fee2e2', neutral: '#f3f4f6', uncertain: '#fef3c7' };
+  var sentLabels = { positive: 'Positive', negative: 'Negative', neutral: 'Neutral', uncertain: 'Uncertain' };
+
+  tbody.innerHTML = slice.map(function(entry) {
+    var stype = entry.stype;
+    var item = entry.item;
+    var modelKey = item.model || '';
+    var modelLabel = _AIM_SENT_MODEL_LABELS[modelKey] || _AIM_SENT_MODEL_LABELS[_aimNormModelKey(modelKey)] || modelKey;
+    var faviconDomain = AIM_MODEL_FAVICON[modelLabel] || AIM_MODEL_FAVICON[modelKey] || 'openai.com';
+    var sentPill = '<span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;' +
+      'background:' + sentBgs[stype] + ';color:' + sentColors[stype] + ';">' + sentLabels[stype] + '</span>';
+    var modelCell = '<div style="display:flex;align-items:center;gap:6px;">' +
+      '<img src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(faviconDomain) + '&sz=32" ' +
+      'style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">' +
+      '<span style="font-size:11px;color:var(--text-muted);">' + aimEscHtml(modelLabel) + '</span>' +
+    '</div>';
+    return '<tr>' +
+      '<td>' + sentPill + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);">' + aimEscHtml(item.reason || '') + '</td>' +
+      '<td style="font-size:12px;">' + aimEscHtml(item.prompt || '') + '</td>' +
+      '<td>' + modelCell + '</td>' +
+    '</tr>';
+  }).join('');
+
+  if (!slice.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-faint);font-size:13px;">No classified responses found.</td></tr>';
+  }
+
+  var rangeEl = document.getElementById('aim-snt-ent-range');
+  if (rangeEl) rangeEl.textContent = total ? (start + 1) + '–' + end + ' of ' + total : '0';
+  var prevBtn = document.getElementById('aim-snt-ent-prev');
+  var nextBtn = document.getElementById('aim-snt-ent-next');
+  if (prevBtn) prevBtn.style.opacity = aimSntEntriesPageIdx === 0 ? '.35' : '1';
+  if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
 }
 
 function _aimSentCatColor(v) {
@@ -7951,12 +8200,11 @@ function aimRenderSentGroups() {
 
 function initAiSentiment() {
   aimRenderTopbar();
-  aimCompSentPage = 0;
+  aimSntCompPageIdx = 0;
+  aimSntEntriesPageIdx = 0;
   if (!_aimSE) _aimSE = aimBuildSE();
   _aimSentFilters = { cat: 'all' };
-  aimRenderSentFilters();
   aimUpdateSentiment();
-  aimRenderCompSentimentTable();
 }
 
 
@@ -13329,15 +13577,12 @@ function aimGenerateTodos() {
           null
         ],
         reasoning: 'AI models cited ' + tdSrc.domain + ' ' + tdSrc.citation_count + ' times across your tracked prompts. That domain is in ' + tdShare + '% of all citations in your category. When AI answers a question in your space, it pulls from that source. Getting listed there is the single highest-leverage move for immediate citation gains.',
-        suggestions: [
-          'Open Sources view > URLs tab and filter by ' + tdSrc.domain + ' to see which specific pages AI cites most',
-          'Identify the content format: review listing, comparison table, roundup article, or directory',
+        steps: [
           'Find the editorial contact or submission path for ' + tdSrc.domain,
           'Prepare a pitch with your key differentiators, proof points, and how ' + brand + ' compares to alternatives already listed',
-          'Once listed, keep your profile updated with current features, pricing, and customer proof points',
-          'Check Competitors view to confirm which rivals are already listed. These are your benchmark entries.',
-          'Track after listing: new citations on ' + tdSrc.domain + ' typically appear in AI within 4-8 weeks'
+          'Once listed, keep your profile updated with current features, pricing, and customer proof points'
         ],
+        suggestions: [],
         exampleDomains: [tdSrc.domain],
         examplesHeading: 'Pages on ' + tdSrc.domain + ' that AI cites most',
         examplesNote: 'Getting ' + brand + ' onto one of these pages creates a direct citation pipeline.',
@@ -13383,15 +13628,12 @@ function aimGenerateTodos() {
           null
         ],
         reasoning: brand + ' gets ' + weakest.vis.toFixed(1) + '% visibility on ' + weakest.label + '. That is your lowest-performing model. ' + weakest.label + ' has its own preferred sources and content formats. Right now it is not pulling from anything that includes you. The gap is big enough that a targeted push on ' + weakest.label + '-favored sources can move the needle significantly.',
-        suggestions: [
-          'Open Sources view, select ' + weakest.label + ' in the model filter, and find its top 5 cited domains in your category',
-          'Compare those domains to your current citation profile and find the gaps',
+        steps: [
           'Create content matching the format ' + weakest.label + ' favors: typically detailed, structured, and authoritative',
           'Ensure content is fully crawlable: no JS-gated text, clean canonical URLs, updated sitemap',
-          'Prioritize outreach and listing on domains that ' + weakest.label + ' references most',
-          'Track ' + weakest.label + '-specific visibility weekly using the model filter in Prompts view',
-          'Target: lift ' + weakest.label + ' visibility to at least ' + (weakest.vis + modGap * 0.4).toFixed(1) + '% within 90 days'
+          'Prioritize outreach and listing on domains that ' + weakest.label + ' references most'
         ],
+        suggestions: [],
         exampleDomains: weakSrcs,
         examplesStrategy: 'model-specific',
         examplesModelKey: weakest.key,
@@ -13440,15 +13682,12 @@ function aimGenerateTodos() {
           topSources.length > 3 ? { heading: 'Next-tier opportunities (positions 4-8):', items: topSources.slice(3, 8).map(function(s, i){ return '#' + (i + 4) + ' ' + s.domain + ': ' + s.citation_count + ' citations'; }) } : null
         ],
         reasoning: 'Most of your AI citations come from a handful of domains. If any of those sources remove or update the content that mentions you, your visibility drops immediately. Spreading citations across more domains makes your AI presence resilient. A single change cannot take you out of AI answers.',
-        suggestions: [
-          'Open Sources view and identify domains ranked 4-10: these are your next-tier targets',
-          'Research what content those domains publish that gets cited in your category',
+        steps: [
           'Prioritize 2-3 new domains per quarter for active outreach, guest content, or product listing',
-          'Set a target: at least 8 distinct domains each contributing meaningfully to your citation profile',
           'For each new domain, prepare a differentiated pitch matching their specific content format',
-          'Track citation distribution monthly and watch the top-3 concentration percentage decrease',
-          'Milestone: reduce top-3 concentration from ' + top3Share + '% to below 50% within 6 months'
+          'Set a target: at least 8 distinct domains each contributing meaningfully to your citation profile'
         ],
+        suggestions: [],
         exampleDomains: topSources.slice(3, 7).map(function(s){ return s.domain; }),
         examplesStrategy: 'next-tier-strict',
         examplesHeading: 'Next-tier domains to target for citations',
@@ -13503,15 +13742,13 @@ function aimGenerateTodos() {
           null
         ],
         reasoning: 'You track ' + weakTopic.count + ' prompts in the ' + weakTopic.topic + ' cluster. Your average visibility there is ' + weakTopic.avgVis.toFixed(1) + '%. AI models are answering those questions without mentioning you because there is no content for them to pull from. A topic cluster approach, using one pillar page plus supporting articles, is the most efficient way to close this gap.',
-        suggestions: [
-          'Open Prompts view, filter by topic = “' + weakTopic.topic + '” and identify the 2-3 prompts with the lowest visibility',
-          'For each zero-visibility prompt, open Sources view to see what AI currently cites. Note the format, depth, and publishing domain.',
-          'Write a pillar page that comprehensively covers “' + weakTopic.topic + '” from ' + brand + '\'s perspective, 2000+ words with structured headings and FAQ section',
+        steps: [
+          'Write a pillar page comprehensively covering “' + weakTopic.topic + '” from ' + brand + '\'s perspective: 2000+ words with structured headings and a FAQ section',
           'Write 3-5 supporting articles covering sub-topics, each linking back to the pillar page',
           'Include original data, a process framework, or a clear conclusion so AI has a citable, quotable answer',
-          'Submit the pillar URL to Google Search Console immediately on publish and pitch it to the 3 top-cited domains in this space',
-          'Target: lift the cluster average from ' + weakTopic.avgVis.toFixed(1) + '% to at least ' + (overallVis * 0.7).toFixed(1) + '% within 90 days'
+          'Submit the pillar URL to Google Search Console immediately on publish'
         ],
+        suggestions: [],
         exampleDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
         examplesStrategy: 'topic-editorial',
         examplesTopicKeywords: [weakTopic.topic],
@@ -13548,14 +13785,14 @@ function aimGenerateTodos() {
       sigs_fav: [lscDomain, lscDomain, null],
       sigs_expand: [null, null, null],
       reasoning: lowSentComp.name + ' is in ' + lowSentComp.visibility.toFixed(1) + '% of AI conversations, but its sentiment score is ' + lowSentComp.sentiment + '%. That means AI is mentioning them but often in a cautious or mixed way. When buyers read those answers, they are already looking for an alternative. You want to be the one named.',
-      suggestions: [
-        'Research the specific issues driving ' + lowSentComp.name + '\'s negative sentiment. Check G2, Trustpilot, and Reddit for common complaints.',
-        'Build a “Best ' + lowSentComp.name + ' alternatives” page that positions ' + brand + ' as the leading option',
-        'Build a “' + brand + ' vs ' + lowSentComp.name + '” page with a feature matrix and pricing comparison',
+      steps: [
+        'Research the specific issues driving ' + lowSentComp.name + '\'s negative sentiment: check G2, Trustpilot, and Reddit for common complaints',
         'Frame content around user outcomes and pain points, not just feature comparisons',
-        'Get both pages listed on comparison platforms and review sites visible in Sources view',
-        'Engage on Reddit threads where ' + lowSentComp.name + ' receives criticism and recommend ' + brand + ' authentically',
-        'Monitor your own sentiment score in Competitors view weekly to confirm your positioning stays positive'
+        'Get the page listed on comparison platforms and review sites visible in Sources view'
+      ],
+      suggestions: [
+        'Build a “' + brand + ' vs ' + lowSentComp.name + '” page with a feature matrix and pricing comparison',
+        'Engage on Reddit threads where ' + lowSentComp.name + ' receives criticism and recommend ' + brand + ' authentically'
       ],
       exampleDomains: [lscDomain].filter(Boolean).concat(topSources.slice(0, 2).map(function(s){ return s.domain; })),
       examplesContextName: lowSentComp.name,
@@ -13593,14 +13830,14 @@ function aimGenerateTodos() {
           null, null
         ],
         reasoning: brand + ' shows up in ' + commAvg.toFixed(1) + '% of commercial-intent queries. These are the prompts where someone is actively comparing tools and getting ready to buy. You are not in most of those answers. The people closest to a purchasing decision are not seeing your name.',
+        steps: [
+          'Ensure every commercial page has a clear, quotable conclusion AI can surface directly in an answer',
+          'Submit new commercial pages to G2, Capterra, and category review platforms visible in Sources view'
+        ],
         suggestions: [
-          'Open Prompts view, filter by intent = “commercial” and sort by visibility ascending. Start with the worst performers.',
           'Build a pricing and comparison page with a feature matrix vs top alternatives and clear ROI framing',
           'Create use-case landing pages for each major buyer persona identified from commercial prompt phrasing',
-          'Write a case study or ROI calculator page. These are heavily cited by AI on decision-stage queries.',
-          'Submit new commercial pages to G2, Capterra, and category review platforms visible in Sources view',
-          'Ensure every commercial page has a clear, quotable conclusion AI can surface directly in an answer',
-          'Track commercial-intent prompts separately in Prompts view and set a weekly check-in'
+          'Write a case study or ROI calculator page — these are heavily cited by AI on decision-stage queries'
         ],
         exampleDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
         examplesStrategy: 'commercial-review',
@@ -13645,14 +13882,13 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'AI models cited Reddit ' + redditSrc.citation_count + ' times across your tracked prompts. Those Reddit threads are directly influencing what AI recommends in your category. Right now ' + brand + ' is not part of those conversations. Getting recommended in active threads means getting cited by AI for months or years as AI models continue indexing community discussions.',
-      suggestions: [
-        'Open Sources view > URLs tab, filter by domain = “reddit.com” to find the exact subreddits and threads AI cites',
-        'Identify the 3-5 subreddits that appear most often. These are the communities shaping AI answers in your space.',
+      steps: [
         'Search those subreddits for “best X”, “X alternative”, “switched from X” threads where ' + brand + ' is absent',
         'Engage authentically in existing threads: provide a genuinely helpful, detailed answer where ' + brand + ' is the accurate solution',
-        'Create original resources for the identified subreddits: benchmark data, free tools, or how-to guides. Data-heavy posts are cited by AI at higher rates.',
-        'Aim for comment depth over volume: a single well-upvoted response outperforms 10 shallow ones in AI citation weight',
-        'Monitor Sources view URLs tab monthly for new Reddit citations appearing for ' + brand
+        'Aim for comment depth over volume: a single well-upvoted response outperforms 10 shallow ones in AI citation weight'
+      ],
+      suggestions: [
+        'Create original resources for the identified subreddits: benchmark data, free tools, or how-to guides — data-heavy posts are cited by AI at higher rates'
       ],
       exampleDomains: ['reddit.com'],
       examplesHeading: 'Reddit threads AI is already citing in your category',
@@ -13697,14 +13933,13 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'AI does not just mention ' + brand + ': it frames the mention with qualifiers drawn from indexed content. A ' + Math.round(avgBrandSent) + '% sentiment score means AI is either neutral or adding caveats. A buyer reading that response is less likely to act. The fix is to publish positive, quotable content AI will pull from: case studies with hard metrics, verified reviews, and press coverage that frames ' + brand + ' as the clear winner for specific use cases.',
+      steps: [],
       suggestions: [
-        'Open Sources view and check Reddit threads and reviews where ' + brand + ' is mentioned negatively. These are actively shaping AI sentiment.',
         'Run a G2 and Trustpilot review campaign: target 20+ new verified reviews in the next 30 days',
         'Create a case studies page with 3-5 customer stories, each with specific metrics and named customers',
-        'Write response content addressing the top criticism angles found in Reddit and reviews and publish as blog posts',
+        'Write blog posts addressing the top criticism angles found in Reddit and reviews',
         'Pitch a founder story to a media outlet AI cites: narrative framing shapes how AI describes your brand',
-        'Build a "Why teams switch to ' + brand + '" page with before/after comparisons and direct user quotes',
-        'Track sentiment weekly in Competitors view and watch for score movement within 4-6 weeks of publishing'
+        'Build a "Why teams switch to ' + brand + '" page with before/after comparisons and direct user quotes'
       ],
       exampleDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
       examplesStrategy: 'editorial-guide',
@@ -13751,14 +13986,14 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'When AI lists multiple tools, position matters. The first brand named captures more clicks and conversions. ' + brand + ' is being mentioned but at position ' + snapAvgPos.toFixed(1) + '. Moving up requires the indexable web to consistently list ' + brand + ' first or second in comparison and listicle content, not fourth or fifth. The most direct lever is getting featured at the top of the specific comparison pages AI currently cites in Sources view.',
-      suggestions: [
-        'Open Sources view and find the comparison/listicle pages AI cites where ' + brand + ' is listed below position 3. Reach out to update the ordering.',
-        'Create original "best [category]" content on ' + brand + '\'s own domain with ' + brand + ' ranked first with clear justification',
-        'Publish a clear "why ' + brand + ' is the best option for [use case]" landing page for each major use case',
+      steps: [
         'Increase citation density: the more domains cite ' + brand + ', the more AI associates it with authority in the category',
-        'Get ' + brand + ' featured as the highlighted or "editor\'s pick" option on at least 3 top-cited comparison sites',
-        'Add a concise "best for" label on every product page. AI uses these structured signals to determine ranking order.',
-        'Track position change in Prompts view monthly as new content gets indexed'
+        'Add a concise "best for" label on every product page — AI uses these structured signals to determine ranking order'
+      ],
+      suggestions: [
+        'Create original "best [category]" content on ' + brand + '\'s own domain with ' + brand + ' ranked first with clear justification',
+        'Publish a "why ' + brand + ' is the best option for [use case]" landing page for each major use case',
+        'Get ' + brand + ' featured as the highlighted or "editor\'s pick" option on at least 3 top-cited comparison sites'
       ],
       exampleDomains: topSources.slice(0, 4).map(function(s){ return s.domain; }),
       examplesStrategy: 'commercial-review',
@@ -13805,14 +14040,14 @@ function aimGenerateTodos() {
           null
         ],
         reasoning: sec.name + ' sits at #2 in your category with ' + sec.visibility.toFixed(1) + '% AI visibility. You are ' + secGap + ' points behind them. Closing this gap is a more achievable near-term goal than overtaking the category leader, and it puts ' + brand + ' in second position, where AI consistently names you alongside ' + competitors[0].name + '. A targeted content and citation push focused on ' + sec.name + ' comparison content can close this in 60-90 days.',
+        steps: [
+          'Check ' + sec.name + '\'s G2 and Trustpilot reviews for common complaints and build content angles around those gaps'
+        ],
         suggestions: [
           'Publish a "' + brand + ' vs ' + sec.name + '" comparison page with feature matrix and pricing',
-          'Open Sources view and identify the domains that cite ' + sec.name + ' but not ' + brand + '. These are your outreach targets.',
           'Find Reddit threads comparing ' + sec.name + ' with alternatives and engage with detailed, helpful responses',
-          'Map every prompt where ' + sec.name + ' appears and ' + brand + ' does not. Write content targeting each of those questions.',
-          'Check ' + sec.name + '\'s G2 and Trustpilot reviews for common complaints and build content angles around those gaps',
-          'Get ' + brand + ' featured on every comparison or roundup article that currently includes ' + sec.name,
-          'Track the gap to ' + sec.name + ' weekly in Competitors view to confirm it is narrowing'
+          'Map every prompt where ' + sec.name + ' appears and ' + brand + ' does not — write content targeting each of those questions',
+          'Get ' + brand + ' featured on every comparison or roundup article that currently includes ' + sec.name
         ],
         exampleDomains: [secDomain].filter(Boolean),
         examplesContextName: sec.name,
@@ -13856,15 +14091,15 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'AI models parse structured data before reading prose. A page with FAQ schema that directly answers "what is the best X tool" gives AI a clean, extractable answer to cite. Without schema, even strong content loses to a competitor\'s structured page. ' + brand + ' has ' + zeroPrompts.length + ' prompts at zero visibility. Adding schema to existing key pages is the lowest-effort, fastest-impact change available: no new content needed, only markup.',
-      suggestions: [
+      steps: [
         'Identify the 5-10 pages on ' + brand + '\'s site that should be cited for your tracked prompt categories',
-        'Add FAQPage schema to every page that answers a question. Use the exact prompt phrasing as the schema question text.',
+        'Add FAQPage schema to every page that answers a question — use the exact prompt phrasing as the schema question text',
         'Add HowTo schema to process-based or tutorial content',
         'Add SoftwareApplication schema to your homepage and product pages with current feature lists and pricing',
         'Validate all schema at Google\'s Rich Results Test before publishing',
-        'Submit updated URLs immediately to Google Search Console after adding schema',
-        'After 4-6 weeks, check if zero-visibility prompts have started showing ' + brand + ' in Prompts view'
+        'Submit updated URLs immediately to Google Search Console after adding schema'
       ],
+      suggestions: [],
       exampleDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
       examplesStrategy: 'schema-examples',
       examplesHeading: 'Pages in your space AI cites because they answer questions directly',
@@ -13906,14 +14141,14 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'Google AI Overviews and AI Mode favor pages that already rank organically for the query and have strong page experience signals. Unlike ChatGPT, which pulls from a broad training corpus, Google AI rewards traditional SEO fundamentals. ' + brand + ' is significantly underperforming on Google AI compared to other models. The fix combines organic SEO (getting pages ranked for target queries) with clean schema markup and citable content structure.',
-      suggestions: [
-        'Open Sources view, select Google AIO in the model filter, and identify which domains Google AI cites vs other models',
-        'For pages where ' + brand + ' already ranks organically: add FAQPage schema that directly answers the tracked prompt text',
+      steps: [
+        'Add FAQPage schema to pages where ' + brand + ' already ranks organically, directly answering the tracked prompt text',
         'Ensure ' + brand + '\'s site passes Core Web Vitals and has no crawl or mobile usability issues',
-        'Build backlinks from the domains Google AIO already cites in your space (visible in Sources view)',
-        'Publish a comprehensive "best [category]" guide on ' + brand + '\'s domain targeting your top prompt themes',
-        'Submit all new and updated content immediately to Google Search Console for fast indexing',
-        'Track Google AIO-specific visibility weekly using the model filter in Prompts view'
+        'Submit all new and updated content immediately to Google Search Console for fast indexing'
+      ],
+      suggestions: [
+        'Build backlinks from the domains Google AIO already cites in your space',
+        'Publish a comprehensive "best [category]" guide on ' + brand + '\'s domain targeting your top prompt themes'
       ],
       exampleDomains: googleSrcs.slice(0, 4).map(function(s){ return s.domain; }),
       examplesStrategy: 'model-specific',
@@ -13962,14 +14197,16 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'AI models cite original data because they cannot restate it without attribution. A benchmark report from ' + brand + ' becomes a persistent citation every time AI answers a question that touches that data. It also attracts backlinks from other sites, improving overall domain authority. This is a one-time investment that compounds indefinitely. Each annual refresh keeps the citation alive and adds new data points for AI to reference.',
-      suggestions: [
+      steps: [
         'Identify a metric or trend ' + brand + ' is uniquely positioned to measure from its own platform or customer data',
         'Survey 100-300 practitioners in your market on a topic that directly maps to your tracked prompt categories',
         'Publish findings as a dedicated report page with clean data visualization and a downloadable version',
-        'Title it "State of [Category] ' + new Date().getFullYear() + ': ' + brand + ' Report". This format is heavily cited across all AI models.',
-        'Pitch the data to 3-5 media outlets that already appear in your Sources view',
+        'Title it "State of [Category] ' + new Date().getFullYear() + ': ' + brand + ' Report" — this format is heavily cited across all AI models',
         'Add DataSet or Article structured data schema to the report page',
         'Plan annual refreshes: consistent data series become the definitive source over time'
+      ],
+      suggestions: [
+        'Pitch the data to 3-5 media outlets that already appear in your Sources view'
       ],
       exampleDomains: topSources.slice(0, 4).map(function(s){ return s.domain; }),
       examplesStrategy: 'research-examples',
@@ -14013,14 +14250,13 @@ function aimGenerateTodos() {
         null
       ],
       reasoning: 'Tech and industry media publications are among the highest-authority sources AI models trust. When ' + newsDomainsCited[0].domain + ' publishes a piece that mentions ' + brand + ', that citation persists in AI responses for months. ' + brand + ' does not need to be the subject of every article: a strong quote in a roundup or a mention in a "tools to watch" piece is enough to create a durable citation. The goal is to get the brand name into high-authority URLs that AI treats as definitive.',
+      steps: [
+        'Build a press kit page with logos, founder photos, key stats, and pre-written company boilerplate',
+        'Identify 3 story angles: a data hook, a clear product differentiator, and a contrarian opinion on a trending topic',
+        'Use HARO or Qwoted to respond to journalist queries in your space — these often turn into named citations within days'
+      ],
       suggestions: [
-        'Open Sources view > URLs tab and filter by each news domain to see which specific articles AI cites. These set the editorial angle you need to pitch.',
-        'Identify 3 story angles for ' + brand + ': a data hook, a clear product differentiator, and a contrarian opinion on a trending topic',
-        'Build a press kit page on ' + brand + '\'s site with logos, founder photos, key stats, and pre-written company boilerplate',
-        'Reach out to 5 journalists who cover your category on ' + newsDomainsCited[0].domain + ' with a sharp, data-led pitch',
-        'Use HARO or Qwoted to respond to journalist queries in your space. These often turn into named citations within days.',
-        'Aim for one media mention per quarter minimum; each creates a durable citation pipeline',
-        'After each mention, check Prompts view 4-6 weeks later to see if new AI citations have appeared'
+        'Reach out to 5 journalists who cover your category on ' + newsDomainsCited[0].domain + ' with a sharp, data-led pitch'
       ],
       exampleDomains: newsDomainsCited.slice(0, 4).map(function(s){ return s.domain; }),
       examplesStrategy: 'editorial-guide',
