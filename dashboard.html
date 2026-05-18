@@ -5278,7 +5278,7 @@ Example: 10 prompts x 5 models = 50 runs
   </div>
 
 <!-- AIM_SNAPSHOT_INJECT_START -->
-
+<!-- AIM_SNAPSHOT_INJECT_END -->
 <script>
 if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
 /* ── DATA ─────────────────────────────────────────────────────────── */
@@ -7659,6 +7659,7 @@ function initAiCompetitors() {
 // ── Sentiment v2: SE-based analysis ─────────────────────────────────────────
 var _aimSE = null;
 var _aimSentApiCache = null; // kept for cache-bust in aimApplySnapshot
+var _aimCompSentCache = null;
 var _aimSentFilters = { cat: 'all' };
 var _aimSentDonut2 = null;
 var _aimSentCatChart2 = null;
@@ -8095,7 +8096,9 @@ function aimRenderSentEntriesTable() {
       '<img class="aim-td-engine-ico" src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(faviconDomain) + '&sz=32" ' +
       'onerror="this.style.display=\'none\'" style="cursor:default;">' +
       '</span>';
-    var promptCell = '<span style="cursor:pointer;color:var(--accent);font-size:12px;font-weight:500;" ' +
+    var promptCell = '<span style="cursor:pointer;color:var(--text-muted);font-size:12px;font-weight:500;text-decoration:none;" ' +
+      'onmouseenter="this.style.textDecoration=\'underline\'" ' +
+      'onmouseleave="this.style.textDecoration=\'none\'" ' +
       'onclick="aimSntOpenEntryResponse(' + idx + ')" ' +
       'title="Click to view full AI response">' +
       aimEscHtml(item.prompt || '') + '</span>';
@@ -8459,66 +8462,93 @@ function aimRenderCompHeatmap() {
   if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
 }
 
-function aimComputeCompInsight(b) {
-  // Tally sentiment of every AI response that co-mentions this competitor
+function aimComputeAllCompSent() {
+  if (_aimCompSentCache) return _aimCompSentCache;
+  var cache = {};
   var history = window._aimPromptResponseHistory || {};
-  var brandLo = b.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
-  var cPos = 0, cNeg = 0, cNeu = 0, total = 0;
-
   Object.keys(history).forEach(function(pid) {
-    var byDate = history[pid];
-    if (!byDate || typeof byDate !== 'object') return;
+    var byDate = history[pid] || {};
     Object.keys(byDate).forEach(function(date) {
-      var byProv = byDate[date];
-      if (!byProv || typeof byProv !== 'object') return;
+      var byProv = byDate[date] || {};
       Object.keys(byProv).forEach(function(prov) {
-        var resp = byProv[prov];
-        if (!resp || !Array.isArray(resp.brands)) return;
-        var mentioned = resp.brands.some(function(br) {
-          var brLo = br.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
-          return brLo === brandLo || brLo.includes(brandLo) || brandLo.includes(brLo);
+        var resp = byProv[prov] || {};
+        if (!resp.is_mentioned) return;
+        var brands = resp.brands || [];
+        var sLabel = (resp.sentiment_label || 'neutral').toLowerCase();
+        brands.forEach(function(bn) {
+          var lo = (bn || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+          if (!lo) return;
+          if (!cache[lo]) cache[lo] = { pos: 0, neg: 0, neu: 0, total: 0 };
+          cache[lo].total++;
+          if (sLabel === 'positive') cache[lo].pos++;
+          else if (sLabel === 'negative') cache[lo].neg++;
+          else cache[lo].neu++;
         });
-        if (!mentioned) return;
-        total++;
-        var sl = (resp.sentiment_label || '').toLowerCase();
-        if (sl === 'positive') cPos++;
-        else if (sl === 'negative') cNeg++;
-        else cNeu++;
       });
     });
   });
+  _aimCompSentCache = cache;
+  return cache;
+}
 
-  var str = null, wk = null;
+function aimCompSentSplitReal(b) {
+  // For the user's own brand, use SE entries (same source as donut)
+  if (b.isMain) {
+    var counts = aimSEGetCounts();
+    var total = (counts.positive || 0) + (counts.negative || 0) + (counts.neutral || 0) + (counts.uncertain || 0);
+    if (!total) return { pos: 0, neu: 100, neg: 0 };
+    return {
+      pos: Math.round((counts.positive || 0) / total * 100),
+      neg: Math.round((counts.negative || 0) / total * 100),
+      neu: Math.round(((counts.neutral || 0) + (counts.uncertain || 0)) / total * 100)
+    };
+  }
+  // For competitors, use _aimPromptResponseHistory co-mention counts
+  var cache = aimComputeAllCompSent();
+  var nameLo = (b.name || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+  var entry = cache[nameLo];
+  if (!entry || !entry.total) return { pos: 0, neu: 100, neg: 0 };
+  return {
+    pos: Math.round(entry.pos / entry.total * 100),
+    neg: Math.round(entry.neg / entry.total * 100),
+    neu: Math.round(entry.neu / entry.total * 100)
+  };
+}
 
+function aimComputeCompInsight(b) {
+  var sentCache = aimComputeAllCompSent();
+  var nameLo = (b.name || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+  var cached = sentCache[nameLo];
+  var cPos = 0, cNeg = 0, cNeu = 0, total = 0;
+  if (cached && cached.total > 0) {
+    cPos = cached.pos; cNeg = cached.neg; cNeu = cached.neu; total = cached.total;
+  }
+  var posRate = total > 0 ? Math.round(cPos / total * 100) : 0;
+  var negRate = total > 0 ? Math.round(cNeg / total * 100) : 0;
+  var neuRate = total > 0 ? Math.round(cNeu / total * 100) : 0;
+
+  var str, wk;
   if (total === 0) {
-    if (aimGetBrandMetrics(b).vis < 3) wk = 'Rarely mentioned in AI responses for monitored prompts';
-    return { str: str, wk: wk };
-  }
-
-  var posRate = Math.round(cPos / total * 100);
-  var negRate = Math.round(cNeg / total * 100);
-  var neuRate = Math.round(cNeu / total * 100);
-
-  // STRENGTH: positive co-mention signal from real response text
-  if (posRate >= 60) {
-    str = 'Positively mentioned in ' + posRate + '% of AI responses (' + cPos + '/' + total + ')';
+    str = 'No tracked AI responses mention this brand yet.';
+    wk = 'Increase coverage by targeting prompts where this brand is expected to appear.';
+  } else if (posRate >= 60) {
+    str = 'Cited positively in ' + cPos + ' of ' + total + ' tracked response' + (total !== 1 ? 's' : '') + ' — consistently framed as a strong option across comparison and buying-intent prompts.';
+    wk = negRate >= 15 ? 'Negative mentions account for ' + negRate + '% of responses, often in pricing or feature trade-off contexts.' : 'Neutral coverage (' + neuRate + '%) suggests some prompts mention it without strong recommendation.';
+  } else if (negRate >= 35) {
+    str = total > 1 ? 'Appears in ' + total + ' tracked response' + (total !== 1 ? 's' : '') + ', giving it reasonable AI visibility.' : 'Has some presence in AI responses.';
+    wk = 'More than a third of mentions carry a critical framing — commonly in comparisons where a competing brand is preferred or when discussing limitations.';
   } else if (posRate > negRate && posRate >= 30) {
-    str = 'More positive than negative — ' + posRate + '% pos vs ' + negRate + '% neg';
-  } else if (neuRate >= 70 && total >= 5) {
-    str = 'Consistent factual mentions across ' + total + ' responses — ' + neuRate + '% neutral';
-  } else if (total >= 10 && negRate < 15) {
-    str = 'Rarely mentioned negatively — only ' + negRate + '% negative across ' + total + ' mentions';
-  }
-
-  // WEAKNESS: negative co-mention signal from real response text
-  if (negRate >= 35) {
-    wk = 'Negatively mentioned in ' + negRate + '% of AI responses (' + cNeg + '/' + total + ')';
-  } else if (cNeg > cPos) {
-    wk = 'More negative than positive — ' + negRate + '% neg vs ' + posRate + '% pos';
+    str = 'Positive mentions outpace negative by ' + (posRate - negRate) + ' percentage points across ' + total + ' response' + (total !== 1 ? 's' : '') + ' — generally viewed favorably when cited.';
+    wk = neuRate >= 50 ? 'A majority of mentions are neutral, suggesting AI models cite it as a reference rather than a clear recommendation.' : 'Has room to improve positive framing across more prompt categories.';
+  } else if (neuRate >= 70) {
+    str = 'Mentioned in ' + total + ' response' + (total !== 1 ? 's' : '') + ' with consistent AI visibility across tracked prompts.';
+    wk = 'Mostly neutral coverage (' + neuRate + '%) — AI models reference it factually but rarely with strong positive endorsement.';
   } else if (total < 5) {
-    wk = 'Rarely co-mentioned — only ' + total + ' shared AI responses found';
-  } else if (posRate < 20 && negRate < 20) {
-    wk = 'Mostly neutral context — limited positive differentiation (' + neuRate + '% neutral)';
+    str = 'Limited data — appears in only ' + total + ' tracked response' + (total !== 1 ? 's' : '') + '.';
+    wk = 'Too few mentions to identify a clear sentiment pattern. Expand prompt coverage to get a reliable signal.';
+  } else {
+    str = 'Cited in ' + total + ' AI response' + (total !== 1 ? 's' : '') + ' with a mixed sentiment profile (' + posRate + '% positive, ' + neuRate + '% neutral, ' + negRate + '% negative).';
+    wk = 'No dominant pattern — mentions vary by prompt context. Review which prompt categories drive negative framing.';
   }
 
   return { str: str, wk: wk };
@@ -8542,7 +8572,7 @@ function aimRenderCompSentimentTable() {
   const slice = sorted.slice(start, end);
   tbody.innerHTML = slice.map(b => {
     const vis = Math.min(100, aimGetBrandMetrics(b).vis * _aimTopicMult(b.name));
-    const sp = aimCompSentSplit(b.sentiment);
+    const sp = aimCompSentSplitReal(b);
     const ins = aimComputeCompInsight(b);
     const youBadge = b.isMain ? `<span class="aim-you-badge" style="margin-left:6px">You</span>` : '';
     const sentTip = `Positive: ${sp.pos}% / Neutral: ${sp.neu}% / Negative: ${sp.neg}%`;
@@ -11623,6 +11653,7 @@ function _entityDomain(name) {
 function aimApplySnapshot(snap) {
   _aimExtUrlCache = null;
   _aimSentApiCache = null;
+  _aimCompSentCache = null;
   _aimSE = null;
   _aimSentFilters = { cat: 'all' };
   const lbp = snap.latest_by_provider || {};
@@ -13372,7 +13403,6 @@ function aimOpenTodoDetail(id) {
       '<div class="card-body">' +
         '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">' +
           '<div style="flex:1;min-width:0;">' +
-            (action._groupLabel ? '<div style="font-size:11px;color:var(--text-faint);margin-bottom:5px;display:flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' + aimEscHtml(action._groupLabel) + '</div>' : '') +
             '<div style="font-size:16px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:8px;' + (isDone ? 'text-decoration:line-through;opacity:.6;' : '') + '">' + aimEscHtml(action.title) + '</div>' +
             '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
               '<button onclick="aimTdToggleWhy(this)" style="display:inline-flex;align-items:center;gap:0;background:#f9fafb;border:1px solid var(--border);border-radius:6px;padding:2px 9px 2px 0;font-size:11.5px;font-weight:600;color:#374151;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:background .12s,color .12s;" onmouseover="this.style.background=\'transparent\';this.style.color=\'var(--text-muted)\'" onmouseout="this.style.background=\'#f9fafb\';this.style.color=\'#374151\'">' +
@@ -13393,6 +13423,7 @@ function aimOpenTodoDetail(id) {
           actionBtns +
         '</div>' +
         '<div id="aim-td-why-panel" style="display:none;margin-top:12px;padding:14px 16px;background:var(--surface-alt);border:1px solid var(--border-light);border-radius:10px;">' +
+          (action._groupLabel ? '<div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border-light);">Part of: ' + aimEscHtml(action._groupLabel) + '</div>' : '') +
           '<p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0;">' + aimEscHtml(action.reasoning || action.why || '') + '</p>' +
         '</div>' +
         (signalChips
@@ -13603,7 +13634,7 @@ function aimGenerateTodos() {
         ],
         reasoning: top.name + ' shows up in ' + top.visibility.toFixed(1) + '% of the AI conversations you track. You show up in ' + overallVis.toFixed(1) + '%. That gap exists right now, on the specific prompts you are monitoring. Buyers asking AI for tool recommendations are getting ' + top.name + ' in the answer. A comparison page gives AI a citable, structured source that directly positions ' + brand + ' against the market leader.',
         steps: [
-          'Title it: “' + brand + ' vs ' + top.name + ': Which is better for [use case]?” — match how buyers search',
+          'Title it: “' + brand + ' vs ' + top.name + ': Which is better for [use case]?” to match how buyers search',
           'Build a feature matrix covering pricing, integrations, support, and key use cases',
           'Add a direct “Who wins?” conclusion that AI can extract as a quotable answer',
           'Include real customer quotes and outcome metrics to strengthen credibility'
@@ -13927,8 +13958,34 @@ function aimGenerateTodos() {
         'Get the page listed on comparison platforms and review sites visible in Sources view'
       ],
       suggestions: [
-        'Build a “' + brand + ' vs ' + lowSentComp.name + '” page with a feature matrix and pricing comparison',
-        'Engage on Reddit threads where ' + lowSentComp.name + ' receives criticism and recommend ' + brand + ' authentically'
+        {
+          title: 'Build a “' + brand + ' vs ' + lowSentComp.name + '” page with a feature matrix and pricing comparison',
+          steps: [
+            'Map ' + lowSentComp.name + '\'s pricing tiers and feature set from their public website and G2 profile',
+            'Build a side-by-side comparison table with ' + brand + ' and ' + lowSentComp.name + ' as columns, using your strongest differentiation points as rows',
+            'Add a clear “best for” recommendation at the top: “Best for [specific use case]: ' + brand + '”',
+            'Add FAQPage schema with the question “' + brand + ' vs ' + lowSentComp.name + ': which is better?” and a structured answer'
+          ],
+          signals: [
+            'Comparison pages are the most-cited content type when AI answers “X vs Y” or “X alternative” queries',
+            lowSentComp.name + ' has a below-neutral AI sentiment score, making buyers actively search for alternatives',
+            'A dedicated comparison page gives AI a structured, citable source for positioning ' + brand + ' as the alternative'
+          ]
+        },
+        {
+          title: 'Engage on Reddit threads where ' + lowSentComp.name + ' receives criticism and recommend ' + brand + ' authentically',
+          steps: [
+            'Search Reddit for “' + lowSentComp.name + ' problem”, “' + lowSentComp.name + ' alternative”, and “' + lowSentComp.name + ' cancelled” threads',
+            'Read each thread carefully before engaging: respond only where ' + brand + ' is a genuine fit for the problem described',
+            'Write a detailed, helpful response that leads with empathy for the problem, then explains why ' + brand + ' solves it',
+            'Focus on threads with high upvote counts: AI citation weight correlates with thread engagement'
+          ],
+          signals: [
+            'Reddit threads criticizing ' + lowSentComp.name + ' are already being cited by AI as evidence of problems with that brand',
+            'Authentic, high-quality Reddit mentions of ' + brand + ' as an alternative create persistent AI citations',
+            lowSentComp.name + '\'s below-neutral sentiment score means buyers are actively searching for alternatives in these threads'
+          ]
+        }
       ],
       exampleDomains: [lscDomain].filter(Boolean).concat(topSources.slice(0, 2).map(function(s){ return s.domain; })),
       examplesContextName: lowSentComp.name,
@@ -13971,9 +14028,48 @@ function aimGenerateTodos() {
           'Submit new commercial pages to G2, Capterra, and category review platforms visible in Sources view'
         ],
         suggestions: [
-          'Build a pricing and comparison page with a feature matrix vs top alternatives and clear ROI framing',
-          'Create use-case landing pages for each major buyer persona identified from commercial prompt phrasing',
-          'Write a case study or ROI calculator page — these are heavily cited by AI on decision-stage queries'
+          {
+            title: 'Build a pricing and comparison page with a feature matrix vs top alternatives and clear ROI framing',
+            steps: [
+              'Structure the page with ' + brand + '\'s pricing at the top, followed by a transparent feature matrix comparing 3-4 top alternatives',
+              'Add an ROI calculator or example savings scenario that quantifies the value of choosing ' + brand,
+              'Include a "best for" section mapping each pricing tier to a specific buyer type',
+              'Add FAQPage schema with the most common commercial-intent questions from your tracked prompt list'
+            ],
+            signals: [
+              'Pricing pages with comparison tables are among the most-cited content by AI on commercial-intent queries',
+              'AI uses ROI framing and cost data to help buyers justify a purchase decision in its answers',
+              'A dedicated comparison page gives AI a direct, structured source to pull from when buyers ask which tool to buy'
+            ]
+          },
+          {
+            title: 'Create use-case landing pages for each major buyer persona from your commercial prompts',
+            steps: [
+              'Extract the 3-5 most common buyer types implied by your commercial-intent prompts (e.g., "agency", "enterprise team", "solo founder")',
+              'Build a dedicated landing page for each persona with specific use cases, outcomes, and social proof relevant to them',
+              'Use the persona type in the page URL and H1 (e.g., "' + brand + ' for agencies: X% faster workflow")',
+              'Add Article or SoftwareApplication schema to each page with a targeted "best for [persona]" field'
+            ],
+            signals: [
+              'Use-case pages give AI persona-specific answers to pull from on commercial-intent queries',
+              'Buyers who identify with a specific persona convert at significantly higher rates from AI answers that name their use case',
+              'A dedicated URL per persona is indexed and cited individually, multiplying commercial-intent coverage'
+            ]
+          },
+          {
+            title: 'Write a case study or ROI calculator page: these are heavily cited by AI on decision-stage queries',
+            steps: [
+              'Choose your strongest customer outcome (highest ROI or most dramatic before/after result) as the foundation',
+              'Structure the case study with a "problem, solution, result" format and include a specific metric in the headline',
+              'Alternatively, build an ROI calculator that takes 2-3 inputs (team size, current tool cost, time spent) and outputs a projected saving',
+              'Publish at a dedicated URL and add Article schema so AI can extract the result data directly'
+            ],
+            signals: [
+              'Case studies and ROI calculators are the most-cited content type by AI when a buyer is close to a decision',
+              'AI uses specific metrics from case studies to justify a recommendation (e.g., "customers report X% time savings")',
+              'A tool like an ROI calculator also attracts backlinks and repeat visits, increasing its citation weight over time'
+            ]
+          }
         ],
         exampleDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
         examplesStrategy: 'commercial-review',
@@ -14024,7 +14120,7 @@ function aimGenerateTodos() {
         'Aim for comment depth over volume: a single well-upvoted response outperforms 10 shallow ones in AI citation weight'
       ],
       suggestions: [
-        'Create original resources for the identified subreddits: benchmark data, free tools, or how-to guides — data-heavy posts are cited by AI at higher rates'
+        'Create original resources for the identified subreddits: benchmark data, free tools, or how-to guides. Data-heavy posts are cited by AI at higher rates.'
       ],
       exampleDomains: ['reddit.com'],
       examplesHeading: 'Reddit threads AI is already citing in your category',
@@ -14071,11 +14167,76 @@ function aimGenerateTodos() {
       reasoning: 'AI does not just mention ' + brand + ': it frames the mention with qualifiers drawn from indexed content. A ' + Math.round(avgBrandSent) + '% sentiment score means AI is either neutral or adding caveats. A buyer reading that response is less likely to act. The fix is to publish positive, quotable content AI will pull from: case studies with hard metrics, verified reviews, and press coverage that frames ' + brand + ' as the clear winner for specific use cases.',
       steps: [],
       suggestions: [
-        'Run a G2 and Trustpilot review campaign: target 20+ new verified reviews in the next 30 days',
-        'Create a case studies page with 3-5 customer stories, each with specific metrics and named customers',
-        'Write blog posts addressing the top criticism angles found in Reddit and reviews',
-        'Pitch a founder story to a media outlet AI cites: narrative framing shapes how AI describes your brand',
-        'Build a "Why teams switch to ' + brand + '" page with before/after comparisons and direct user quotes'
+        {
+          title: 'Run a G2 and Trustpilot review campaign: target 20+ new verified reviews in the next 30 days',
+          steps: [
+            'Export your current customer list and identify your 50 most active or successful users to contact first',
+            'Send a personal email asking for an honest review, linking directly to your G2 and Trustpilot profile pages',
+            'Follow up once after 5 days: a short, friendly reminder doubles response rates',
+            'Respond publicly to all reviews within 48 hours, especially critical ones, to signal active management to AI'
+          ],
+          signals: [
+            'G2 and Trustpilot are among the highest-authority review platforms AI models pull sentiment signals from',
+            'Review volume and recency both influence how AI frames a brand\'s reputation in responses',
+            '20+ new reviews in 30 days is enough to begin shifting the sentiment calculation AI uses'
+          ]
+        },
+        {
+          title: 'Create a case studies page with 3-5 customer stories, each with specific metrics and named customers',
+          steps: [
+            'Identify 3-5 customers who have achieved measurable results (time saved, revenue, cost reduction) with ' + brand,
+            'Interview each customer and capture specific metrics, before/after comparisons, and a named quote',
+            'Publish each story as a dedicated URL with Article schema so AI can parse and cite it directly',
+            'Add a summary stats callout to each page (e.g., "Reduced onboarding time by 60% in 30 days")'
+          ],
+          signals: [
+            'Case studies with named customers and hard metrics are among the most-cited content types by AI for positive sentiment signals',
+            'A dedicated URL per case study is indexed and cited individually, compounding the citation value',
+            'Structured proof points (metrics, quotes, named customers) are what AI extracts when framing a brand positively'
+          ]
+        },
+        {
+          title: 'Write blog posts addressing the top criticism angles found in Reddit and reviews',
+          steps: [
+            'Search Reddit, G2, Trustpilot, and Capterra for the 5 most common criticisms or objections about ' + brand,
+            'Write a candid, direct blog post for each objection, addressing it head-on with evidence or context',
+            'Frame each post as "[Objection]: Here is what actually happens and why" to match how critics phrase the issue',
+            'Add FAQPage schema to each post using the criticism as the question and the response as the answer'
+          ],
+          signals: [
+            'AI pulls criticism angles from Reddit threads and review platforms and uses them as sentiment qualifiers in responses',
+            'Directly indexed content that addresses criticisms gives AI a counter-narrative to pull from',
+            'Posts that match the exact phrasing of common objections are more likely to be cited alongside those objections'
+          ]
+        },
+        {
+          title: 'Pitch a founder story to a media outlet AI cites: narrative framing shapes how AI describes your brand',
+          steps: [
+            'Identify 3 media outlets in Sources view that already generate AI citations in your space',
+            'Draft a founder story angle: the specific problem that led to ' + brand + ', told with concrete details and data',
+            'Find the editor or writer who covers your category at each outlet using LinkedIn or their author page',
+            'Send a concise pitch (under 200 words) with the story angle, one data point, and a clear offer to interview'
+          ],
+          signals: [
+            'Media coverage creates high-authority citations that AI uses to frame how it describes a brand',
+            'Founder and origin stories are a reliable angle for tech and industry publications',
+            'A single article on an AI-cited domain can shift how AI frames ' + brand + ' across all tracked models'
+          ]
+        },
+        {
+          title: 'Build a "Why teams switch to ' + brand + '" page with before/after comparisons and direct user quotes',
+          steps: [
+            'Survey or interview 10 customers who switched from a competitor and ask them to describe the specific moment they decided to switch',
+            'Structure the page around the 3-5 most common switching reasons, each with a named user quote and metric',
+            'Include a simple comparison table showing the before state (with the prior tool) and the after state (with ' + brand + ')',
+            'Optimize the page URL slug for "' + brand + ' vs [competitor]" and "[competitor] alternative" query patterns'
+          ],
+          signals: [
+            '"Why switch" pages are among the most-cited content by AI when buyers ask for alternatives to a specific competitor',
+            'User quotes create quotable, AI-extractable content that AI uses to describe a brand\'s strengths',
+            'A dedicated switching page targets the highest-intent buyers who are actively evaluating alternatives'
+          ]
+        }
       ],
       exampleDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
       examplesStrategy: 'editorial-guide',
@@ -14124,12 +14285,51 @@ function aimGenerateTodos() {
       reasoning: 'When AI lists multiple tools, position matters. The first brand named captures more clicks and conversions. ' + brand + ' is being mentioned but at position ' + snapAvgPos.toFixed(1) + '. Moving up requires the indexable web to consistently list ' + brand + ' first or second in comparison and listicle content, not fourth or fifth. The most direct lever is getting featured at the top of the specific comparison pages AI currently cites in Sources view.',
       steps: [
         'Increase citation density: the more domains cite ' + brand + ', the more AI associates it with authority in the category',
-        'Add a concise "best for" label on every product page — AI uses these structured signals to determine ranking order'
+        'Add a concise "best for" label on every product page so AI has a structured signal to determine ranking order'
       ],
       suggestions: [
-        'Create original "best [category]" content on ' + brand + '\'s own domain with ' + brand + ' ranked first with clear justification',
-        'Publish a "why ' + brand + ' is the best option for [use case]" landing page for each major use case',
-        'Get ' + brand + ' featured as the highlighted or "editor\'s pick" option on at least 3 top-cited comparison sites'
+        {
+          title: 'Create original "best [category]" content on ' + brand + '\'s own domain with ' + brand + ' ranked first',
+          steps: [
+            'Research the top 5 "best [category] tools" articles in Sources view and note how tools are ranked and described',
+            'Write your own "best [category] tools" post on ' + brand + '\'s blog, with ' + brand + ' ranked first with a clear "best overall" justification',
+            'Structure the post with individual sections per tool so AI can extract a clean, structured answer',
+            'Add FAQPage schema with the question "what is the best [category] tool?" and ' + brand + ' as the direct answer'
+          ],
+          signals: [
+            'AI pulls from "best of" listicle content to determine the order tools are mentioned in recommendation responses',
+            'First-party content where ' + brand + ' ranks itself first creates a citable data point AI weighs alongside third-party sources',
+            'A dedicated "best [category]" URL is indexed as an authority signal that compounds with each citation'
+          ]
+        },
+        {
+          title: 'Publish a "why ' + brand + ' is the best option for [use case]" landing page for each major use case',
+          steps: [
+            'Identify the 3 most specific use cases mentioned across your tracked commercial prompts',
+            'For each use case, write a page with a clear argument: include customer quotes, specific features, and outcomes',
+            'Use the exact use case phrasing from your tracked prompts in the page title and H1 so AI can match query intent',
+            'Submit each page to Google Search Console immediately after publishing for fast indexing'
+          ],
+          signals: [
+            'Use-case-specific pages are more likely to appear at position 1-2 in AI answers than generic product pages',
+            'AI uses exact-match content to determine which tool to name first for a specific use case query',
+            'Multiple use-case pages increase the number of queries where ' + brand + ' appears at position 1'
+          ]
+        },
+        {
+          title: 'Get ' + brand + ' featured as the top pick on at least 3 of the comparison sites AI currently cites',
+          steps: [
+            'Identify the 3-5 comparison and roundup articles in Sources view that drive the most AI citations in your space',
+            'Find the editor or author of each article and reach out with a specific pitch: what ' + brand + ' does better than the current top pick, with evidence',
+            'Offer a unique data point, case study, or exclusive quote the author can use in their next update',
+            'Follow up after 2 weeks if no response: article updates are high-value and worth a second contact'
+          ],
+          signals: [
+            '"Editor\'s pick" and top placements in comparison articles are the strongest signal for a higher mention position in AI',
+            'Third-party sources that rank ' + brand + ' first carry more weight with AI than first-party claims',
+            'Appearing in the top slot on 3 high-authority comparison pages is enough to shift average mention position by 1-2 positions'
+          ]
+        }
       ],
       exampleDomains: topSources.slice(0, 4).map(function(s){ return s.domain; }),
       examplesStrategy: 'commercial-review',
@@ -14180,10 +14380,62 @@ function aimGenerateTodos() {
           'Check ' + sec.name + '\'s G2 and Trustpilot reviews for common complaints and build content angles around those gaps'
         ],
         suggestions: [
-          'Publish a "' + brand + ' vs ' + sec.name + '" comparison page with feature matrix and pricing',
-          'Find Reddit threads comparing ' + sec.name + ' with alternatives and engage with detailed, helpful responses',
-          'Map every prompt where ' + sec.name + ' appears and ' + brand + ' does not — write content targeting each of those questions',
-          'Get ' + brand + ' featured on every comparison or roundup article that currently includes ' + sec.name
+          {
+            title: 'Publish a "' + brand + ' vs ' + sec.name + '" comparison page with feature matrix and pricing',
+            steps: [
+              'Research ' + sec.name + '\'s public pricing, features, and differentiators from their website, G2, and Trustpilot',
+              'Build a feature matrix table with ' + brand + ' and ' + sec.name + ' as columns, focusing on categories where ' + brand + ' wins clearly',
+              'Include a direct "bottom line" recommendation at the top: "If you need X, choose ' + brand + '. If you need Y, ' + sec.name + ' may work better."',
+              'Add FAQPage schema with the question "' + brand + ' vs ' + sec.name + ': which is better?" and a concise, honest answer'
+            ],
+            signals: [
+              '"' + brand + ' vs ' + sec.name + '" pages are cited every time AI answers a comparison query between these two tools',
+              sec.name + ' generates ' + sec.visibility.toFixed(1) + '% AI visibility, largely from comparison and roundup content',
+              'A dedicated comparison page gives AI a ' + brand + '-owned, structured source to pull from instead of third-party comparisons'
+            ]
+          },
+          {
+            title: 'Find Reddit threads comparing ' + sec.name + ' with alternatives and engage with detailed, helpful responses',
+            steps: [
+              'Search Reddit for "' + sec.name + ' alternative", "vs ' + sec.name + '", and "' + sec.name + ' worth it" threads',
+              'Read at least 10 threads before engaging: respond only where ' + brand + ' is a genuine fit for the problem described',
+              'Write a substantive response (400+ words) that explains the specific difference and when ' + brand + ' is the right choice',
+              'Aim for threads with 50+ upvotes or comments: these carry the most AI citation weight'
+            ],
+            signals: [
+              'Reddit comparison threads are among the most-cited content by AI for "' + brand + ' vs ' + sec.name + '" and "' + sec.name + ' alternative" queries',
+              'A detailed, well-upvoted Reddit response creates a citation that AI pulls from for months',
+              sec.name + ' appears in ' + sec.visibility.toFixed(1) + '% of AI responses: Reddit threads discussing them are high-traffic entry points'
+            ]
+          },
+          {
+            title: 'Map every prompt where ' + sec.name + ' appears and ' + brand + ' does not: write content targeting each one',
+            steps: [
+              'Go to the Prompts view in this dashboard and identify every prompt where ' + sec.name + ' has a higher visibility score than ' + brand,
+              'For each prompt where you score 0% and ' + sec.name + ' scores above 0%, write one targeted piece of content that directly answers that query',
+              'Ensure each piece includes ' + brand + ' as the recommended solution with specific supporting evidence',
+              'Prioritize prompts with the highest ' + sec.name + ' visibility scores first: these represent the largest visibility gap'
+            ],
+            signals: [
+              'Every prompt where ' + sec.name + ' appears and ' + brand + ' does not is a direct buyer touchpoint ' + brand + ' is missing',
+              'Content specifically written to answer a tracked prompt increases visibility on that prompt within 4-8 weeks',
+              'Closing the prompt gap with ' + sec.name + ' is more achievable than matching their overall citation volume'
+            ]
+          },
+          {
+            title: 'Get ' + brand + ' featured on every comparison or roundup article that currently includes ' + sec.name,
+            steps: [
+              'Use Sources view to find the domains and articles generating the most citations for ' + sec.name,
+              'For each article, find the author or editor contact and send a short pitch explaining ' + brand + '\'s unique value and why it belongs alongside ' + sec.name,
+              'Include a specific differentiator and one customer metric in your outreach: editors want a concrete reason to update an article',
+              'Target the 5 highest-citation articles first: getting onto those alone can close a significant share of the visibility gap'
+            ],
+            signals: [
+              'Roundup and comparison articles that include ' + sec.name + ' are a primary driver of their AI visibility advantage',
+              'Getting onto the same articles that include ' + sec.name + ' directly reduces their relative advantage over ' + brand,
+              'A placement on a high-authority comparison article generates AI citations for 12-24 months'
+            ]
+          }
         ],
         exampleDomains: [secDomain].filter(Boolean),
         examplesContextName: sec.name,
@@ -14229,7 +14481,7 @@ function aimGenerateTodos() {
       reasoning: 'AI models parse structured data before reading prose. A page with FAQ schema that directly answers "what is the best X tool" gives AI a clean, extractable answer to cite. Without schema, even strong content loses to a competitor\'s structured page. ' + brand + ' has ' + zeroPrompts.length + ' prompts at zero visibility. Adding schema to existing key pages is the lowest-effort, fastest-impact change available: no new content needed, only markup.',
       steps: [
         'Identify the 5-10 pages on ' + brand + '\'s site that should be cited for your tracked prompt categories',
-        'Add FAQPage schema to every page that answers a question — use the exact prompt phrasing as the schema question text',
+        'Add FAQPage schema to every page that answers a question, using the exact prompt phrasing as the schema question text',
         'Add HowTo schema to process-based or tutorial content',
         'Add SoftwareApplication schema to your homepage and product pages with current feature lists and pricing',
         'Validate all schema at Google\'s Rich Results Test before publishing',
@@ -14283,8 +14535,34 @@ function aimGenerateTodos() {
         'Submit all new and updated content immediately to Google Search Console for fast indexing'
       ],
       suggestions: [
-        'Build backlinks from the domains Google AIO already cites in your space',
-        'Publish a comprehensive "best [category]" guide on ' + brand + '\'s domain targeting your top prompt themes'
+        {
+          title: 'Build backlinks from the domains Google AIO already cites in your space',
+          steps: [
+            'Open Sources view, filter by Google AIO, and list the top 10 domains it cites most in your space',
+            'For each domain, identify a specific page where ' + brand + ' could earn a mention: tool roundup, resource list, or partner page',
+            'Reach out to the editor or author with a concise pitch: what ' + brand + ' offers that fits their existing content and why their readers benefit',
+            'Prioritize domains with 5 or more Google AIO citations: these have the strongest citation-to-visibility relationship'
+          ],
+          signals: [
+            'Google AIO strongly prefers to cite pages that already have high organic authority and relevant backlinks',
+            'Earning a link from a Google AIO-cited domain signals relevance to Google\'s AI indexing layer',
+            'Backlinks from existing citation sources create a compounding effect: each new link reinforces the others'
+          ]
+        },
+        {
+          title: 'Publish a comprehensive "best [category]" guide on ' + brand + '\'s domain targeting your top prompt themes',
+          steps: [
+            'Research the top 5 "best [category]" queries across your tracked prompts and identify the common subtopics they share',
+            'Write a comprehensive guide (1,500+ words) that directly answers each of those query variants in dedicated sections',
+            'Structure the guide with ' + brand + ' recommended first, with specific "best for" justification for each use case',
+            'Add FAQPage schema using exact prompt phrasing as question text, and submit the URL to Google Search Console immediately'
+          ],
+          signals: [
+            'Google AI Overviews favor comprehensive, well-structured pages that already rank organically for the query',
+            'A "best [category]" guide on ' + brand + '\'s own domain is a high-authority first-party citation source',
+            'Google AI Mode rewards pages with strong topical authority: covering multiple query variants in one guide builds that authority'
+          ]
+        }
       ],
       exampleDomains: googleSrcs.slice(0, 4).map(function(s){ return s.domain; }),
       examplesStrategy: 'model-specific',
@@ -14337,7 +14615,7 @@ function aimGenerateTodos() {
         'Identify a metric or trend ' + brand + ' is uniquely positioned to measure from its own platform or customer data',
         'Survey 100-300 practitioners in your market on a topic that directly maps to your tracked prompt categories',
         'Publish findings as a dedicated report page with clean data visualization and a downloadable version',
-        'Title it "State of [Category] ' + new Date().getFullYear() + ': ' + brand + ' Report" — this format is heavily cited across all AI models',
+        'Title it "State of [Category] ' + new Date().getFullYear() + ': ' + brand + ' Report". This format is heavily cited across all AI models.',
         'Add DataSet or Article structured data schema to the report page',
         'Plan annual refreshes: consistent data series become the definitive source over time'
       ],
@@ -14389,7 +14667,7 @@ function aimGenerateTodos() {
       steps: [
         'Build a press kit page with logos, founder photos, key stats, and pre-written company boilerplate',
         'Identify 3 story angles: a data hook, a clear product differentiator, and a contrarian opinion on a trending topic',
-        'Use HARO or Qwoted to respond to journalist queries in your space — these often turn into named citations within days'
+        'Use HARO or Qwoted to respond to journalist queries in your space: these often turn into named citations within days'
       ],
       suggestions: [
         'Reach out to 5 journalists who cover your category on ' + newsDomainsCited[0].domain + ' with a sharp, data-led pitch'
