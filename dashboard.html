@@ -7173,6 +7173,62 @@ function aimAddSuggestedPrompt(id, el) {
 }
 
 
+function aimApManAddRow() {
+  var tbody = document.getElementById('aim-ap-man-body');
+  if (!tbody) return;
+  var i = window._aimApManRowCount || 0;
+  window._aimApManRowCount = i + 1;
+  var topics  = Object.keys(AIM_TOPIC_COLORS);
+  var intents = ['Commercial','Informational','Transactional','Navigational'];
+  var topicSel  = _aimCtpBuildSelect('aim-ap-man-topic-'  + i, topics,  topics[0], '');
+  var intentSel = _aimCtpBuildSelect('aim-ap-man-intent-' + i, intents, 'Commercial', '');
+  var tr = document.createElement('tr');
+  tr.id = 'aim-ap-man-row-' + i;
+  tr.innerHTML =
+    '<td><textarea class="aim-ctp-tbl-input" id="aim-ap-man-text-' + i + '" rows="2" placeholder="Enter the question or phrase to monitor..."></textarea></td>'
+  + '<td style="width:168px;">' + topicSel + '</td>'
+  + '<td style="width:148px;">' + intentSel + '</td>'
+  + '<td style="width:36px;text-align:center;vertical-align:middle;"><button class="aim-ctp-tbl-rm" onclick="aimApManRemoveRow(' + i + ')" title="Remove">'
+  +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+  + '</button></td>';
+  tbody.appendChild(tr);
+  var ta = document.getElementById('aim-ap-man-text-' + i);
+  if (ta) ta.focus();
+}
+
+function aimApManRemoveRow(i) {
+  var row = document.getElementById('aim-ap-man-row-' + i);
+  if (row) row.remove();
+}
+
+function aimManualAddPrompt() {
+  var rows = document.querySelectorAll('#aim-ap-man-body tr');
+  var added = 0;
+  var firstEmpty = null;
+  rows.forEach(function(row) {
+    var id = row.id.replace('aim-ap-man-row-', '');
+    var text   = (document.getElementById('aim-ap-man-text-'   + id) || {}).value || '';
+    var intentWrap = document.getElementById('aim-ap-man-intent-' + id);
+    var topicWrap  = document.getElementById('aim-ap-man-topic-'  + id);
+    var intent = (intentWrap && intentWrap.dataset.value) || 'Commercial';
+    var topic  = (topicWrap  && topicWrap.dataset.value)  || 'General';
+    text = text.trim();
+    if (!text) {
+      if (!firstEmpty) firstEmpty = document.getElementById('aim-ap-man-text-' + id);
+      return;
+    }
+    aimAddPromptToDb({ text: text, intent: intent, topic: topic });
+    added++;
+  });
+  if (!added) {
+    if (firstEmpty) { firstEmpty.style.outline = '2px solid var(--danger)'; firstEmpty.focus(); }
+    return;
+  }
+  aimUpdatePromptCounters();
+  aimRebuildTopicDropdown();
+  aimCloseAddPrompts();
+}
+
 /* ── PROMPT DETAIL ───────────────────────────────────────────────── */
 function aimToggleDateSection(btn) {
   const section = btn.closest('.aim-pd-day-section');
@@ -8878,6 +8934,13 @@ function aimRenderScStats() {
     card('position',    'Avg Position',       '#' + parseFloat(s.position).toFixed(1));
 }
 
+function aimRenderScSummary() {
+  const d  = window.AIM_SC_DATA;
+  const el = document.getElementById('aim-sc-summary-bar');
+  if (el) el.innerHTML = `Your site received <strong>${d.stats.clicks.toLocaleString()} clicks</strong> from <strong>${d.stats.impressions.toLocaleString()} impressions</strong> over the last 30 days. Average ranking position: <strong>#${parseFloat(d.stats.position).toFixed(1)}</strong>`;
+  const lu = document.getElementById('aim-sc-last-updated');
+  if (lu) lu.textContent = 'Last updated: ' + d.lastUpdated;
+}
 
 function aimRenderScChart() {
   const canvas = document.getElementById('aim-sc-perf-chart');
@@ -12306,6 +12369,15 @@ function aimRenderStepRow(text, idx, expandItems) {
   '</div>';
 }
 
+function aimRenderBrandBadges(brands) {
+  if (!brands || !brands.length) return '';
+  return brands.filter(function(b){ return b && b.domain; }).map(function(b) {
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:500;padding:3px 8px 3px 5px;border-radius:20px;background:#f3f4f6;border:1px solid var(--border);color:var(--text-muted);">' +
+      '<img src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(b.domain) + '&sz=32" style="width:14px;height:14px;border-radius:3px;flex-shrink:0;" onerror="this.style.display=\'none\'">' +
+      aimEscHtml(b.label || b.domain) +
+    '</span>';
+  }).join('');
+}
 
 var _aimExtUrlCache = null;
 function _aimGetAllUrls() {
