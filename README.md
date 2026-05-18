@@ -102,7 +102,9 @@ Use a `.env` file for local development (see `.env.example`).
 | **Competitors** | All brands by visibility score, sentiment, avg. position — paginated, sortable |
 | **Prompts** | Per-prompt visibility, sentiment, position across all 5 AI models |
 | **Sources** | Top cited domains and URLs — heatmap (domain x model), bar chart, URL line chart |
+| **Sentiment** | Feature Mentions table (prompt categories grouped by topic, mention rate + sentiment bar), Sentiment Overview donut (distribution of positive/neutral/negative across responses where brand is mentioned), Sentiment by Competitor (10 per page, pos/neu/neg split + strength/weakness) |
 | **AI Suggestions** | AI-generated recommendations from the Peekaboo API |
+| **Integrations** | API key generator (read/read+write permissions), API docs with sticky sidebar (AI agent guide, quickstart, REST reference, rate limits, error codes), MCP server config |
 
 ---
 
