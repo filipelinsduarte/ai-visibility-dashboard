@@ -966,6 +966,10 @@ tbody td { padding: 9px 12px; }
 .aim-intent-badge.navigational::before   { color: #d97706; }
 .aim-intent-badge.priority-high::before   { color: #dc2626; }
 .aim-intent-badge.priority-medium::before { color: #d97706; }
+.aim-intent-badge.sent-positive::before  { color: #16a34a; }
+.aim-intent-badge.sent-negative::before  { color: #dc2626; }
+.aim-intent-badge.sent-neutral::before   { color: #6b7280; }
+.aim-intent-badge.sent-uncertain::before { color: #d97706; }
 
 .aim-topic-badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -2941,41 +2945,41 @@ window.AIM_INJECTED_DATA = {
   <div id="view-ai-sentiment" class="view">
     <div class="page-content">
 
-      <!-- Top row: Competitor chart | Sentiment over time | Donut -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 240px;gap:18px;margin-bottom:18px;align-items:stretch;">
+      <!-- 2-col grid: competitor table | donut -->
+      <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;margin-bottom:18px;align-items:start;">
 
-        <!-- Col 1: Sentiment by Competitor (paginated bar chart) -->
-        <div class="card" style="display:flex;flex-direction:column;">
-          <div class="card-header" style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+        <!-- Left: Sentiment by Competitor table -->
+        <div class="card" style="overflow:hidden;">
+          <div class="card-header">
             <div>
               <div class="card-title">Sentiment by Competitor</div>
-              <div class="card-desc">Positive / neutral / negative split per brand</div>
+              <div class="card-desc">Positive / neutral / negative split per brand with key strengths and weaknesses</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);">
-              <button id="aim-snt-comp-prev" onclick="aimSntCompPage(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <span id="aim-snt-comp-range" style="min-width:55px;text-align:center;">1–10</span>
-              <button id="aim-snt-comp-next" onclick="aimSntCompPage(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button id="aim-cp-sent-prev" onclick="aimCpSentPage(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <span id="aim-cp-sent-range" style="min-width:55px;text-align:center;">1–10 of 20</span>
+              <button id="aim-cp-sent-next" onclick="aimCpSentPage(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
           </div>
-          <div class="card-body" style="padding-top:8px;flex:1;">
-            <div style="position:relative;height:220px;"><canvas id="aim-snt-comp-chart"></canvas></div>
+          <div class="card-body" style="padding:0;">
+            <div class="aim-table-wrap" style="overflow-x:auto;">
+              <table class="aim-comp-table" style="min-width:720px;">
+                <thead>
+                  <tr>
+                    <th style="min-width:180px;">Brand</th>
+                    <th style="width:200px;">Sentiment Split</th>
+                    <th style="width:80px;">Visibility</th>
+                    <th style="min-width:180px;">Strength</th>
+                    <th style="min-width:180px;">Weakness</th>
+                  </tr>
+                </thead>
+                <tbody id="aim-cp-sent-tbody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <!-- Col 2: Sentiment over time -->
-        <div class="card" style="display:flex;flex-direction:column;">
-          <div class="card-header" style="flex-shrink:0;">
-            <div>
-              <div class="card-title">Sentiment over time</div>
-              <div class="card-desc">Daily positive rate across all classified AI responses</div>
-            </div>
-          </div>
-          <div class="card-body" style="padding-top:8px;flex:1;">
-            <div style="position:relative;height:220px;"><canvas id="aim-snt-trend-chart"></canvas></div>
-          </div>
-        </div>
-
-        <!-- Col 3: Sentiment overview donut with legend labels (no counts) -->
+        <!-- Right: Sentiment overview donut with legend (labels + count + pct) -->
         <div class="card" style="display:flex;flex-direction:column;">
           <div class="card-header" style="flex-shrink:0;">
             <div>
@@ -2991,39 +2995,49 @@ window.AIM_INJECTED_DATA = {
                 <div style="font-size:9px;color:var(--text-faint);margin-top:3px;">positive</div>
               </div>
             </div>
-            <div id="aim-snt-legend" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
+            <div id="aim-snt-legend" style="display:flex;flex-direction:column;gap:7px;width:100%;"></div>
           </div>
         </div>
 
       </div>
 
-      <!-- Sentiment entries table (flat, paginated) -->
+      <!-- Sentiment entries: search + filter toolbar, scrollable table -->
       <div class="card" style="overflow:hidden;">
-        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border-light);gap:10px;flex-wrap:wrap;">
           <div>
-            <div class="card-title">Sentiment entries</div>
-            <div class="card-desc">All classified AI responses mentioning your brand</div>
+            <div class="card-title" style="font-size:14px;">Sentiment entries</div>
+            <div class="card-desc" style="font-size:11px;">All classified AI responses mentioning your brand</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);">
-            <button id="aim-snt-ent-prev" onclick="aimSntEntriesPageDir(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <span id="aim-snt-ent-range" style="min-width:55px;text-align:center;">1–20</span>
-            <button id="aim-snt-ent-next" onclick="aimSntEntriesPageDir(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <input type="search" id="aim-snt-search" placeholder="Search prompts..." oninput="aimSntSearchChanged(this.value)"
+              style="height:28px;padding:0 10px;font-size:11.5px;border:1px solid var(--border);border-radius:6px;outline:none;font-family:var(--font);color:var(--text);width:180px;background:#fff;">
+            <div class="ct-custom-select" id="aim-snt-sent-sel" style="min-width:120px;">
+              <button class="ct-custom-trigger" onclick="openCustomSelect('aim-snt-sent-sel')" style="height:28px;font-size:11.5px;padding:0 9px;">
+                <span class="ct-trigger-label" id="aim-snt-sent-label">All Sentiments</span>
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style="flex-shrink:0;opacity:.5"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="ct-custom-dropdown">
+                <div class="ct-custom-option selected" onclick="aimSntSetSentFilter('all','All Sentiments')">All Sentiments</div>
+                <div class="ct-custom-option" onclick="aimSntSetSentFilter('positive','Positive')">Positive</div>
+                <div class="ct-custom-option" onclick="aimSntSetSentFilter('negative','Negative')">Negative</div>
+                <div class="ct-custom-option" onclick="aimSntSetSentFilter('neutral','Neutral')">Neutral</div>
+                <div class="ct-custom-option" onclick="aimSntSetSentFilter('uncertain','Uncertain')">Uncertain</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="card-body" style="padding:0;">
-          <div style="overflow-x:auto;">
-            <table class="aim-comp-table" style="min-width:700px;">
-              <thead>
-                <tr>
-                  <th style="width:100px;">Sentiment</th>
-                  <th style="min-width:200px;">Reason</th>
-                  <th style="min-width:180px;">Prompt</th>
-                  <th style="width:110px;">Model</th>
-                </tr>
-              </thead>
-              <tbody id="aim-snt-ent-tbody"></tbody>
-            </table>
-          </div>
+        <div style="max-height:calc(100vh - 320px);overflow-y:auto;">
+          <table class="aim-comp-table" style="min-width:700px;">
+            <thead>
+              <tr>
+                <th style="width:110px;">Sentiment</th>
+                <th style="min-width:200px;">Reason</th>
+                <th style="min-width:180px;">Prompt</th>
+                <th style="width:80px;">Model</th>
+              </tr>
+            </thead>
+            <tbody id="aim-snt-ent-tbody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -7653,6 +7667,8 @@ var _aimSentCompChart = null;
 var _aimSentTrendChart = null;
 var aimSntCompPageIdx = 0;
 var aimSntEntriesPageIdx = 0;
+var _aimSntSearch = '';
+var _aimSntFilterSent = 'all';
 
 var _AIM_SENT_MODEL_LABELS = {
   chatgpt: 'ChatGPT', gemini: 'Gemini', perplexity: 'Perplexity',
@@ -7840,8 +7856,7 @@ function aimUpdateSentiment() {
   var posRate = classified ? Math.round(counts.positive / classified * 100) : 0;
 
   aimRenderSentDonut2(counts, posRate);
-  aimRenderCompSentimentChart();
-  aimRenderSentOverTime();
+  aimRenderCompSentimentTable();
   aimRenderSentEntriesTable();
 }
 
@@ -7861,21 +7876,26 @@ function aimRenderSentDonut2(counts, posRate) {
         backgroundColor: total ? ['#16a34a', '#dc2626', '#6b7280', '#d97706'] : ['#e5e7eb'],
         borderWidth: 0 }]
     },
-    options: { cutout: '68%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    options: { cutout: '68%', plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: false } }
   });
 
   var legend = document.getElementById('aim-snt-legend');
   if (legend) {
+    var total = counts.positive + counts.negative + counts.neutral + counts.uncertain;
     var legendItems = [
-      { label: 'Positive',  color: '#16a34a' },
-      { label: 'Negative',  color: '#dc2626' },
-      { label: 'Neutral',   color: '#6b7280' },
-      { label: 'Uncertain', color: '#d97706' }
+      { label: 'Positive',  color: '#16a34a', key: 'positive' },
+      { label: 'Negative',  color: '#dc2626', key: 'negative' },
+      { label: 'Neutral',   color: '#6b7280', key: 'neutral' },
+      { label: 'Uncertain', color: '#d97706', key: 'uncertain' }
     ];
     legend.innerHTML = legendItems.map(function(item) {
+      var cnt = counts[item.key] || 0;
+      var pct = total ? Math.round(cnt / total * 100) : 0;
       return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">' +
         '<span style="width:8px;height:8px;border-radius:50%;background:' + item.color + ';flex-shrink:0;display:inline-block;"></span>' +
-        '<span>' + item.label + '</span>' +
+        '<span style="flex:1;">' + item.label + '</span>' +
+        '<span style="font-weight:600;color:var(--text);font-size:12px;">' + cnt + '</span>' +
+        '<span style="color:var(--text-faint);font-size:10px;">(' + pct + '%)</span>' +
       '</div>';
     }).join('');
   }
@@ -8034,8 +8054,16 @@ function aimSntEntriesPageDir(dir) {
 function aimSEGetAllFlat() {
   var SE = aimSEGetFiltered();
   var all = [];
+  var q = (_aimSntSearch || '').toLowerCase().trim();
   ['positive','negative','neutral','uncertain'].forEach(function(stype) {
-    (SE[stype] || []).forEach(function(x) { all.push({ stype: stype, item: x }); });
+    if (_aimSntFilterSent !== 'all' && stype !== _aimSntFilterSent) return;
+    (SE[stype] || []).forEach(function(x) {
+      if (q) {
+        var haystack = ((x.prompt || '') + ' ' + (x.reason || '')).toLowerCase();
+        if (haystack.indexOf(q) === -1) return;
+      }
+      all.push({ stype: stype, item: x });
+    });
   });
   all.sort(function(a, b) {
     var da = a.item.date || '';
@@ -8049,46 +8077,48 @@ function aimRenderSentEntriesTable() {
   var tbody = document.getElementById('aim-snt-ent-tbody');
   if (!tbody) return;
   var all = aimSEGetAllFlat();
-  var total = all.length;
-  var start = aimSntEntriesPageIdx * AIM_SNT_ENT_PAGE_SIZE;
-  var end = Math.min(start + AIM_SNT_ENT_PAGE_SIZE, total);
-  var slice = all.slice(start, end);
 
-  var sentColors = { positive: '#16a34a', negative: '#dc2626', neutral: '#6b7280', uncertain: '#d97706' };
-  var sentBgs    = { positive: '#dcfce7', negative: '#fee2e2', neutral: '#f3f4f6', uncertain: '#fef3c7' };
+  var sentBadgeClass = { positive: 'sent-positive', negative: 'sent-negative', neutral: 'sent-neutral', uncertain: 'sent-uncertain' };
   var sentLabels = { positive: 'Positive', negative: 'Negative', neutral: 'Neutral', uncertain: 'Uncertain' };
 
-  tbody.innerHTML = slice.map(function(entry) {
+  tbody.innerHTML = all.map(function(entry) {
     var stype = entry.stype;
     var item = entry.item;
     var modelKey = item.model || '';
     var modelLabel = _AIM_SENT_MODEL_LABELS[modelKey] || _AIM_SENT_MODEL_LABELS[_aimNormModelKey(modelKey)] || modelKey;
     var faviconDomain = AIM_MODEL_FAVICON[modelLabel] || AIM_MODEL_FAVICON[modelKey] || 'openai.com';
-    var sentPill = '<span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;' +
-      'background:' + sentBgs[stype] + ';color:' + sentColors[stype] + ';">' + sentLabels[stype] + '</span>';
-    var modelCell = '<div style="display:flex;align-items:center;gap:6px;">' +
-      '<img src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(faviconDomain) + '&sz=32" ' +
-      'style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">' +
-      '<span style="font-size:11px;color:var(--text-muted);">' + aimEscHtml(modelLabel) + '</span>' +
-    '</div>';
+    var sentBadge = '<span class="aim-intent-badge ' + (sentBadgeClass[stype] || '') + '">' + sentLabels[stype] + '</span>';
+    var modelCell = '<img class="aim-td-engine-ico" src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(faviconDomain) + '&sz=32" title="' + aimEscHtml(modelLabel) + '" onerror="this.style.display=\'none\'">';
     return '<tr>' +
-      '<td>' + sentPill + '</td>' +
+      '<td>' + sentBadge + '</td>' +
       '<td style="font-size:12px;color:var(--text-muted);">' + aimEscHtml(item.reason || '') + '</td>' +
       '<td style="font-size:12px;">' + aimEscHtml(item.prompt || '') + '</td>' +
-      '<td>' + modelCell + '</td>' +
+      '<td><div class="aim-td-engines">' + modelCell + '</div></td>' +
     '</tr>';
   }).join('');
 
-  if (!slice.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-faint);font-size:13px;">No classified responses found.</td></tr>';
+  if (!all.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-faint);font-size:13px;">No entries match your filters.</td></tr>';
   }
+}
 
-  var rangeEl = document.getElementById('aim-snt-ent-range');
-  if (rangeEl) rangeEl.textContent = total ? (start + 1) + '–' + end + ' of ' + total : '0';
-  var prevBtn = document.getElementById('aim-snt-ent-prev');
-  var nextBtn = document.getElementById('aim-snt-ent-next');
-  if (prevBtn) prevBtn.style.opacity = aimSntEntriesPageIdx === 0 ? '.35' : '1';
-  if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
+function aimSntSearchChanged(val) {
+  _aimSntSearch = val || '';
+  aimRenderSentEntriesTable();
+}
+
+function aimSntSetSentFilter(val, label) {
+  _aimSntFilterSent = val;
+  var lbl = document.getElementById('aim-snt-sent-label');
+  if (lbl) lbl.textContent = label;
+  // Update selected state in dropdown
+  var dd = document.querySelector('#aim-snt-sent-sel .ct-custom-dropdown');
+  if (dd) {
+    dd.querySelectorAll('.ct-custom-option').forEach(function(opt) {
+      opt.classList.toggle('selected', opt.textContent.trim() === label);
+    });
+  }
+  aimRenderSentEntriesTable();
 }
 
 function _aimSentCatColor(v) {
@@ -8200,10 +8230,16 @@ function aimRenderSentGroups() {
 
 function initAiSentiment() {
   aimRenderTopbar();
-  aimSntCompPageIdx = 0;
+  aimCompSentPage = 0;
   aimSntEntriesPageIdx = 0;
   if (!_aimSE) _aimSE = aimBuildSE();
   _aimSentFilters = { cat: 'all' };
+  _aimSntSearch = '';
+  _aimSntFilterSent = 'all';
+  var searchEl = document.getElementById('aim-snt-search');
+  if (searchEl) searchEl.value = '';
+  var sentLbl = document.getElementById('aim-snt-sent-label');
+  if (sentLbl) sentLbl.textContent = 'All Sentiments';
   aimUpdateSentiment();
 }
 
