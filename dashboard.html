@@ -3030,9 +3030,9 @@ window.AIM_INJECTED_DATA = {
           <table class="aim-comp-table" style="min-width:700px;">
             <thead>
               <tr>
+                <th style="min-width:200px;">Prompt</th>
+                <th style="min-width:180px;">Reason</th>
                 <th style="width:110px;">Sentiment</th>
-                <th style="min-width:200px;">Reason</th>
-                <th style="min-width:180px;">Prompt</th>
                 <th style="width:80px;">Model</th>
               </tr>
             </thead>
@@ -8073,26 +8073,36 @@ function aimSEGetAllFlat() {
   return all;
 }
 
+var _aimSntEntFlat = [];
+
 function aimRenderSentEntriesTable() {
   var tbody = document.getElementById('aim-snt-ent-tbody');
   if (!tbody) return;
-  var all = aimSEGetAllFlat();
+  _aimSntEntFlat = aimSEGetAllFlat();
+  var all = _aimSntEntFlat;
 
   var sentBadgeClass = { positive: 'sent-positive', negative: 'sent-negative', neutral: 'sent-neutral', uncertain: 'sent-uncertain' };
   var sentLabels = { positive: 'Positive', negative: 'Negative', neutral: 'Neutral', uncertain: 'Uncertain' };
 
-  tbody.innerHTML = all.map(function(entry) {
+  tbody.innerHTML = all.map(function(entry, idx) {
     var stype = entry.stype;
     var item = entry.item;
     var modelKey = item.model || '';
     var modelLabel = _AIM_SENT_MODEL_LABELS[modelKey] || _AIM_SENT_MODEL_LABELS[_aimNormModelKey(modelKey)] || modelKey;
     var faviconDomain = AIM_MODEL_FAVICON[modelLabel] || AIM_MODEL_FAVICON[modelKey] || 'openai.com';
     var sentBadge = '<span class="aim-intent-badge ' + (sentBadgeClass[stype] || '') + '">' + sentLabels[stype] + '</span>';
-    var modelCell = '<img class="aim-td-engine-ico" src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(faviconDomain) + '&sz=32" title="' + aimEscHtml(modelLabel) + '" onerror="this.style.display=\'none\'">';
+    var modelCell = '<span class="aim-td-tip" data-tip="' + aimEscHtml(modelLabel) + '">' +
+      '<img class="aim-td-engine-ico" src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(faviconDomain) + '&sz=32" ' +
+      'onerror="this.style.display=\'none\'" style="cursor:default;">' +
+      '</span>';
+    var promptCell = '<span style="cursor:pointer;color:var(--accent);font-size:12px;font-weight:500;" ' +
+      'onclick="aimSntOpenEntryResponse(' + idx + ')" ' +
+      'title="Click to view full AI response">' +
+      aimEscHtml(item.prompt || '') + '</span>';
     return '<tr>' +
-      '<td>' + sentBadge + '</td>' +
+      '<td>' + promptCell + '</td>' +
       '<td style="font-size:12px;color:var(--text-muted);">' + aimEscHtml(item.reason || '') + '</td>' +
-      '<td style="font-size:12px;">' + aimEscHtml(item.prompt || '') + '</td>' +
+      '<td>' + sentBadge + '</td>' +
       '<td><div class="aim-td-engines">' + modelCell + '</div></td>' +
     '</tr>';
   }).join('');
@@ -8100,6 +8110,19 @@ function aimRenderSentEntriesTable() {
   if (!all.length) {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-faint);font-size:13px;">No entries match your filters.</td></tr>';
   }
+}
+
+function aimSntOpenEntryResponse(idx) {
+  var entry = _aimSntEntFlat[idx];
+  if (!entry) return;
+  var item = entry.item;
+  var modelKey = item.model || '';
+  var modelLabel = _AIM_SENT_MODEL_LABELS[modelKey] || _AIM_SENT_MODEL_LABELS[_aimNormModelKey(modelKey)] || modelKey;
+  var pidStr = item.promptId || '';
+  var pidMatch = pidStr.match(/(\d+)/);
+  var pidIdx = pidMatch ? (parseInt(pidMatch[1]) - 1) : 0;
+  var promptObj = AIM_PROMPTS[pidIdx] || AIM_PROMPTS.find(function(p) { return p.text === item.prompt; }) || AIM_PROMPTS[0];
+  aimOpenResponseModal(modelLabel, item.date || '', promptObj ? promptObj.id : 1, null);
 }
 
 function aimSntSearchChanged(val) {
@@ -8437,64 +8460,65 @@ function aimRenderCompHeatmap() {
 }
 
 function aimComputeCompInsight(b) {
-  var vis = aimGetBrandMetrics(b).vis;
-  var sent = b.sentiment || 50;
-  var pos = b.avg_position || b.position || null;
+  // Tally sentiment of every AI response that co-mentions this competitor
+  var history = window._aimPromptResponseHistory || {};
+  var brandLo = b.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+  var cPos = 0, cNeg = 0, cNeu = 0, total = 0;
+
+  Object.keys(history).forEach(function(pid) {
+    var byDate = history[pid];
+    if (!byDate || typeof byDate !== 'object') return;
+    Object.keys(byDate).forEach(function(date) {
+      var byProv = byDate[date];
+      if (!byProv || typeof byProv !== 'object') return;
+      Object.keys(byProv).forEach(function(prov) {
+        var resp = byProv[prov];
+        if (!resp || !Array.isArray(resp.brands)) return;
+        var mentioned = resp.brands.some(function(br) {
+          var brLo = br.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+          return brLo === brandLo || brLo.includes(brandLo) || brandLo.includes(brLo);
+        });
+        if (!mentioned) return;
+        total++;
+        var sl = (resp.sentiment_label || '').toLowerCase();
+        if (sl === 'positive') cPos++;
+        else if (sl === 'negative') cNeg++;
+        else cNeu++;
+      });
+    });
+  });
+
   var str = null, wk = null;
 
-  // Per-model visibility from real heatmap data
-  var bHm = (window.AIM_REAL_HM_DATA || {})[b.name] || {};
-  var modelDefs = [
-    {key:'chatgpt',label:'ChatGPT'},{key:'gemini',label:'Gemini'},
-    {key:'perplexity',label:'Perplexity'},{key:'googleaio',label:'Google AIO'},
-    {key:'googleaimode',label:'AI Mode'}
-  ];
-  var scored = modelDefs.map(function(m){return{label:m.label,val:bHm[m.key]||0};});
-  scored.sort(function(a,c){return c.val-a.val;});
-  var bestM = scored[0], worstM = scored[scored.length-1];
-
-  // Visibility trend from brand_timeline
-  var _bt = window._aimBrandTimeline || {};
-  var tl = _bt[b.name];
-  if (!tl) {
-    var blo = b.name.toLowerCase().trim();
-    for (var k in _bt) {
-      if (k.toLowerCase().trim() === blo) { tl = _bt[k]; break; }
-    }
-  }
-  var trendPct = 0;
-  if (tl && tl.length >= 4) {
-    var recentVals = tl.slice(-2).map(function(t){return t.visibility||0;});
-    var earlierVals = tl.slice(-4,-2).map(function(t){return t.visibility||0;});
-    var rAvg = recentVals.reduce(function(a,v){return a+v;},0)/recentVals.length;
-    var eAvg = earlierVals.reduce(function(a,v){return a+v;},0)/earlierVals.length;
-    if (eAvg > 0) trendPct = Math.round((rAvg/eAvg - 1)*100);
+  if (total === 0) {
+    if (aimGetBrandMetrics(b).vis < 3) wk = 'Rarely mentioned in AI responses for monitored prompts';
+    return { str: str, wk: wk };
   }
 
-  // STRENGTH: best factual signal
-  if (pos !== null && pos <= 2.5) {
-    str = 'Avg position #' + pos.toFixed(1) + ' across all AI responses';
-  } else if (trendPct >= 20) {
-    str = 'Visibility growing +' + trendPct + '% vs prior period';
-  } else if (bestM && bestM.val >= 10) {
-    str = 'Cited most on ' + bestM.label + ' (' + bestM.val.toFixed(0) + '% vis)';
-  } else if (sent >= 72) {
-    str = 'Strong positive sentiment (' + Math.round(sent) + '/100)';
-  } else if (vis >= 15) {
-    str = 'High AI visibility (' + vis.toFixed(0) + '%) across monitored prompts';
+  var posRate = Math.round(cPos / total * 100);
+  var negRate = Math.round(cNeg / total * 100);
+  var neuRate = Math.round(cNeu / total * 100);
+
+  // STRENGTH: positive co-mention signal from real response text
+  if (posRate >= 60) {
+    str = 'Positively mentioned in ' + posRate + '% of AI responses (' + cPos + '/' + total + ')';
+  } else if (posRate > negRate && posRate >= 30) {
+    str = 'More positive than negative — ' + posRate + '% pos vs ' + negRate + '% neg';
+  } else if (neuRate >= 70 && total >= 5) {
+    str = 'Consistent factual mentions across ' + total + ' responses — ' + neuRate + '% neutral';
+  } else if (total >= 10 && negRate < 15) {
+    str = 'Rarely mentioned negatively — only ' + negRate + '% negative across ' + total + ' mentions';
   }
 
-  // WEAKNESS: worst factual signal
-  if (worstM && worstM.val === 0) {
-    wk = 'Not cited on ' + worstM.label + ' — zero visibility on that model';
-  } else if (trendPct <= -20) {
-    wk = 'Visibility declining ' + trendPct + '% vs prior period';
-  } else if (sent < 38) {
-    wk = 'Negative sentiment signal (score ' + Math.round(sent) + '/100)';
-  } else if (vis < 5) {
-    wk = 'Low AI visibility (' + vis.toFixed(1) + '%) — rarely cited';
-  } else if (pos !== null && pos > 5) {
-    wk = 'Avg position #' + pos.toFixed(1) + ' — mentioned late in AI responses';
+  // WEAKNESS: negative co-mention signal from real response text
+  if (negRate >= 35) {
+    wk = 'Negatively mentioned in ' + negRate + '% of AI responses (' + cNeg + '/' + total + ')';
+  } else if (cNeg > cPos) {
+    wk = 'More negative than positive — ' + negRate + '% neg vs ' + posRate + '% pos';
+  } else if (total < 5) {
+    wk = 'Rarely co-mentioned — only ' + total + ' shared AI responses found';
+  } else if (posRate < 20 && negRate < 20) {
+    wk = 'Mostly neutral context — limited positive differentiation (' + neuRate + '% neutral)';
   }
 
   return { str: str, wk: wk };
@@ -8521,20 +8545,14 @@ function aimRenderCompSentimentTable() {
     const sp = aimCompSentSplit(b.sentiment);
     const ins = aimComputeCompInsight(b);
     const youBadge = b.isMain ? `<span class="aim-you-badge" style="margin-left:6px">You</span>` : '';
-    const sentBar = `<div style="display:flex;align-items:center;gap:8px;">
-      <div class="aim-comp-sent-bar">
+    const sentTip = `Positive: ${sp.pos}% / Neutral: ${sp.neu}% / Negative: ${sp.neg}%`;
+    const sentBar = `<span class="aim-td-tip" data-tip="${aimEscHtml(sentTip)}" style="display:inline-block;cursor:default;">
+      <div class="aim-comp-sent-bar" style="width:180px;">
         <div class="aim-comp-sent-pos" style="width:${sp.pos}%"></div>
         <div class="aim-comp-sent-neu" style="width:${sp.neu}%"></div>
         <div class="aim-comp-sent-neg" style="width:${sp.neg}%"></div>
       </div>
-      <span style="font-size:10px;color:var(--text-faint);white-space:nowrap">
-        <span style="color:#16a34a;font-weight:600">${sp.pos}%</span>
-        <span style="color:var(--text-faint);margin:0 2px">/</span>
-        <span style="font-weight:500">${sp.neu}%</span>
-        <span style="color:var(--text-faint);margin:0 2px">/</span>
-        <span style="color:#dc2626;font-weight:600">${sp.neg}%</span>
-      </span>
-    </div>`;
+    </span>`;
     return `<tr class="${b.isMain ? 'is-main' : ''}">
       <td>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -13477,12 +13495,15 @@ function _aimExpandTodo(parent) {
   var result = [];
   var sugs = parent.suggestions || [];
 
-  // Singleton suggestion: fold it into parent steps, don't create a child todo
-  if (sugs.length === 1) {
-    parentOut.steps = (parentOut.steps || []).concat(sugs);
-    if (!parentOut.steps || parentOut.steps.length > 0) {
-      result.push(parentOut);
-    }
+  // Normalize to objects — supports both plain strings and {title,steps,signals} objects
+  var sugObjs = sugs.map(function(s) {
+    return (typeof s === 'string') ? { title: s, steps: [], signals: [] } : s;
+  });
+
+  // Singleton: fold title into parent steps, emit only the parent
+  if (sugObjs.length === 1) {
+    parentOut.steps = (parentOut.steps || []).concat([sugObjs[0].title]);
+    result.push(parentOut);
     return result;
   }
 
@@ -13491,16 +13512,19 @@ function _aimExpandTodo(parent) {
     result.push(parentOut);
   }
 
-  // Each item in suggestions[] is a genuinely independent sub-campaign
-  sugs.forEach(function(sug, i) {
+  // Each suggestion becomes an independent child todo with its own steps/signals
+  sugObjs.forEach(function(sug, i) {
     var child = {};
     for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) child[k] = parent[k]; }
     child.id          = parent.id + '-s' + i;
-    child.title       = sug;
+    child.title       = sug.title;
     child._groupId    = parent.id;
     child._groupLabel = parent.title;
     child.suggestions = null;
-    child.steps       = sugs.filter(function(_, j){ return j !== i; });
+    child.steps       = sug.steps && sug.steps.length ? sug.steps : [];
+    child.signals     = sug.signals && sug.signals.length ? sug.signals : parent.signals;
+    child.sigs_fav    = sug.sigs_fav || [null, null, null];
+    child.sigs_expand = sug.sigs_expand || null;
     child.reasoning   = parent.reasoning;
     result.push(child);
   });
