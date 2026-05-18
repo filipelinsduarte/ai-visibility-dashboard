@@ -12393,6 +12393,14 @@ function aimTdToggleExpand(btn) {
 function initAiTodos() {
   aimRenderTopbar();
   if (!_aimTodosData) _aimTodosData = aimGenerateTodos();
+  // Purge stale IDs from localStorage that no longer exist in the current todo list
+  var validIds = new Set(_aimTodosData.map(function(t){ return t.id; }));
+  [['aim_td_added', _aimTodosAdded], ['aim_td_completed', _aimTodosCompleted], ['aim_td_archived', _aimTodosArchived]].forEach(function(pair) {
+    var key = pair[0], set = pair[1];
+    var before = set.size;
+    set.forEach(function(id){ if (!validIds.has(id)) set.delete(id); });
+    if (set.size !== before) localStorage.setItem(key, JSON.stringify([...set]));
+  });
   aimCloseTodoDetail();
   aimRenderTodosTable();
   aimUpdateTodoTabCounts();
@@ -12689,7 +12697,6 @@ function aimRenderTodosTable() {
       '</td>' +
       '<td class="col-left">' +
         '<div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.4;' + (isDone ? 'text-decoration:line-through;opacity:.6;' : '') + '">' + aimEscHtml(a.title) + '</div>' +
-        (a._groupLabel ? '<div style="font-size:10.5px;color:var(--text-faint);margin-top:2px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px;">' + aimEscHtml(a._groupLabel) + '</div>' : '') +
       '</td>' +
       '<td onclick="event.stopPropagation()"><span class="aim-intent-badge ' + priClass + '" style="cursor:pointer;" onclick="aimTdPriPop(this,\'' + aimEscHtml(a.id) + '\')"> ' + priLabel + '</span></td>' +
       '<td><span class="aim-intent-badge ' + pageClass + '">' + pageLabel + '</span></td>' +
@@ -13369,17 +13376,23 @@ function _aimExpandTodo(parent) {
   for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) parentOut[k] = parent[k]; }
   parentOut.suggestions = null;
   var result = [];
-  // Only include the parent row if it has execution steps to show — if steps is
-  // empty, the sub-campaign children are the real action items and the parent
-  // would just be an empty placeholder.
+  var sugs = parent.suggestions || [];
+
+  // Singleton suggestion: fold it into parent steps, don't create a child todo
+  if (sugs.length === 1) {
+    parentOut.steps = (parentOut.steps || []).concat(sugs);
+    if (!parentOut.steps || parentOut.steps.length > 0) {
+      result.push(parentOut);
+    }
+    return result;
+  }
+
+  // Only include the parent row if it has execution steps to show
   if (!parent.steps || parent.steps.length > 0) {
     result.push(parentOut);
   }
-  // Each item in suggestions[] is a genuinely independent sub-campaign.
-  // Its "why" reasoning inherits the parent context so the detail view explains
-  // which goal this action addresses.
-  var sugs = parent.suggestions || [];
-  var parentShortTitle = parent.title.split(':')[0];
+
+  // Each item in suggestions[] is a genuinely independent sub-campaign
   sugs.forEach(function(sug, i) {
     var child = {};
     for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) child[k] = parent[k]; }
@@ -13389,7 +13402,7 @@ function _aimExpandTodo(parent) {
     child._groupLabel = parent.title;
     child.suggestions = null;
     child.steps       = sugs.filter(function(_, j){ return j !== i; });
-    child.reasoning   = 'Part of the action plan to address: "' + parentShortTitle + '". ' + parent.reasoning;
+    child.reasoning   = parent.reasoning;
     result.push(child);
   });
   return result;
