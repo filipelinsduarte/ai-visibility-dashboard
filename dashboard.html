@@ -12246,6 +12246,7 @@ function aimRenderTodosTable() {
       '</td>' +
       '<td class="col-left">' +
         '<div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.4;' + (isDone ? 'text-decoration:line-through;opacity:.6;' : '') + '">' + aimEscHtml(a.title) + '</div>' +
+        (a._groupLabel ? '<div style="font-size:10.5px;color:var(--text-faint);margin-top:2px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px;">' + aimEscHtml(a._groupLabel) + '</div>' : '') +
       '</td>' +
       '<td onclick="event.stopPropagation()"><span class="aim-intent-badge ' + priClass + '" style="cursor:pointer;" onclick="aimTdPriPop(this,\'' + aimEscHtml(a.id) + '\')"> ' + priLabel + '</span></td>' +
       '<td><span class="aim-intent-badge ' + pageClass + '">' + pageLabel + '</span></td>' +
@@ -12747,8 +12748,8 @@ function aimOpenTodoDetail(id) {
     return aimRenderSigChip(s, sfav, sexp);
   }).join('');
 
-  var suggestions = (action.suggestions || []).map(function(s) {
-    return '<li style="font-size:12.5px;color:var(--text-muted);line-height:1.7;padding:2px 0;">' + aimEscHtml(s) + '</li>';
+  var stepsHtml = (action.steps || action.suggestions || []).map(function(s, i) {
+    return aimRenderStepRow(s, i, null);
   }).join('');
 
   var examples = aimTdGetExamples(action);
@@ -12805,6 +12806,7 @@ function aimOpenTodoDetail(id) {
       '<div class="card-body">' +
         '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">' +
           '<div style="flex:1;min-width:0;">' +
+            (action._groupLabel ? '<div style="font-size:11px;color:var(--text-faint);margin-bottom:5px;display:flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' + aimEscHtml(action._groupLabel) + '</div>' : '') +
             '<div style="font-size:16px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:8px;' + (isDone ? 'text-decoration:line-through;opacity:.6;' : '') + '">' + aimEscHtml(action.title) + '</div>' +
             '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
               '<button onclick="aimTdToggleWhy(this)" style="display:inline-flex;align-items:center;gap:0;background:#f9fafb;border:1px solid var(--border);border-radius:6px;padding:2px 9px 2px 0;font-size:11.5px;font-weight:600;color:#374151;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:background .12s,color .12s;" onmouseover="this.style.background=\'transparent\';this.style.color=\'var(--text-muted)\'" onmouseout="this.style.background=\'#f9fafb\';this.style.color=\'#374151\'">' +
@@ -12850,12 +12852,12 @@ function aimOpenTodoDetail(id) {
           '<button data-save-id="' + aimEscHtml(id) + '" onclick="aimTdSaveNotes(\'' + aimEscHtml(id) + '\')" style="padding:4px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);">Save</button>' +
         '</div>' +
       '</div>' +
-      (suggestions || examples.length
+      (stepsHtml || examples.length
         ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;margin-top:28px;">' +
-            (suggestions
+            (stepsHtml
               ? '<div>' +
-                  '<div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:12px;">Suggestions</div>' +
-                  '<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;">' + suggestions + '</ul>' +
+                  '<div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:12px;">Steps</div>' +
+                  '<div style="display:flex;flex-direction:column;gap:10px;">' + stepsHtml + '</div>' +
                 '</div>'
               : '<div></div>') +
             (examples.length
@@ -12920,6 +12922,23 @@ const _aimTdIconMap = {
 };
 function aimTdIcon(name) { return _aimTdIconMap[name] || _aimTdIconMap.target; }
 
+function _aimExpandTodo(parent) {
+  var sugs = parent.suggestions;
+  if (!sugs || !sugs.length) return [parent];
+  return sugs.map(function(sug, i) {
+    var steps = sugs.filter(function(_, j){ return j !== i; });
+    var child = {};
+    for (var k in parent) { if (Object.prototype.hasOwnProperty.call(parent, k)) child[k] = parent[k]; }
+    child.id          = parent.id + '-s' + i;
+    child.title       = sug;
+    child._groupId    = parent.id;
+    child._groupLabel = parent.title;
+    child.suggestions = null;
+    child.steps       = steps;
+    return child;
+  });
+}
+
 function aimGenerateTodos() {
   var snap = window._AIM_SNAPSHOT || {};
   var todos = [];
@@ -12971,7 +12990,7 @@ function aimGenerateTodos() {
     if (!targProvs.length) targProvs = activeProviders();
 
     if (gap > 3) {
-      todos.push({
+      _aimExpandTodo({
         id: 'td-comp-gap',
         priority: 'high',
         effort: 'High effort',
@@ -13009,14 +13028,14 @@ function aimGenerateTodos() {
         brands: competitors[1]
           ? [{ domain: topDomain, label: top.name }, { domain: injDomainMap[(competitors[1].name||'').toLowerCase()] || '', label: competitors[1].name || '' }]
           : [{ domain: topDomain, label: top.name }]
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
   // ── 2. Zero-visibility prompts ────────────────────────────────
   if (zeroPrompts.length > 0) {
     var ex0 = zeroPrompts[0];
-    todos.push({
+    _aimExpandTodo({
       id: 'td-zero-vis',
       priority: 'high',
       effort: 'High effort',
@@ -13052,7 +13071,7 @@ function aimGenerateTodos() {
       outcome: 'Converting 20% of zero-visibility prompts to 10%+ mention rates would meaningfully lift your overall AI visibility score.',
       platDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
       brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 3. Top citation domain ────────────────────────────────────
@@ -13080,7 +13099,7 @@ function aimGenerateTodos() {
       var provsCitingDomain = allProviders.filter(function(p) {
         return (srcByProv[p] || []).find(function(s){ return s.domain === tdSrc.domain && s.citation_count > 0; });
       });
-      todos.push({
+      _aimExpandTodo({
         id: 'td-top-domain',
         priority: 'high',
         effort: 'Med effort',
@@ -13118,7 +13137,7 @@ function aimGenerateTodos() {
         outcome: 'A feature on ' + tdSrc.domain + ' could add 5-15 additional AI citations per month and raise your overall visibility by 2-5 points.',
         platDomains: topSources.slice(0, 5).map(function(s){ return s.domain; }),
         brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
@@ -13137,7 +13156,7 @@ function aimGenerateTodos() {
       var allModItems = pvSorted.slice().reverse().map(function(p) {
         return p.label + ': ' + p.vis.toFixed(1) + '%' + (p.key === weakest.key ? ' (lowest)' : p.key === strongest.key ? ' (highest)' : '');
       });
-      todos.push({
+      _aimExpandTodo({
         id: 'td-model-gap',
         priority: 'high',
         effort: 'Med effort',
@@ -13174,7 +13193,7 @@ function aimGenerateTodos() {
         outcome: 'A targeted 60-day push on ' + weakest.label + '-favored sources should raise your visibility on that model by 3-10 points.',
         platDomains: weakSrcs,
         brands: provVis.filter(function(p){ return provDomains[p.key]; }).slice(0, 3).map(function(p){ return { domain: provDomains[p.key], label: p.label }; })
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
@@ -13183,7 +13202,7 @@ function aimGenerateTodos() {
     var top3Count = topSources.slice(0, 3).reduce(function(s, d){ return s + (d.citation_count || 0); }, 0);
     var top3Share = totalCitations > 0 ? Math.round((top3Count / totalCitations) * 100) : 0;
     if (top3Share > 50) {
-      todos.push({
+      _aimExpandTodo({
         id: 'td-diversify',
         priority: 'medium',
         effort: 'High effort',
@@ -13230,7 +13249,7 @@ function aimGenerateTodos() {
         outcome: 'A distributed citation profile reduces volatility and compounds over time as each new domain adds a persistent source of AI references.',
         platDomains: topSources.slice(0, 6).map(function(s){ return s.domain; }),
         brands: topSources.slice(0, 3).map(function(s){ return { domain: s.domain, label: s.domain }; })
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
@@ -13252,7 +13271,7 @@ function aimGenerateTodos() {
     var weakTopic = topicList[0];
     if (weakTopic.avgVis < overallVis * 0.7 || weakTopic.avgVis < 5) {
       var clusterPrompts = weakTopic.prompts.slice().sort(function(a,b){ return (a.visibility_all||0)-(b.visibility_all||0); });
-      todos.push({
+      _aimExpandTodo({
         id: 'td-topic-cluster',
         priority: 'medium',
         effort: 'Med effort',
@@ -13294,7 +13313,7 @@ function aimGenerateTodos() {
         outcome: 'A well-executed topic cluster typically lifts AI visibility in that category by 10-20 points within 2-3 months of indexing.',
         platDomains: topSources.slice(0, 4).map(function(s){ return s.domain; }),
         brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
@@ -13306,7 +13325,7 @@ function aimGenerateTodos() {
     var lscDomain = injDomainMap[lowSentComp.name.toLowerCase()] || '';
     var lscTargProvs = providersWhereCompVisible(lowSentComp.name);
     if (!lscTargProvs.length) lscTargProvs = activeProviders();
-    todos.push({
+    _aimExpandTodo({
       id: 'td-sentiment-opp',
       priority: 'medium',
       effort: 'Med effort',
@@ -13339,7 +13358,7 @@ function aimGenerateTodos() {
       outcome: 'Comparison and alternative content typically generates AI citations within 4-8 weeks and can shift share of voice when a competitor has persistent sentiment issues.',
       platDomains: [lscDomain].filter(Boolean).concat(topSources.slice(0, 2).map(function(s){ return s.domain; })),
       brands: [{ domain: lscDomain, label: lowSentComp.name }].filter(function(b){ return b.domain; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 8. Commercial intent prompts ─────────────────────────────
@@ -13348,7 +13367,7 @@ function aimGenerateTodos() {
     var commAvg = commercialPrompts.reduce(function(s,p){ return s + (p.visibility_all || 0); }, 0) / commercialPrompts.length;
     if (commAvg < overallVis * 0.85 || commAvg < 5) {
       var commZeroCount = commercialPrompts.filter(function(p){ return (p.visibility_all||0)===0; }).length;
-      todos.push({
+      _aimExpandTodo({
         id: 'td-commercial',
         priority: 'medium',
         effort: 'Med effort',
@@ -13383,7 +13402,7 @@ function aimGenerateTodos() {
         outcome: 'Lifting commercial-intent visibility to match your overall average puts ' + brand + ' in front of buyers at their highest-intent moment.',
         platDomains: topSources.slice(0, 5).map(function(s){ return s.domain; }),
         brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
@@ -13399,7 +13418,7 @@ function aimGenerateTodos() {
       var entry = (srcByProv[p] || []).find(function(s){ return s.domain === 'reddit.com'; });
       return provLabels[p] + ': ' + (entry ? entry.citation_count + ' Reddit citations' : '0');
     });
-    todos.push({
+    _aimExpandTodo({
       id: 'td-reddit',
       priority: 'medium',
       effort: 'Med effort',
@@ -13434,7 +13453,7 @@ function aimGenerateTodos() {
       outcome: 'Reddit mentions in popular threads generate persistent AI citations for 12-24 months as AI models continue to index community discussions.',
       platDomains: ['reddit.com'].concat(topSources.slice(0, 2).map(function(s){ return s.domain; })),
       brands: [{ domain: 'reddit.com', label: 'Reddit' }]
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 10. Brand sentiment below neutral ─────────────────────────
@@ -13446,7 +13465,7 @@ function aimGenerateTodos() {
     var sentByModel = activeProviders().map(function(p) {
       return latByProv[p] && latByProv[p].sentiment != null ? provLabels[p] + ': ' + latByProv[p].sentiment + '% positive' : null;
     }).filter(Boolean);
-    todos.push({
+    _aimExpandTodo({
       id: 'td-brand-sentiment',
       priority: 'high',
       effort: 'High effort',
@@ -13487,7 +13506,7 @@ function aimGenerateTodos() {
       outcome: 'A 10-point lift in sentiment (from ' + Math.round(avgBrandSent) + '% to ' + Math.round(avgBrandSent + 10) + '%) typically takes 60-90 days with consistent review and content activity.',
       platDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
       brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 11. Poor mention position ──────────────────────────────────
@@ -13500,7 +13519,7 @@ function aimGenerateTodos() {
     var posByModel = activeProviders().map(function(p) {
       return latByProv[p] && latByProv[p].position != null ? provLabels[p] + ': position ' + latByProv[p].position.toFixed(1) : null;
     }).filter(Boolean);
-    todos.push({
+    _aimExpandTodo({
       id: 'td-position',
       priority: 'medium',
       effort: 'Med effort',
@@ -13541,7 +13560,7 @@ function aimGenerateTodos() {
       outcome: 'Moving from position ' + snapAvgPos.toFixed(1) + ' to position 3 or below can double the conversion impact of each AI mention.',
       platDomains: topSources.slice(0, 4).map(function(s){ return s.domain; }),
       brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 12. Second competitor gap ──────────────────────────────────
@@ -13554,7 +13573,7 @@ function aimGenerateTodos() {
       var secHmItems = Object.keys(secHm).filter(function(k){ return provLabels[k]; }).map(function(k){
         return provLabels[k] + ': ' + secHm[k].toFixed(1) + '%';
       });
-      todos.push({
+      _aimExpandTodo({
         id: 'td-second-comp',
         priority: 'medium',
         effort: 'High effort',
@@ -13596,7 +13615,7 @@ function aimGenerateTodos() {
         outcome: 'A focused 60-day push on ' + sec.name + ' comparison content can close the gap by half and move ' + brand + ' into the top 2 most-cited tools.',
         platDomains: [secDomain].filter(Boolean).concat(topSources.slice(0, 3).map(function(s){ return s.domain; })),
         brands: [{ domain: secDomain, label: sec.name }].filter(function(b){ return b.domain; })
-      });
+      }).forEach(function(t){ todos.push(t); });
     }
   }
 
@@ -13605,7 +13624,7 @@ function aimGenerateTodos() {
     var questionPrompts = prompts.filter(function(p) {
       return /^(what|how|which|who|where|when|why|can|should|is|are|does|do)\b/i.test((p.prompt_text || '').trim());
     });
-    todos.push({
+    _aimExpandTodo({
       id: 'td-schema',
       priority: 'medium',
       effort: 'Low effort',
@@ -13646,7 +13665,7 @@ function aimGenerateTodos() {
       outcome: 'Schema typically shows AI citation impact within 3-6 weeks with no new content production required. Only technical markup changes.',
       platDomains: topSources.slice(0, 3).map(function(s){ return s.domain; }),
       brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 14. Google AIO / AI Mode gap ──────────────────────────────
@@ -13658,7 +13677,7 @@ function aimGenerateTodos() {
     : (googleAioVis !== null ? googleAioVis : googleAiModeVis);
   if (googleLowVis !== null && chatgptVis2 !== null && googleLowVis < chatgptVis2 * 0.55 && chatgptVis2 > 0) {
     var googleSrcs = (srcByProv['googleaio'] || []).slice(0, 5);
-    todos.push({
+    _aimExpandTodo({
       id: 'td-google-ai',
       priority: 'medium',
       effort: 'Med effort',
@@ -13697,7 +13716,7 @@ function aimGenerateTodos() {
       outcome: 'Google AI visibility typically responds faster to SEO improvements than other models. Expect movement within 3-5 weeks of publishing and indexing.',
       platDomains: googleSrcs.map(function(s){ return s.domain; }),
       brands: googleSrcs.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 15. Publish original research or data asset ────────────────
@@ -13705,7 +13724,7 @@ function aimGenerateTodos() {
     return /\bstudy\b|research|\bsurvey\b|\breport\b|\bstate[-\s]of\b|\bindex\b/i.test(u.url || '');
   });
   if (!hasOriginalData || overallVis < 12) {
-    todos.push({
+    _aimExpandTodo({
       id: 'td-original-data',
       priority: 'medium',
       effort: 'High effort',
@@ -13752,7 +13771,7 @@ function aimGenerateTodos() {
       outcome: 'A well-distributed research piece typically generates 50-200 new domain citations within 90 days, creating a sustained uplift in AI visibility that compounds with each annual refresh.',
       platDomains: topSources.slice(0, 5).map(function(s){ return s.domain; }),
       brands: topSources.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── 16. Tech media and press coverage ─────────────────────────
@@ -13761,7 +13780,7 @@ function aimGenerateTodos() {
     return newsPatterns.some(function(n) { return s.domain.indexOf(n) > -1; });
   });
   if (newsDomainsCited.length > 0 && overallVis < 20) {
-    todos.push({
+    _aimExpandTodo({
       id: 'td-press',
       priority: 'medium',
       effort: 'High effort',
@@ -13803,7 +13822,7 @@ function aimGenerateTodos() {
       outcome: 'Each media mention creates a citation AI references for 12-24 months, compounding into a persistent presence across responses for relevant queries.',
       platDomains: newsDomainsCited.map(function(s){ return s.domain; }),
       brands: newsDomainsCited.slice(0, 2).map(function(s){ return { domain: s.domain, label: s.domain }; })
-    });
+    }).forEach(function(t){ todos.push(t); });
   }
 
   // ── Fallback ──────────────────────────────────────────────────
