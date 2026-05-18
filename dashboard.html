@@ -2946,7 +2946,7 @@ window.AIM_INJECTED_DATA = {
     <div class="page-content">
 
       <!-- 2-col grid: competitor table | donut -->
-      <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;margin-bottom:18px;align-items:start;">
+      <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;margin-bottom:18px;align-items:stretch;">
 
         <!-- Left: Sentiment by Competitor table -->
         <div class="card" style="overflow:hidden;">
@@ -8436,9 +8436,73 @@ function aimRenderCompHeatmap() {
   if (nextBtn) nextBtn.style.opacity = end >= total ? '.35' : '1';
 }
 
+function aimComputeCompInsight(b) {
+  var vis = aimGetBrandMetrics(b).vis;
+  var sent = b.sentiment || 50;
+  var pos = b.avg_position || b.position || null;
+  var str = null, wk = null;
+
+  // Per-model visibility from real heatmap data
+  var bHm = (window.AIM_REAL_HM_DATA || {})[b.name] || {};
+  var modelDefs = [
+    {key:'chatgpt',label:'ChatGPT'},{key:'gemini',label:'Gemini'},
+    {key:'perplexity',label:'Perplexity'},{key:'googleaio',label:'Google AIO'},
+    {key:'googleaimode',label:'AI Mode'}
+  ];
+  var scored = modelDefs.map(function(m){return{label:m.label,val:bHm[m.key]||0};});
+  scored.sort(function(a,c){return c.val-a.val;});
+  var bestM = scored[0], worstM = scored[scored.length-1];
+
+  // Visibility trend from brand_timeline
+  var _bt = window._aimBrandTimeline || {};
+  var tl = _bt[b.name];
+  if (!tl) {
+    var blo = b.name.toLowerCase().trim();
+    for (var k in _bt) {
+      if (k.toLowerCase().trim() === blo) { tl = _bt[k]; break; }
+    }
+  }
+  var trendPct = 0;
+  if (tl && tl.length >= 4) {
+    var recentVals = tl.slice(-2).map(function(t){return t.visibility||0;});
+    var earlierVals = tl.slice(-4,-2).map(function(t){return t.visibility||0;});
+    var rAvg = recentVals.reduce(function(a,v){return a+v;},0)/recentVals.length;
+    var eAvg = earlierVals.reduce(function(a,v){return a+v;},0)/earlierVals.length;
+    if (eAvg > 0) trendPct = Math.round((rAvg/eAvg - 1)*100);
+  }
+
+  // STRENGTH: best factual signal
+  if (pos !== null && pos <= 2.5) {
+    str = 'Avg position #' + pos.toFixed(1) + ' across all AI responses';
+  } else if (trendPct >= 20) {
+    str = 'Visibility growing +' + trendPct + '% vs prior period';
+  } else if (bestM && bestM.val >= 10) {
+    str = 'Cited most on ' + bestM.label + ' (' + bestM.val.toFixed(0) + '% vis)';
+  } else if (sent >= 72) {
+    str = 'Strong positive sentiment (' + Math.round(sent) + '/100)';
+  } else if (vis >= 15) {
+    str = 'High AI visibility (' + vis.toFixed(0) + '%) across monitored prompts';
+  }
+
+  // WEAKNESS: worst factual signal
+  if (worstM && worstM.val === 0) {
+    wk = 'Not cited on ' + worstM.label + ' — zero visibility on that model';
+  } else if (trendPct <= -20) {
+    wk = 'Visibility declining ' + trendPct + '% vs prior period';
+  } else if (sent < 38) {
+    wk = 'Negative sentiment signal (score ' + Math.round(sent) + '/100)';
+  } else if (vis < 5) {
+    wk = 'Low AI visibility (' + vis.toFixed(1) + '%) — rarely cited';
+  } else if (pos !== null && pos > 5) {
+    wk = 'Avg position #' + pos.toFixed(1) + ' — mentioned late in AI responses';
+  }
+
+  return { str: str, wk: wk };
+}
+
 function aimCpSentPage(dir) {
   const sorted = [...AI_BRANDS].sort((a,b) => aimGetBrandMetrics(b).vis - aimGetBrandMetrics(a).vis);
-  const maxPage = Math.ceil(sorted.length / 10) - 1;
+  const maxPage = Math.ceil(sorted.length / 6) - 1;
   aimCompSentPage = Math.max(0, Math.min(maxPage, aimCompSentPage + dir));
   aimRenderCompSentimentTable();
 }
@@ -8446,17 +8510,16 @@ function aimCpSentPage(dir) {
 function aimRenderCompSentimentTable() {
   const tbody = document.getElementById('aim-cp-sent-tbody');
   if (!tbody) return;
-  const insights = AIM_COMP_INSIGHTS[aimSelectedWorkspaceId] || {};
   const sorted = [...AI_BRANDS].sort((a,b) => aimGetBrandMetrics(b).vis * _aimTopicMult(b.name) - aimGetBrandMetrics(a).vis * _aimTopicMult(a.name));
   const page = aimCompSentPage;
   const total = sorted.length;
-  const start = page * 10;
-  const end = Math.min(start + 10, total);
+  const start = page * 6;
+  const end = Math.min(start + 6, total);
   const slice = sorted.slice(start, end);
   tbody.innerHTML = slice.map(b => {
     const vis = Math.min(100, aimGetBrandMetrics(b).vis * _aimTopicMult(b.name));
     const sp = aimCompSentSplit(b.sentiment);
-    const ins = insights[b.name] || {};
+    const ins = aimComputeCompInsight(b);
     const youBadge = b.isMain ? `<span class="aim-you-badge" style="margin-left:6px">You</span>` : '';
     const sentBar = `<div style="display:flex;align-items:center;gap:8px;">
       <div class="aim-comp-sent-bar">
