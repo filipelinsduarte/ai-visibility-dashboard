@@ -262,14 +262,9 @@ a:hover { text-decoration: underline; }
 /* ── Main ── */
 .main { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; }
 .page-header {
-  padding: 16px 28px;
+  padding: 20px 28px 0;
   min-height: 65px;
   display: flex; flex-direction: column; justify-content: center;
-  border-bottom: 1px solid #e5e7eb;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  position: sticky; top: 0; z-index: 10;
 }
 .page-header h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
 .page-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
@@ -1530,14 +1525,6 @@ button[onclick="aimOpenAddPrompts()"] {
   box-shadow: rgba(0,0,0,.1) 0px 10px 15px -3px, rgba(0,0,0,.1) 0px 4px 6px -4px;
   color: #171717;
 }
-/* Page header becomes simple section label, not sticky */
-.page-header {
-  background: none !important;
-  backdrop-filter: none !important;
-  position: static !important;
-  padding: 20px 28px 0 !important;
-  border-bottom: none !important;
-}
 
 /* ── Responsive utilities ── */
 .aim-hamburger {
@@ -1802,6 +1789,36 @@ button[onclick="aimOpenAddPrompts()"] {
   #aim-sr-urls-panel table td:nth-child(5),
   #aim-sr-urls-panel table th:nth-child(6),
   #aim-sr-urls-panel table td:nth-child(6) { display: none; }
+
+  /* ── Topbar: hide filter pills (overflow prevention) ── */
+  .aim-topbar-filters { display: none; }
+
+  /* ── Response modal: stack sidebar below chat ── */
+  .aim-rm-body { flex-direction: column; }
+  .aim-rm-sidebar {
+    width: 100%; flex-shrink: 1;
+    border-left: none; border-top: 1px solid var(--border-light);
+    max-height: 180px;
+  }
+
+  /* ── Manage Account modal: stack nav + content vertically ── */
+  .aim-ma-card { flex-direction: column; height: auto; max-height: calc(100vh - 60px); }
+  .aim-ma-nav {
+    width: 100%; flex-shrink: 0;
+    padding: 10px 12px 6px;
+    flex-direction: row; flex-wrap: wrap; gap: 4px;
+  }
+  .aim-ma-nav-title, .aim-ma-nav-desc { display: none; }
+  .aim-ma-nav-btn { width: auto; }
+  .aim-ma-nav-footer { display: none; }
+  .aim-ma-content { padding: 12px 14px; }
+  .aim-ma-row { flex-direction: column; gap: 4px; }
+  .aim-ma-row-label { width: auto; flex-shrink: 1; padding-top: 0; }
+}
+
+/* ── Sentiment view top grid: single column at tablet/mobile ── */
+@media (max-width: 820px) {
+  .aim-sent-top-grid { grid-template-columns: 1fr !important; }
 }
 
 
@@ -2387,11 +2404,10 @@ tr.aim-td-row-done td { opacity: .45; }
 .aim-td-tip:hover::after { opacity: 1; }
 tr.aim-td-row-done td:first-child { opacity: 1; }
 /* step num */
-.aim-td-sn1 { background: #eef2ff; color: #4338ca; }
+.aim-td-sn0, .aim-td-sn1 { background: #eef2ff; color: #4338ca; }
 .aim-td-sn2 { background: #eff6ff; color: #1d4ed8; }
 .aim-td-sn3 { background: #f5f3ff; color: #6d28d9; }
 .aim-td-sn4 { background: #ecfdf5; color: #065f46; }
-.aim-td-sn0 { background: #eef2ff; color: #4338ca; }
 .aim-td-step-num { width: 20px; height: 20px; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
 /* ── end To-do's ─────────────────────────────────────────── */
 
@@ -2898,7 +2914,7 @@ window.AIM_INJECTED_DATA = null;
     <div class="page-content">
 
       <!-- Top row: Feature Mentions + Sentiment Overview -->
-      <div style="display:grid;grid-template-columns:1fr 272px;gap:16px;margin-bottom:16px;align-items:stretch;">
+      <div class="aim-sent-top-grid" style="display:grid;grid-template-columns:1fr 272px;gap:16px;margin-bottom:16px;align-items:stretch;">
 
         <!-- Feature Mentions table -->
         <div class="card" style="overflow:hidden;display:flex;flex-direction:column;">
@@ -6247,23 +6263,6 @@ function aimSelectBrand(id) {
   else if (aimCurrentView === 'ai-sources') { aimRenderDomainsTable(); aimRenderUrlsTable(); }
 }
 
-function aimSelectWorkspace(id) {
-  aimSelectedWorkspaceId = id;
-  const ws = AIM_WORKSPACES.find(w => w.id === id);
-  if (!ws) return;
-  AI_BRANDS.splice(0, AI_BRANDS.length, ...ws.brands);
-  aimSelectedBrandId = 1;
-  aimCompPageIdx = 0;
-  document.querySelectorAll('.aim-brand-dropdown, [id$="-portal"].aim-brand-dropdown').forEach(function(d){ d.classList.remove('open'); d.style.display='none'; });
-  aimRenderTopbar();
-  aimRenderVisibilityChart();
-  aimRenderCompetitorsTablePage();
-  if (aimCurrentView === 'ai-overview') initAiOverview();
-  else if (aimCurrentView === 'ai-prompts') aimRenderPromptsTable();
-  else if (aimCurrentView === 'ai-competitors') initAiCompetitors();
-  else if (aimCurrentView === 'ai-sentiment') initAiSentiment();
-  else if (aimCurrentView === 'ai-sources') { aimRenderDomainsTable(); aimRenderUrlsTable(); }
-}
 
 function aimSelectApiBrand(id) {
   window._aimSelectedApiBrandId = id;
@@ -7173,61 +7172,6 @@ function aimAddSuggestedPrompt(id, el) {
   el.style.background = 'var(--success)';
 }
 
-function aimApManAddRow() {
-  var tbody = document.getElementById('aim-ap-man-body');
-  if (!tbody) return;
-  var i = window._aimApManRowCount || 0;
-  window._aimApManRowCount = i + 1;
-  var topics  = Object.keys(AIM_TOPIC_COLORS);
-  var intents = ['Commercial','Informational','Transactional','Navigational'];
-  var topicSel  = _aimCtpBuildSelect('aim-ap-man-topic-'  + i, topics,  topics[0], '');
-  var intentSel = _aimCtpBuildSelect('aim-ap-man-intent-' + i, intents, 'Commercial', '');
-  var tr = document.createElement('tr');
-  tr.id = 'aim-ap-man-row-' + i;
-  tr.innerHTML =
-    '<td><textarea class="aim-ctp-tbl-input" id="aim-ap-man-text-' + i + '" rows="2" placeholder="Enter the question or phrase to monitor..."></textarea></td>'
-  + '<td style="width:168px;">' + topicSel + '</td>'
-  + '<td style="width:148px;">' + intentSel + '</td>'
-  + '<td style="width:36px;text-align:center;vertical-align:middle;"><button class="aim-ctp-tbl-rm" onclick="aimApManRemoveRow(' + i + ')" title="Remove">'
-  +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'
-  + '</button></td>';
-  tbody.appendChild(tr);
-  var ta = document.getElementById('aim-ap-man-text-' + i);
-  if (ta) ta.focus();
-}
-
-function aimApManRemoveRow(i) {
-  var row = document.getElementById('aim-ap-man-row-' + i);
-  if (row) row.remove();
-}
-
-function aimManualAddPrompt() {
-  var rows = document.querySelectorAll('#aim-ap-man-body tr');
-  var added = 0;
-  var firstEmpty = null;
-  rows.forEach(function(row) {
-    var id = row.id.replace('aim-ap-man-row-', '');
-    var text   = (document.getElementById('aim-ap-man-text-'   + id) || {}).value || '';
-    var intentWrap = document.getElementById('aim-ap-man-intent-' + id);
-    var topicWrap  = document.getElementById('aim-ap-man-topic-'  + id);
-    var intent = (intentWrap && intentWrap.dataset.value) || 'Commercial';
-    var topic  = (topicWrap  && topicWrap.dataset.value)  || 'General';
-    text = text.trim();
-    if (!text) {
-      if (!firstEmpty) firstEmpty = document.getElementById('aim-ap-man-text-' + id);
-      return;
-    }
-    aimAddPromptToDb({ text: text, intent: intent, topic: topic });
-    added++;
-  });
-  if (!added) {
-    if (firstEmpty) { firstEmpty.style.outline = '2px solid var(--danger)'; firstEmpty.focus(); }
-    return;
-  }
-  aimUpdatePromptCounters();
-  aimRebuildTopicDropdown();
-  aimCloseAddPrompts();
-}
 
 /* ── PROMPT DETAIL ───────────────────────────────────────────────── */
 function aimToggleDateSection(btn) {
@@ -8934,13 +8878,6 @@ function aimRenderScStats() {
     card('position',    'Avg Position',       '#' + parseFloat(s.position).toFixed(1));
 }
 
-function aimRenderScSummary() {
-  const d  = window.AIM_SC_DATA;
-  const el = document.getElementById('aim-sc-summary-bar');
-  if (el) el.innerHTML = `Your site received <strong>${d.stats.clicks.toLocaleString()} clicks</strong> from <strong>${d.stats.impressions.toLocaleString()} impressions</strong> over the last 30 days. Average ranking position: <strong>#${parseFloat(d.stats.position).toFixed(1)}</strong>`;
-  const lu = document.getElementById('aim-sc-last-updated');
-  if (lu) lu.textContent = 'Last updated: ' + d.lastUpdated;
-}
 
 function aimRenderScChart() {
   const canvas = document.getElementById('aim-sc-perf-chart');
@@ -9045,13 +8982,13 @@ function aimRenderScChart() {
       },
       scales: {
         x: {
-          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+          grid: { color: 'rgba(0,0,0,0.04)', border: { display: false } },
           ticks: { font: { size: 10 }, color: '#9ca3af', maxRotation: 0, maxTicksLimit: maxTicks }
         },
         yClicks: {
           position: 'left',
           display: active.has('clicks'),
-          grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+          grid: { color: 'rgba(0,0,0,0.05)', border: { display: false } },
           ticks: {
             font: { size: 10 }, color: C_CLICKS, maxTicksLimit: 5,
             callback: v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v
@@ -9060,7 +8997,7 @@ function aimRenderScChart() {
         yImpressions: {
           position: 'right',
           display: showImpAxis,
-          grid: { display: false, drawBorder: false },
+          grid: { display: false, border: { display: false } },
           ticks: {
             font: { size: 10 }, color: C_IMP, maxTicksLimit: 5,
             callback: v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v
@@ -9069,14 +9006,14 @@ function aimRenderScChart() {
         yCTR: {
           position: 'right',
           display: showCtrAxis,
-          grid: { display: false, drawBorder: false },
+          grid: { display: false, border: { display: false } },
           ticks: { font: { size: 10 }, color: C_CTR, maxTicksLimit: 5, callback: v => v + '%' }
         },
         yPos: {
           position: 'right',
           display: showPosAxis,
           reverse: true,
-          grid: { display: false, drawBorder: false },
+          grid: { display: false, border: { display: false } },
           ticks: { font: { size: 10 }, color: C_POS, maxTicksLimit: 5, callback: v => '#' + v }
         }
       }
@@ -11068,6 +11005,7 @@ function _entityDomain(name) {
 
 function aimApplySnapshot(snap) {
   _aimExtUrlCache = null;
+  _aimSentApiCache = null;
   const lbp = snap.latest_by_provider || {};
   const _rawPromptResp = snap.prompt_responses || {};
   const PMAP = { chatgpt:'chatgpt', gemini:'gemini', perplexity:'perplexity', googleaio:'google-aio', googleaimode:'google-aim' };
@@ -11466,13 +11404,22 @@ function aimApplySnapshot(snap) {
       };
     });
     window._aimTopSourceUrls = extUrls;
-    if (typeof _aimExtUrlCache !== 'undefined') _aimExtUrlCache = extUrls;
+    _aimExtUrlCache = extUrls;
     // Also update snap.top_source_urls so hasOriginalData and other readers see the full URL list
     snap.top_source_urls = extUrls;
 
-    // Re-sync line chart data with comprehensive top_sources
-    if (typeof AIM_SOURCE_LINE_DATA !== 'undefined' && AIM_SOURCE_LINE_DATA.dates) {
-      AIM_SOURCE_LINE_DATA.domains = snap.top_sources.slice(0, 10).map(function(s){ return s.domain; });
+    // Re-sync line chart domains with comprehensive AIM_SOURCE_DOMAINS (correct key is .labels not .dates)
+    if (typeof AIM_SOURCE_LINE_DATA !== 'undefined' && AIM_SOURCE_LINE_DATA.labels) {
+      var _syncLabels = AIM_SOURCE_LINE_DATA.labels;
+      AIM_SOURCE_LINE_DATA.domains = AIM_SOURCE_DOMAINS.slice(0, 6).map(function(d) {
+        return {
+          domain:  d.domain,
+          favicon: d.favicon,
+          data: Array.from({ length: _syncLabels.length }, function(_, i) {
+            return Math.max(1, Math.round(d.mentions / _syncLabels.length + Math.sin(i * 1.1) * 2));
+          })
+        };
+      });
     }
   })();
 
@@ -11831,10 +11778,6 @@ function aimApplyInjectedData() {
     const ovEl = document.getElementById('aim-ov-score');
     if (ovEl && typeof initAiOverview === 'function') initAiOverview();
 
-    console.log('[AIM] Injected data applied: brand score:', inj.brand?.score,
-      '| competitors:', inj.competitors?.length,
-      '| trend dates:', inj.trend?.length,
-      '| heatmap brands:', Object.keys(inj.hm || {}).length);
 }
 
 
@@ -12363,15 +12306,6 @@ function aimRenderStepRow(text, idx, expandItems) {
   '</div>';
 }
 
-function aimRenderBrandBadges(brands) {
-  if (!brands || !brands.length) return '';
-  return brands.filter(function(b){ return b && b.domain; }).map(function(b) {
-    return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:500;padding:3px 8px 3px 5px;border-radius:20px;background:#f3f4f6;border:1px solid var(--border);color:var(--text-muted);">' +
-      '<img src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(b.domain) + '&sz=32" style="width:14px;height:14px;border-radius:3px;flex-shrink:0;" onerror="this.style.display=\'none\'">' +
-      aimEscHtml(b.label || b.domain) +
-    '</span>';
-  }).join('');
-}
 
 var _aimExtUrlCache = null;
 function _aimGetAllUrls() {
