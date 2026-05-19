@@ -3152,17 +3152,13 @@ window.AIM_INJECTED_DATA = null;
         </div>
       </div>
       <div id="aim-sr-urls-panel" style="display:none;">
-        <div class="card" style="margin-bottom:18px;">
-          <div class="card-header"><div><div class="card-title">Source Usage by URL</div><div class="card-desc" id="aim-url-hist-desc">Top 1–5 of – URLs</div></div><div style="display:flex;align-items:center;gap:4px;"><button onclick="aimUrlHistNav(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span id="aim-url-hist-range" style="min-width:50px;text-align:center;font-size:11px;color:var(--text-muted)">1–5</span><button onclick="aimUrlHistNav(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
-          <div class="card-body">
-            <div id="aim-url-hist-legend" class="chart-legend" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;"></div>
-            <div class="chart-wrap" style="height:220px;"><canvas id="aim-url-hist-chart"></canvas></div>
-          </div>
-        </div>
         <div class="aim-sr-chart-grid" style="display:grid;grid-template-columns:1fr 280px;gap:18px;margin-bottom:18px;">
           <div class="card">
-            <div class="card-header"><div><div class="card-title">Top URL Citations by Provider</div><div class="card-desc" id="aim-url-chart-desc">Top 1–6 of – URLs</div></div><div style="display:flex;align-items:center;gap:4px;"><button onclick="aimUrlChartNav(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span id="aim-url-chart-range" style="min-width:50px;text-align:center;font-size:11px;color:var(--text-muted)">1–6</span><button onclick="aimUrlChartNav(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
-            <div class="card-body"><div id="aim-url-line-legend" class="chart-legend" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;"></div><div id="aim-url-line-chart" style="padding:4px 0;"></div></div>
+            <div class="card-header"><div><div class="card-title">Source Usage by URL</div><div class="card-desc" id="aim-url-hist-desc">Top 1–5 of – URLs</div></div><div style="display:flex;align-items:center;gap:4px;"><button onclick="aimUrlHistNav(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span id="aim-url-hist-range" style="min-width:50px;text-align:center;font-size:11px;color:var(--text-muted)">1–5</span><button onclick="aimUrlHistNav(1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
+            <div class="card-body">
+              <div id="aim-url-hist-legend" class="chart-legend" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;"></div>
+              <div class="chart-wrap" style="height:220px;"><canvas id="aim-url-hist-chart"></canvas></div>
+            </div>
           </div>
           <div class="card">
             <div class="card-header"><div class="card-title">Content Type</div></div>
@@ -3232,14 +3228,6 @@ window.AIM_INJECTED_DATA = null;
         <button class="aim-st-tab active" id="aim-st-tab-brand" onclick="aimSetStTab('brand')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Brand Details
-        </button>
-        <button class="aim-st-tab" id="aim-st-tab-competitors" onclick="aimSetStTab('competitors')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Manage Competitors
-        </button>
-        <button class="aim-st-tab" id="aim-st-tab-prompts" onclick="aimSetStTab('prompts')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Manage Prompts
         </button>
         <button class="aim-st-tab" id="aim-st-tab-schedule" onclick="aimSetStTab('schedule')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -3311,118 +3299,6 @@ window.AIM_INJECTED_DATA = null;
       </div>
 
       <!-- ── Manage Competitors panel ── -->
-      <div id="aim-st-panel-competitors" class="aim-st-panel">
-        <div class="aim-st-card">
-          <div class="aim-st-card-hd">
-            <div>
-              <div class="aim-st-card-title" id="aim-st-comp-title">Enhanced Competitor Management</div>
-              <div class="aim-st-card-sub">Discover, track, and manage competitors with AI-powered insights and bulk operations</div>
-            </div>
-            <button class="aim-st-btn-outlined" onclick="aimStAddCompetitor()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              Add Individual
-            </button>
-          </div>
-          <div class="aim-st-subtabs">
-            <button class="aim-st-subtab active" id="aim-st-ctab-current" onclick="aimStSetCompTab('current')">Current Competitors</button>
-            <button class="aim-st-subtab" id="aim-st-ctab-discover" onclick="aimStSetCompTab('discover')">Discover New</button>
-            <button class="aim-st-subtab" id="aim-st-ctab-untracked" onclick="aimStSetCompTab('untracked')">Untracked Brands</button>
-          </div>
-          <div id="aim-st-comp-current">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div>
-                <div style="font-size:13px;font-weight:600;color:var(--text)">Current Competitors</div>
-                <div style="font-size:11px;color:var(--text-muted)">Manage your existing competitor list</div>
-              </div>
-            </div>
-            <table class="aim-st-table">
-              <thead><tr><th>Competitor</th><th>Website</th><th style="text-align:right">Actions</th></tr></thead>
-              <tbody id="aim-st-comp-tbody"></tbody>
-            </table>
-          </div>
-          <div id="aim-st-comp-discover" style="display:none">
-            <div class="aim-st-dashed" style="padding:32px;margin-top:8px;">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted);display:block;margin:0 auto 10px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Discover New Competitors</div>
-              <div style="font-size:12px;color:var(--text-muted);">AI-powered competitor discovery is available in the live Peekaboo dashboard.</div>
-            </div>
-          </div>
-          <div id="aim-st-comp-untracked" style="display:none">
-            <div class="aim-st-dashed" style="padding:32px;margin-top:8px;">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted);display:block;margin:0 auto 10px"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Untracked Brands</div>
-              <div style="font-size:12px;color:var(--text-muted);">Brands appearing in your AI responses that you are not yet tracking.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Manage Prompts panel ── -->
-      <div id="aim-st-panel-prompts" class="aim-st-panel">
-        <div class="aim-st-card">
-          <div class="aim-st-card-hd">
-            <div>
-              <div class="aim-st-card-title">
-                Enhanced Prompt Management
-                <span id="aim-st-prompt-count-badge" style="display:inline-block;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:12px;margin-right:6px;vertical-align:middle;"></span>
-              </div>
-              <div class="aim-st-card-sub">AI-powered prompt generation with performance analytics and smart optimization.</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <button class="aim-st-btn-outlined" onclick="aimStOpenAddTopic()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                Add Topic
-              </button>
-              <button class="aim-st-btn-outlined" onclick="aimStOpenAddIntent()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                Add Intent
-              </button>
-              <div class="aim-add-menu-wrap">
-              <button class="aim-st-btn-primary" onclick="aimToggleAddMenu('aim-st-add-menu',event)" style="display:flex;align-items:center;gap:6px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add Prompts
-                <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="aim-add-menu" id="aim-st-add-menu">
-                <button class="aim-add-menu-item" onclick="aimCloseAddMenus();aimOpenAddPrompts('ai')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>AI Suggested
-                </button>
-                <button class="aim-add-menu-item" onclick="aimCloseAddMenus();aimOpenAddPrompts('manual')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Manual Prompts
-                </button>
-              </div>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <input type="checkbox" id="aim-st-select-all" onclick="aimStSelectAll(this)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;" title="Select all prompts">
-            <div class="aim-search-wrap" style="flex:1;min-width:160px;">
-              <svg class="aim-search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input class="aim-search-input" id="aim-st-prompt-search" placeholder="Search prompts..." oninput="aimStRenderPrompts()" style="width:100%">
-            </div>
-          </div>
-          <div id="aim-st-bulk-bar" class="aim-st-bulk-bar" style="display:none;">
-            <span id="aim-st-bulk-count" class="aim-st-bulk-count">0 selected</span>
-            <div class="aim-st-bulk-sep"></div>
-            <button class="aim-st-bulk-btn" onclick="aimStBulkTopic()">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-              Change Topic
-            </button>
-            <button class="aim-st-bulk-btn" onclick="aimStBulkIntent()">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              Change Intent
-            </button>
-            <div class="aim-st-bulk-sep"></div>
-            <button class="aim-st-bulk-btn danger" onclick="aimStBulkDelete()">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-              Delete
-            </button>
-            <button class="aim-st-bulk-clear" onclick="aimStClearSelection()">Clear selection</button>
-          </div>
-          <div id="aim-st-prompts-list"></div>
-        </div>
-      </div>
-
       <!-- ── Analysis Schedule panel ── -->
       <div id="aim-st-panel-schedule" class="aim-st-panel">
         <div class="aim-st-card">
@@ -5335,8 +5211,7 @@ Example: 10 prompts x 5 models = 50 runs
     </div>
   </div>
 
-<!-- AIM_SNAPSHOT_INJECT_START -->
-<script>window._AIM_SNAPSHOT = null;
+<!-- AIM_SNAPSHOT_INJECT_START --><script>window._AIM_SNAPSHOT = null;
 
 const AIM_COMP_INSIGHTS = {
   1: {
@@ -10915,7 +10790,7 @@ function aimAcTab(tab) {
       + '<input id="aim-ac-manual-name" type="text" placeholder="e.g. Ahrefs" style="width:100%;box-sizing:border-box;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:13px;font-family:var(--font);color:var(--text);background:var(--surface);outline:none;">'
       + '</div>'
       + '<div style="margin-bottom:14px;">'
-      + '<label style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Domain (optional)</label>'
+      + '<label style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Domain</label>'
       + '<div style="display:flex;align-items:center;gap:8px;">'
       + '<div id="aim-ac-domain-fav-wrap" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--surface-alt);flex-shrink:0;">'
       + '<img id="aim-ac-domain-fav" src="" style="width:16px;height:16px;border-radius:2px;display:none;" onerror="this.style.display=\'none\'">'
