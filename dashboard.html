@@ -5878,8 +5878,12 @@ function aimSetCardFilter(field, val, cid) {
     aimFilterIntent = val;
   }
   document.querySelectorAll('.ct-custom-select.open').forEach(el => el.classList.remove('open'));
+  // Invalidate the date cutoff cache so _aimSrcDateInRange recomputes with new filter
+  _aimDateCache.key = null;
   aimRenderTopbar();
-  aimRefreshCurrentView();
+  // Debounce: skip render if another filter change fires within 120ms
+  clearTimeout(window._aimRefreshTimer);
+  window._aimRefreshTimer = setTimeout(aimRefreshCurrentView, 120);
 }
 
 function aimRefreshCurrentView() {
@@ -5897,18 +5901,26 @@ function aimRefreshCurrentView() {
       aimOpenPromptDetail(aimCurrentPromptId);
     }
   } else if (aimCurrentView === 'ai-competitors') {
-    initAiCompetitors();
+    // Call render functions directly — initAiCompetitors() would re-render topbar redundantly
+    aimRenderCompMentionsChart();
+    aimRenderCompHeatmap();
+    aimRenderCompPromptMatrix();
   } else if (aimCurrentView === 'ai-sentiment') {
     initAiSentiment();
   } else if (aimCurrentView === 'ai-sources') {
-    aimRenderSourceLineChart();
-    aimRenderSourceDonut();
-    aimRenderSourceHeatmap();
-    aimRenderDomainsTable();
-    aimRenderUrlHistoryChart();
-    aimRenderUrlLineChart();
-    aimRenderUrlDonut();
-    aimRenderUrlsTable();
+    // Only render the active tab — halves the work vs rendering all 8 functions
+    const _urlsActive = document.getElementById('aim-sr-urls-panel')?.style.display !== 'none';
+    if (_urlsActive) {
+      aimRenderUrlHistoryChart();
+      aimRenderUrlLineChart();
+      aimRenderUrlDonut();
+      aimRenderUrlsTable();
+    } else {
+      aimRenderSourceLineChart();
+      aimRenderSourceDonut();
+      aimRenderSourceHeatmap();
+      aimRenderDomainsTable();
+    }
   } else if (aimCurrentView === 'ai-todos') {
     aimRenderTodosTable();
   }
@@ -6640,21 +6652,27 @@ function aimRenderRecentChats() {
   const activeModel = aimFilterModel !== 'all' ? (_pm[aimFilterModel] || null) : null;
 
   function _isoFromEntry(r) { return r.iso_date || r.date || ''; }
+  // Pre-compute cutoff once (not inside the filter loop) to avoid O(n²)
+  const _rcCutoff = (() => {
+    if (aimFilterDate === 'all') return '';
+    if (aimFilterDate === 'custom') return '';
+    const allDates = (allResps || []).map(_isoFromEntry).filter(d => d.includes('-')).sort();
+    const newest = allDates[allDates.length - 1];
+    if (!newest) return '';
+    const [ny,nm,nd] = newest.split('-').map(Number);
+    const days = aimFilterDate === '7d' ? 7 : aimFilterDate === '30d' ? 30 : 90;
+    const c = new Date(Date.UTC(ny, nm-1, nd - days));
+    const mm = String(c.getUTCMonth()+1).padStart(2,'0');
+    const dd = String(c.getUTCDate()).padStart(2,'0');
+    return `${c.getUTCFullYear()}-${mm}-${dd}`;
+  })();
   function _withinDateFilter(isoDate) {
     if (!isoDate || !isoDate.includes('-') || aimFilterDate === 'all') return true;
     if (aimFilterDate === 'custom' && aimCalStart && aimCalEnd) {
       const [y,m,d] = isoDate.split('-').map(Number);
       return new Date(y,m-1,d) >= aimCalStart && new Date(y,m-1,d) <= aimCalEnd;
     }
-    const allDates = (allResps || []).map(_isoFromEntry).filter(d => d.includes('-')).sort();
-    const newest = allDates[allDates.length - 1];
-    if (!newest) return true;
-    const [ny,nm,nd] = newest.split('-').map(Number);
-    const cutoff = new Date(ny,nm-1,nd);
-    const days = aimFilterDate === '7d' ? 7 : aimFilterDate === '30d' ? 30 : 90;
-    cutoff.setDate(cutoff.getDate() - days);
-    const [y,m,d] = isoDate.split('-').map(Number);
-    return new Date(y,m-1,d) >= cutoff;
+    return !_rcCutoff || isoDate >= _rcCutoff;
   }
 
   function _fmtDate(isoDate) { return aimFmtDate(isoDate); }
@@ -8998,7 +9016,9 @@ function aimRenderCompPromptMatrix() {
   let html = `<table class="aim-pm-table"><thead><tr><th>Prompt</th>${cols.map(n => `<th>#${n}</th>`).join('')}</tr></thead><tbody>`;
   const _brandLookup = {};
   AI_BRANDS.forEach(b => { _brandLookup[b.name] = b; });
-  const _activePrompts = window.AIM_REAL_PROMPTS || AIM_PROMPTS;
+  // Always use AIM_PROMPTS (updated by aimApplySnapshot with real texts + numeric IDs 1-38)
+  // AIM_REAL_PROMPTS from AIM_INJECTED_DATA uses UUID IDs that don't match _filteredByPrompt keys
+  const _activePrompts = AIM_PROMPTS;
 
   // Pre-compute filtered brand counts per prompt from _aimAllResponses when date/model filter is active
   const _activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
@@ -9108,22 +9128,34 @@ function aimSetUrlDomainFilter(value, label) {
 }
 
 /* ── SOURCES FILTER HELPER ───────────────────────────────────────── */
+// Cache cutoff string so _aimSrcDateInRange never recomputes per-call (was O(n²))
+const _aimDateCache = { key: null, cutoff: '' };
+function _aimGetCutoffStr() {
+  const key = aimFilterDate + '|' + (aimCalStart ? aimCalStart.getTime() : '') + '|' + (aimCalEnd ? aimCalEnd.getTime() : '');
+  if (_aimDateCache.key === key) return _aimDateCache.cutoff;
+  _aimDateCache.key = key;
+  if (aimFilterDate === 'all') return (_aimDateCache.cutoff = '');
+  if (aimFilterDate === 'custom') return (_aimDateCache.cutoff = ''); // handled separately
+  const allIso = Object.keys(window._aimSourcesByDate || {}).sort();
+  if (!allIso.length) return (_aimDateCache.cutoff = '');
+  const newest = allIso[allIso.length - 1];
+  const [ny,nm,nd] = newest.split('-').map(Number);
+  const days = aimFilterDate === '7d' ? 7 : aimFilterDate === '30d' ? 30 : 90;
+  const c = new Date(Date.UTC(ny, nm-1, nd - days));
+  const mm = String(c.getUTCMonth()+1).padStart(2,'0');
+  const dd = String(c.getUTCDate()).padStart(2,'0');
+  return (_aimDateCache.cutoff = `${c.getUTCFullYear()}-${mm}-${dd}`);
+}
 function _aimSrcDateInRange(isoDate) {
-  if (!isoDate || aimFilterDate === 'all') return true;
+  if (!isoDate) return true;
+  if (aimFilterDate === 'all') return true;
   if (aimFilterDate === 'custom' && aimCalStart && aimCalEnd) {
     const [y,m,d] = isoDate.split('-').map(Number);
     const dt = new Date(y,m-1,d);
     return dt >= aimCalStart && dt <= aimCalEnd;
   }
-  const allIso = Object.keys(window._aimSourcesByDate || {}).sort();
-  if (!allIso.length) return true;
-  const newest = allIso[allIso.length - 1];
-  const [ny,nm,nd] = newest.split('-').map(Number);
-  const cutoff = new Date(ny,nm-1,nd);
-  const days = aimFilterDate === '7d' ? 7 : aimFilterDate === '30d' ? 30 : 90;
-  cutoff.setDate(cutoff.getDate() - days);
-  const [y,m,d] = isoDate.split('-').map(Number);
-  return new Date(y,m-1,d) >= cutoff;
+  const cutoff = _aimGetCutoffStr();
+  return !cutoff || isoDate >= cutoff;
 }
 
 function _aimGetPromptData(numericId, apId) {
