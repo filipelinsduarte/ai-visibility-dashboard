@@ -5213,72 +5213,6 @@ Example: 10 prompts x 5 models = 50 runs
 
 <!-- AIM_SNAPSHOT_INJECT_START --><script>window._AIM_SNAPSHOT=null;
 
-const AIM_COMP_INSIGHTS = {
-  1: {
-    'Profound':      { str:'Deep enterprise integrations and Salesforce connector', wk:'High price point limits SMB adoption, limited prompt customization' },
-    'Scrunch':       { str:'Clean onboarding, strong Perplexity coverage', wk:'Limited historical data depth and no export API' },
-    'Otterly.AI':    { str:'Real-time Slack alerts and quick no-code setup', wk:'Lacks multi-brand monitoring in base tier' },
-    'Brandwise':     { str:'Good Reddit and forum tracking capabilities', wk:'No Google AIO or AI Mode coverage yet' },
-    'Peec.AI':       { str:'Competitive pricing for early-stage startups', wk:'Narrow model coverage, limited analytics depth' },
-    'Rankscale':     { str:'SEO and AI monitoring combined in one tool', wk:'AI features are secondary to core SEO product' },
-    'Mention.ai':    { str:'Established brand monitoring history and brand trust', wk:'AI visibility features are newly added and shallow' },
-    'Aimon':         { str:'Simple UI and low cost entry point', wk:'Limited to 3 AI models, no sentiment detail' },
-    'Visio AI':      { str:'Visual reporting dashboards and clean export', wk:'Small customer base, limited integrations' },
-    'SE Ranking':    { str:'Broad SEO toolkit with AI add-ons', wk:'AI monitoring is a minor feature, not the core product' },
-    'Semrush':       { str:'Massive keyword and backlink data alongside AI tracking', wk:'AI visibility is a small add-on inside expensive bundles' },
-    'Ahrefs':        { str:'Industry-leading backlink data and trusted brand', wk:'AI monitoring coverage is minimal and recently added' },
-    'Writesonic':    { str:'Content generation and AI visibility in one platform', wk:'Monitoring is secondary to writing features' },
-    'NightWatch':    { str:'Rank tracking with basic AI mention alerts', wk:'No sentiment analysis, limited AI model coverage' },
-    'Rankability':   { str:'Strong content optimization focus', wk:'AI monitoring features are underdeveloped' },
-    'Siftly':        { str:'Lightweight and fast to deploy', wk:'Limited data retention and model coverage' },
-    'Brandwatch':    { str:'Enterprise social and AI monitoring combined', wk:'Very high cost and complex setup' },
-    'Mentionlytics': { str:'Social listening and AI citation tracking combined', wk:'AI features are basic compared to dedicated tools' },
-    'AthenaHQ':      { str:'Emerging player with a modern API', wk:'Limited brand recognition and track record' },
-  },
-  2: {
-    'Thomasnet':     { str:'Dominant US industrial supplier database', wk:'Outdated UI, no AI-native search features' },
-    'Alibaba':       { str:'Massive global supplier network and buyer trust', wk:'Quality verification issues and fraud risk perception' },
-    'GlobalSpec':    { str:'Engineering-focused supplier discovery', wk:'Narrow vertical focus limits broader B2B use' },
-    'Kompass':       { str:'Strong European market coverage', wk:'Limited US reach and dated interface' },
-    'IndiaMart':     { str:'Deep India market penetration at scale', wk:'Perceived as low-cost only, quality concerns' },
-    'EC21':          { str:'Large Asian supplier catalogue', wk:'Low trust scores in Western markets' },
-    'TradeKey':      { str:'Simple onboarding for suppliers', wk:'Low traffic and limited buyer activity' },
-    'Made-in-China': { str:'Direct factory access and low prices', wk:'Brand perception struggles in quality-first markets' },
-    'ExportHub':     { str:'SMB-friendly pricing', wk:'Limited analytics and buyer intent data' },
-    'DHGate':        { str:'Consumer goods strength', wk:'Not seen as a serious B2B platform' },
-    'TradeIndia':    { str:'Strong SME supplier base in India', wk:'Minimal adoption outside India' },
-    'BizVibe':       { str:'AI-enhanced supplier search capability', wk:'Small network and limited verified data' },
-    'Europages':     { str:'Strong European supplier directory', wk:'Low adoption outside Europe' },
-    'Panjiva':       { str:'Trade data and import/export intelligence', wk:'Expensive and niche use case' },
-    'Seasia':        { str:'IT services focus with niche depth', wk:'Very limited marketplace features' },
-    'Wer Liefert Was': { str:'Strong German B2B market presence', wk:'Minimal global reach' },
-    'TradeGecko':    { str:'Inventory and marketplace integration', wk:'Acquired by QuickBooks, limited standalone focus' },
-    'Handshake':     { str:'US wholesale marketplace, strong retailer network', wk:'Limited supplier discovery for manufacturing' },
-    'Tundra':        { str:'Zero-fee wholesale model', wk:'Niche product categories and low brand awareness' },
-  },
-  3: {
-    'Aya Healthcare':   { str:'Largest travel nurse network in the US with strong brand trust', wk:'Premium pricing, less focus on UK NHS market' },
-    'Conexus':          { str:'Specialized in Allied Health placements', wk:'Limited UK presence and brand recognition' },
-    'AMN Healthcare':   { str:'Enterprise-grade technology platform for large health systems', wk:'Complex onboarding and slow response times' },
-    'Cross Country':    { str:'Broad specialties and nationwide US coverage', wk:'Lower candidate satisfaction scores' },
-    'Staffmark':        { str:'Multi-industry staffing strength', wk:'Healthcare is not their primary focus' },
-    'Medical Solutions':{ str:'Competitive pay packages and strong recruiter relationships', wk:'Limited UK and international coverage' },
-    'Acacium':          { str:'Strong NHS framework agreements and UK coverage', wk:'Less digital, heavier on traditional recruitment' },
-    'Meridian':         { str:'Regional UK depth and responsive team', wk:'Limited tech platform compared to US competitors' },
-    'Medacs':           { str:'UK and international healthcare staffing experience', wk:'Older brand with limited innovation narrative' },
-    'Locum Meds':       { str:'Dedicated locum doctor focus', wk:'Narrow scope, limited nursing and allied health' },
-    'ID Medical':       { str:"One of UK's fastest-growing healthcare staffers", wk:'Less visibility outside NHS market' },
-    'Pulse Healthcare': { str:'Broad UK healthcare coverage', wk:'Lower tech maturity than US platforms' },
-    'NHS Professionals':{ str:'First-party NHS trust with high compliance standards', wk:'Limited to NHS only, no private sector coverage' },
-    'Thornbury':        { str:'High-quality nursing placements and strong reputation', wk:'Premium price point, limited scale' },
-    'Unison Staffing':  { str:'Cross-industry reach', wk:'Healthcare is not core, thin specialist depth' },
-    'Hays Healthcare':  { str:'Global brand with strong LinkedIn presence', wk:'Generalist recruiter, weaker healthcare specialization' },
-    'Staffline':        { str:'Large UK workforce solutions brand', wk:'Primarily blue collar, healthcare is secondary' },
-    '4Way Healthcare':  { str:'NHS specialist, compliant and trusted', wk:'Very small scale, limited marketing reach' },
-    'Recruit Healthcare':{ str:'International healthcare staffing focus', wk:'Low brand recognition in UK domestic market' },
-  }
-};
-
 const AIM_PROMPT_COMP_RANKINGS = (function() {
   const w1 = [
     {n:'Profound',d:'tryprofound.com'},{n:'AI Peekaboo',d:'aipeekaboo.com'},{n:'Scrunch',d:'scrunch.ai'},
@@ -5329,15 +5263,6 @@ const AIM_PROMPT_COMP_RANKINGS = (function() {
     }
   };
 })();
-
-const AIM_VIS_DATA = {
-  labels:['Apr 28','Apr 29','Apr 30','May 1','May 2','May 3','May 4'],
-  datasets: AI_BRANDS.slice(0,6).map(b => ({
-    label: b.name,
-    color: b.color,
-    data: Array.from({length:7}, (_,i) => Math.max(5, Math.round(b.visibility + (Math.sin(i*1.3 + b.id)*8))))
-  }))
-};
 
 const AIM_TOPIC_COLORS = {
   'AI Monitoring': '#b352b3',
@@ -6924,7 +6849,7 @@ function aimRenderPromptsTable() {
       : `<span style="color:var(--text-faint);font-size:11px">–</span>`;
     // Citations column: top 3 source domain favicons, each with white popup tooltip
     const _citeFavs = (_pd?.topDomains || []).map(domain =>
-      `<span onmouseenter="aimShowFaviconTip(this,'${domain}')" onmouseleave="aimHideFaviconTip()" style="display:inline-flex;flex-shrink:0;cursor:default"><img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" data-domain="${domain}" style="width:18px;height:18px;border-radius:3px;display:block" onload="aimPmFavCheck(this)" onerror="this.style.display='none'"></span>`
+      `<span onmouseenter="aimShowFaviconTip(this,'${aimEscHtml(domain)}')" onmouseleave="aimHideFaviconTip()" style="display:inline-flex;flex-shrink:0;cursor:default"><img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32" data-domain="${aimEscHtml(domain)}" style="width:18px;height:18px;border-radius:3px;display:block" onload="aimPmFavCheck(this)" onerror="this.style.display='none'"></span>`
     );
     const _citeExtra = Math.max(0, (_pd?.totalDomains || 0) - (_pd?.topDomains || []).length);
     const _citeCell = _citeFavs.length
@@ -7110,7 +7035,8 @@ function aimAddSuggestedPrompt(id, el) {
     const _dateAvgVis = _dateVisVals.length ? Math.round(_dateVisVals.reduce((s,v)=>s+v,0)/_dateVisVals.length) : 0;
     const _dateSentCounts = {};
     _dateChatArr.forEach(c => { const s = c.sentiment_label || 'neutral'; _dateSentCounts[s] = (_dateSentCounts[s]||0)+1; });
-    const _dateDomSent = Object.entries(_dateSentCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'neutral';
+    const _dateDomSentRaw = Object.entries(_dateSentCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'neutral';
+    const _dateDomSent = ['positive','negative','neutral','uncertain'].includes(_dateDomSentRaw) ? _dateDomSentRaw : 'neutral';
     const _dateSentLbl = _dateDomSent.charAt(0).toUpperCase() + _dateDomSent.slice(1);
     const _datePosVals = _provPairs.filter(p => p._pos !== null && p._pos > 0).map(p => p._pos);
     const _dateAvgPos = _datePosVals.length ? (_datePosVals.reduce((s,v)=>s+v,0)/_datePosVals.length).toFixed(1) : '–';
@@ -7123,7 +7049,7 @@ function aimAddSuggestedPrompt(id, el) {
         </tr>`;
       }
       const _sentLabel = chat.sentiment_label ? (chat.sentiment_label.charAt(0).toUpperCase()+chat.sentiment_label.slice(1)) : 'Neutral';
-      const _sentCls   = chat.sentiment_label || 'neutral';
+      const _sentCls   = ['positive','negative','neutral','uncertain'].includes(chat.sentiment_label) ? chat.sentiment_label : 'neutral';
       const _preview   = aimEscHtml((chat.text||'').substring(0, 120));
       const _vis       = chat.visibility_score ?? null;
       const _visCell   = _vis !== null ? `<span style="font-weight:600;color:${_vis > 0 ? 'var(--accent)' : 'var(--text-faint)'}">${Math.round(_vis)}%</span>` : `<span style="color:var(--text-faint)">–</span>`;
@@ -7139,7 +7065,7 @@ function aimAddSuggestedPrompt(id, el) {
       const _top3S = _chatSrcs.slice(0,3);
       const _sExtra = Math.max(0, _chatSrcs.length - 3);
       const _citCell = _top3S.length
-        ? `<div style="display:flex;align-items:center;gap:4px;justify-content:center">${_top3S.map(s=>{const dom=typeof s==='string'?s:(s.domain||'');return dom?`<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=32" style="width:16px;height:16px;border-radius:3px">`:'';}).join('')}${_sExtra>0?`<span style="font-size:10px;font-weight:600;color:var(--text-muted)">+${_sExtra}</span>`:''}</div>`
+        ? `<div style="display:flex;align-items:center;gap:4px;justify-content:center">${_top3S.map(s=>{const dom=typeof s==='string'?s:(s.domain||'');return dom?`<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(dom)}&sz=32" style="width:16px;height:16px;border-radius:3px">`:'';}).join('')}${_sExtra>0?`<span style="font-size:10px;font-weight:600;color:var(--text-muted)">+${_sExtra}</span>`:''}</div>`
         : `<span style="color:var(--text-faint)">–</span>`;
       const _posCell = (_pos !== null && _pos > 0)
         ? `<span style="font-size:12px;font-weight:600;color:var(--text)">#${Number.isInteger(_pos) ? _pos : parseFloat(_pos).toFixed(1)}</span>`
@@ -7148,7 +7074,7 @@ function aimAddSuggestedPrompt(id, el) {
       const _storeKey  = `${id}_${date}_${_pk}`;
       if (!window._aimChatStore) window._aimChatStore = {};
       window._aimChatStore[_storeKey] = {...chat, model, prompt_id: id};
-      return `<tr style="cursor:pointer" onclick="aimOpenResponseModal('${model}','${date}',${id},'${_storeKey}')">
+      return `<tr style="cursor:pointer" onclick="aimOpenResponseModal('${aimEscHtml(model)}','${aimEscHtml(date)}',${id},'${aimEscHtml(_storeKey)}')">
         <td>${aimModelBadge(model)}</td>
         <td style="max-width:300px"><p style="font-size:11px;line-height:1.5;color:var(--text-muted);margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${_preview}${_preview.length >= 120 ? '…' : ''}</p></td>
         <td><span class="aim-sent-badge ${_sentCls}">${_sentLabel}</span></td>
@@ -7408,8 +7334,6 @@ function initAiCompetitors() {
 
 // ── Sentiment v2: SE-based analysis ─────────────────────────────────────────
 var _aimSE = null;
-var _aimSentApiCache = null; // kept for cache-bust in aimApplySnapshot
-var _aimCompSentCache = null;
 var _aimCompMentionData = null;
 var _aimSentFilters = { cat: 'all' };
 var _aimSentDonut2 = null;
@@ -7719,6 +7643,8 @@ function aimUpdateSentiment() {
   aimRenderSentDonut2(counts, posRate);
   try { aimRenderCompSentimentTable(); } catch(e) { console.error('[AIM] CompSentTable error:', e); }
   try { aimRenderSentEntriesTable(); } catch(e) { console.error('[AIM] SentEntries error:', e); }
+  try { aimRenderSentOverTime(); } catch(e) { console.error('[AIM] SentOverTime error:', e); }
+  try { aimRenderSentCatChart2(); } catch(e) { console.error('[AIM] SentCatChart2 error:', e); }
 }
 
 function aimRenderSentDonut2(counts, posRate) {
@@ -7786,9 +7712,9 @@ function aimRenderCompSentimentChart() {
   var slice = sorted.slice(start, end);
 
   var labels = slice.map(function(b) { return b.name; });
-  var posData = slice.map(function(b) { return aimCompSentSplit(b.sentiment).pos; });
-  var neuData = slice.map(function(b) { return aimCompSentSplit(b.sentiment).neu; });
-  var negData = slice.map(function(b) { return aimCompSentSplit(b.sentiment).neg; });
+  var posData = slice.map(function(b) { return aimCompSentSplitReal(b).pos; });
+  var neuData = slice.map(function(b) { return aimCompSentSplitReal(b).neu; });
+  var negData = slice.map(function(b) { return aimCompSentSplitReal(b).neg; });
 
   if (_aimSentCompChart) { _aimSentCompChart.destroy(); _aimSentCompChart = null; }
   _aimSentCompChart = new Chart(canvas, {
@@ -7837,7 +7763,7 @@ function aimRenderCompSentimentChart() {
 function aimRenderSentOverTime() {
   var canvas = document.getElementById('aim-snt-trend-chart');
   if (!canvas) return;
-  var SE = _aimSE || {};
+  var SE = aimSEGetFiltered();
   var byDate = {};
   ['positive','negative','neutral','uncertain'].forEach(function(stype) {
     (SE[stype] || []).forEach(function(x) {
@@ -8015,7 +7941,7 @@ function _aimSentCatColor(v) {
 function aimRenderSentCatChart2() {
   var canvas = document.getElementById('aim-snt-cat-chart');
   if (!canvas) return;
-  var SE = _aimSE || {};
+  var SE = aimSEGetFiltered();
   var catF = _aimSentFilters.cat;
 
   // Aggregate per category
@@ -11584,7 +11510,7 @@ function aimRenderDomainsTable() {
     return `<tr>
       <td style="width:36px;font-size:11px;color:var(--text-faint);text-align:center">${start+rowIdx+1}</td>
       <td class="col-left"><div style="display:flex;align-items:center;gap:7px">
-        <img src="${d.favicon || `https://www.google.com/s2/favicons?domain=${d.domain}&sz=32`}" onmouseenter="aimShowFaviconTip(this,'${d.domain}')" onmouseleave="aimHideFaviconTip()" style="width:16px;height:16px;border-radius:3px;cursor:default">
+        <img src="${(d.favicon && /^https:\/\//i.test(d.favicon)) ? aimEscHtml(d.favicon) : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(d.domain)}&sz=32`}" onmouseenter="aimShowFaviconTip(this,'${aimEscHtml(d.domain)}')" onmouseleave="aimHideFaviconTip()" style="width:16px;height:16px;border-radius:3px;cursor:default">
         <a href="https://${aimEscHtml(d.domain)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--text)">${aimEscHtml(d.domain)}</a>
       </div></td>
       <td><span class="aim-source-type-badge ${typeClass}">${type}</span></td>
@@ -11643,7 +11569,7 @@ function aimRenderUrlsTable() {
     const titleLine = u.label ? `<div style="font-size:10px;color:var(--text-faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">${aimEscHtml(u.label.replace(/\.\s*Opens in new tab\.?/i,'').trim())}</div>` : '';
     return `<tr>
       <td style="min-width:340px"><div style="display:flex;align-items:flex-start;gap:7px">
-        <img src="https://www.google.com/s2/favicons?domain=${u.domain}&sz=32" data-domain="${u.domain}" data-fl="${(u.domain||'?')[0].toUpperCase()}" data-fbs="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:2px;background:#e2e8f0;color:#64748b;font-size:8px;font-weight:700;flex-shrink:0" onload="aimFavCheck(this)" onerror="aimFavFallback(this)" onmouseenter="aimShowFaviconTip(this,'${u.domain}')" onmouseleave="aimHideFaviconTip()" style="width:14px;height:14px;border-radius:2px;margin-top:1px;flex-shrink:0;cursor:default">
+        <img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(u.domain)}&sz=32" data-domain="${aimEscHtml(u.domain)}" data-fl="${(u.domain||'?')[0].toUpperCase()}" data-fbs="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:2px;background:#e2e8f0;color:#64748b;font-size:8px;font-weight:700;flex-shrink:0" onload="aimFavCheck(this)" onerror="aimFavFallback(this)" onmouseenter="aimShowFaviconTip(this,'${aimEscHtml(u.domain)}')" onmouseleave="aimHideFaviconTip()" style="width:14px;height:14px;border-radius:2px;margin-top:1px;flex-shrink:0;cursor:default">
         <div style="min-width:0"><a href="${/^https?:\/\//i.test(u.url)?u.url:'#'}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;display:block" title="${aimEscHtml(u.url)}">${aimEscHtml(u.url)}</a>${titleLine}</div>
       </div></td>
       <td style="white-space:nowrap"><span class="aim-source-type-badge ${urlType.toLowerCase().replace(/[\s\/]+/g, '-')}" style="white-space:nowrap">${urlType}</span></td>
@@ -12424,8 +12350,6 @@ function _entityDomain(name) {
 
 function aimApplySnapshot(snap) {
   _aimExtUrlCache = null;
-  _aimSentApiCache = null;
-  _aimCompSentCache = null;
   _aimCompMentionData = null;
   _aimSE = null;
   _aimSentFilters = { cat: 'all' };
@@ -13200,15 +13124,15 @@ function aimApplyInjectedData() {
   const inj = window.AIM_INJECTED_DATA;
   if (!inj) return;
 
-    // ── Heatmap + Matrix + Prompts ───────────────────────────────
-    window.AIM_REAL_HM_DATA     = inj.hm;
-    window.AIM_REAL_MATRIX_DATA = inj.matrix;
-    window.AIM_REAL_PROMPTS     = inj.prompts;
+    // ── Heatmap + Matrix ─────────────────────────────────────────
+    // Guards prevent overwriting superior snapshot data loaded earlier
+    if (!window.AIM_REAL_HM_DATA)     window.AIM_REAL_HM_DATA     = inj.hm;
+    if (!window.AIM_REAL_MATRIX_DATA) window.AIM_REAL_MATRIX_DATA = inj.matrix;
 
     // ── Trend timelines ──────────────────────────────────────────
-    if (inj.trend && inj.trend.length)              window._aimDailyTrend              = inj.trend;
-    if (inj.competitorTrend)                        window._aimBrandTimeline           = inj.competitorTrend;
-    if (inj.competitorTrendByProv)                  window._aimBrandTimelineByProvider = inj.competitorTrendByProv;
+    if (!window._aimDailyTrend && inj.trend && inj.trend.length)              window._aimDailyTrend              = inj.trend;
+    if (!window._aimBrandTimeline && inj.competitorTrend)                     window._aimBrandTimeline           = inj.competitorTrend;
+    if (!window._aimBrandTimelineByProvider && inj.competitorTrendByProv)     window._aimBrandTimelineByProvider = inj.competitorTrendByProv;
 
     // ── Update AI_BRANDS with real API scores ────────────────────
     function _normN(n) { return (n || '').toLowerCase().replace(/[\s.\-_]/g, ''); }
