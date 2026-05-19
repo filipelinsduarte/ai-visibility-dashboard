@@ -13131,9 +13131,14 @@ function aimApplyInjectedData() {
     if (!window.AIM_REAL_MATRIX_DATA) window.AIM_REAL_MATRIX_DATA = inj.matrix;
 
     // ── Trend timelines ──────────────────────────────────────────
+    // _aimDailyTrend: snapshot wins (23 days of global vis data vs AIM_INJECTED_DATA's 5 days)
     if (!window._aimDailyTrend && inj.trend && inj.trend.length)              window._aimDailyTrend              = inj.trend;
-    if (!window._aimBrandTimeline && inj.competitorTrend)                     window._aimBrandTimeline           = inj.competitorTrend;
-    if (!window._aimBrandTimelineByProvider && inj.competitorTrendByProv)     window._aimBrandTimelineByProvider = inj.competitorTrendByProv;
+    // _aimBrandTimeline: AIM_INJECTED_DATA always wins — snapshot.brand_timeline measures per-prompt
+    // position-weighted visibility (reaching 60-90%) while competitorTrend measures global visibility
+    // (consistent with the competitors table scores, ~27-33%). Using snapshot data here would show
+    // a completely different scale from the competitors table.
+    if (inj.competitorTrend)    window._aimBrandTimeline           = inj.competitorTrend;
+    if (inj.competitorTrendByProv) window._aimBrandTimelineByProvider = inj.competitorTrendByProv;
 
     // ── Update AI_BRANDS with real API scores ────────────────────
     function _normN(n) { return (n || '').toLowerCase().replace(/[\s.\-_]/g, ''); }
