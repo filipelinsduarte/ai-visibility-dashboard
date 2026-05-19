@@ -8748,59 +8748,80 @@ function aimComputeCompInsight(b) {
     var data = _aimBuildCompMentionData();
     var nn = (b.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     var entry = _aimFuzzyLookup(data, nn);
+    var sc = aimComputeAllCompSent();
+    var cd = sc[nn] || _aimFuzzyLookup(sc, nn) || null;
+    var visRaw = Math.min(100, aimGetBrandMetrics(b).vis || b.visibility || 0);
+    var cdTotal = cd ? (cd.total || 0) : 0;
+    var posR = cdTotal ? Math.round(cd.pos / cdTotal * 100) : 0;
+    var negR = cdTotal ? Math.round(cd.neg / cdTotal * 100) : 0;
+    var neuR = cdTotal ? Math.round(((cd.neu || 0) + (cd.uncertain || 0)) / cdTotal * 100) : 0;
+    var vis = Math.round(visRaw);
+
+    function buildTipHtml(snippetText, pR, nR, nuR, total) {
+      var html = '<div style="font-size:12px;line-height:1.7;max-width:380px">';
+      if (snippetText && snippetText.length > 20) {
+        html += '<div style="color:var(--text);margin-bottom:' + (total ? '10px' : '0') + ';font-size:12px;line-height:1.6">' + aimEscHtml(snippetText) + '</div>';
+      }
+      if (total) {
+        var hasBoth = snippetText && snippetText.length > 20;
+        html += '<div style="display:flex;gap:10px;' + (hasBoth ? 'padding-top:8px;border-top:1px solid var(--border-light);' : '') + 'font-size:11px">';
+        html += '<span style="color:#15803d">+' + pR + '% positive</span>';
+        html += '<span style="color:var(--text-faint)">' + nuR + '% neutral</span>';
+        html += '<span style="color:#b91c1c">-' + nR + '% negative</span>';
+        html += '<span style="margin-left:auto;color:var(--text-faint)">' + total + ' mention' + (total !== 1 ? 's' : '') + '</span>';
+        html += '</div>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function dataBackedSummary() {
+      if (vis === 0 && cdTotal === 0) return 'Not detected in tracked AI responses for this workspace.';
+      var visStr = vis >= 30 ? 'in ' + vis + '% of AI responses'
+        : vis >= 10 ? 'in roughly ' + vis + '% of tracked responses'
+        : vis > 0 ? 'in about ' + vis + '% of tracked responses'
+        : 'in tracked AI responses';
+      if (posR >= 70) return 'Appears ' + visStr + '; ' + posR + '% of mentions carry positive framing, consistently positioned as a top recommendation.';
+      if (posR >= 50 && negR <= 15) return 'Cited ' + visStr + ' with predominantly favorable framing; AI responses recommend it in most contexts with minimal critical language.';
+      if (posR >= 50 && negR > 15) return 'Surfaces ' + visStr + ' with broadly positive reception; ' + negR + '% of mentions include caveats or note alternatives.';
+      if (negR >= 40) return 'Shows up ' + visStr + ', but ' + negR + '% of mentions include critical framing or highlight specific limitations.';
+      if (neuR >= 70) return 'Listed ' + visStr + ' primarily in category overview or comparison contexts, without strong directional framing.';
+      if (cdTotal > 0) return 'Present ' + visStr + '; ' + posR + '% positive, ' + neuR + '% neutral across tracked model responses.';
+      return 'Observed ' + visStr + '; sentiment breakdown is still accumulating for this brand.';
+    }
 
     if (!entry || entry.total === 0) {
-      var _sc = aimComputeAllCompSent();
-      var _cd = _sc[nn] || _aimFuzzyLookup(_sc, nn);
-      if (!_cd || !_cd.total) return { summary: '', tip: '' };
-      var _t = _cd.total, _pr = Math.round(_cd.pos/_t*100), _nr = Math.round(_cd.neg/_t*100);
-      var _sum = _pr >= 60 ? 'Frequently cited as a recommended option across AI responses in this category.'
-        : _nr >= 30 ? 'Appears in AI responses with a mix of positive recommendations and critical framing.'
-        : 'Mentioned across AI responses mainly in comparative or listing contexts.';
-      return { summary: _sum, tip: '' };
+      return { summary: dataBackedSummary(), tipHtml: buildTipHtml('', posR, negR, neuR, cdTotal) };
     }
 
-    function bestEntry(arr) {
-      if (!arr.length) return null;
-      return arr.slice().sort(function(a, b) {
-        return _aimScoreSnippet(b.snippet || b.reason) - _aimScoreSnippet(a.snippet || a.reason);
-      })[0];
-    }
-
-    // Pool all entries and pick the single most descriptive snippet
     var allEntries = entry.pos.concat(entry.neg).concat(entry.neu).concat(entry.uncertain);
-    // Positive entries get a small score boost so they appear first when quality is equal
     var scored = allEntries.map(function(e) {
       var cat = entry.pos.indexOf(e) >= 0 ? 'pos' : entry.neg.indexOf(e) >= 0 ? 'neg' : 'neu';
       return { e: e, cat: cat, score: _aimScoreSnippet(e.snippet || e.reason) + (cat === 'pos' ? 4 : 0) };
     }).sort(function(a, b) { return b.score - a.score; });
 
     var best = scored.length ? scored[0] : null;
-    var second = scored.length > 1 ? scored[1] : null;
-
-    if (!best) return { summary: '', tip: '' };
-
-    var mainSnippet = _aimCleanSnippet(best.e.snippet || best.e.reason, 130);
-    var tip = best.e.fullText || best.e.snippet || '';
-
-    // If there are both positive and negative entries, try to surface contrast in a second clause
-    var summary = mainSnippet;
-    if (!summary) {
-      var total = entry.total, posR = Math.round(entry.pos.length/total*100);
-      summary = posR >= 50 ? 'Cited as a recommended option in multiple AI responses for this category.'
-        : 'Mentioned across AI responses in listing and comparative contexts.';
+    if (!best) {
+      return { summary: dataBackedSummary(), tipHtml: buildTipHtml('', posR, negR, neuR, cdTotal) };
     }
 
-    // If we have a strong second entry from a different sentiment bucket, append a contrast phrase
-    if (second && best.cat !== (entry.pos.indexOf(second.e) >= 0 ? 'pos' : entry.neg.indexOf(second.e) >= 0 ? 'neg' : 'neu')) {
-      var secondSnippet = _aimCleanSnippet(second.e.snippet || second.e.reason, 80);
-      if (secondSnippet && summary.length + secondSnippet.length < 200) {
-        tip = (tip ? tip + '\n\n' : '') + (second.e.fullText || second.e.snippet || '');
-      }
+    var mainSnippet = _aimCleanSnippet(best.e.snippet || best.e.reason, 140);
+    if (!mainSnippet || mainSnippet.length < 20) {
+      return { summary: dataBackedSummary(), tipHtml: buildTipHtml('', posR, negR, neuR, cdTotal) };
     }
 
-    return { summary: summary, tip: tip };
-  } catch(e) { console.error('[AIM] CompInsight error:', e); return { summary: '', tip: '' }; }
+    var fullTextForTip = best.e.fullText || best.e.snippet || '';
+    return { summary: mainSnippet, tipHtml: buildTipHtml(fullTextForTip, posR, negR, neuR, cdTotal) };
+  } catch(e) { console.error('[AIM] CompInsight error:', e); return { summary: '', tipHtml: '' }; }
+}
+
+function aimShowCompInsightTip(el) {
+  var bn = el.dataset.bn || '';
+  var b = AI_BRANDS.find(function(x) { return x.name === bn; });
+  if (!b) return;
+  var ins = aimComputeCompInsight(b);
+  if (!ins.tipHtml) return;
+  aimShowInfoTip(el, ins.tipHtml);
 }
 
 function aimCpSentPage(dir) {
@@ -8842,7 +8863,7 @@ function aimRenderCompSentimentTable() {
       </td>
       <td>${sentBar}</td>
       <td style="font-size:12px;font-weight:600;color:var(--text)">${vis.toFixed(0)}%</td>
-      <td>${ins.summary ? `<span class="aim-comp-insight" style="cursor:default;color:var(--text-muted)" onmouseenter="aimShowInfoTip(this,'<div style=\\"max-width:380px;line-height:1.6;font-size:12px\\">${aimEscHtml(ins.tip || ins.summary)}</div>')" onmouseleave="aimHideInfoTip()">${ins.summary}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
+      <td>${ins.summary ? `<span class="aim-comp-insight" data-bn="${aimEscHtml(b.name)}" style="cursor:default;color:var(--text-muted)" onmouseenter="aimShowCompInsightTip(this)" onmouseleave="aimHideInfoTip()">${ins.summary}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
     </tr>`;
     } catch(e) { console.error('[AIM] Row error:', b && b.name, e); return ''; }
   }).join('');
