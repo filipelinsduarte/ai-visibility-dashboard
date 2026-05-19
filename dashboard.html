@@ -5407,6 +5407,210 @@ const AIM_URL_DONUT_DATA = {
   colors: ['#f472b6','#38bdf8','#6366f1','#10b981','#f59e0b','#94a3b8']
 };
 
+const AI_BRANDS = [
+  { id:1, name:'AI Peekaboo', domain:'aipeekaboo.com', visibility:52, sentiment:71, position:2.1, isMain:true, color:'#b352b3' },
+  { id:2, name:'Profound', domain:'tryprofound.com', visibility:67, sentiment:58, position:1.8, isMain:false, color:'#10b981' },
+  { id:3, name:'Scrunch', domain:'scrunch.ai', visibility:44, sentiment:62, position:3.2, isMain:false, color:'#2563eb' },
+  { id:4, name:'Otterly.AI', domain:'otterly.ai', visibility:38, sentiment:55, position:3.9, isMain:false, color:'#8b5cf6' },
+  { id:5, name:'Brandwise', domain:'brandwise.ai', visibility:29, sentiment:48, position:4.5, isMain:false, color:'#64748b' },
+  { id:6, name:'Peec.AI', domain:'peec.ai', visibility:23, sentiment:52, position:5.1, isMain:false, color:'#06b6d4' },
+  { id:7, name:'Rankscale', domain:'rankscale.ai', visibility:18, sentiment:44, position:5.7, isMain:false, color:'#f59e0b' },
+  { id:8, name:'Mention.ai', domain:'mention.ai', visibility:15, sentiment:41, position:6.2, isMain:false, color:'#f472b6' },
+  { id:9, name:'Aimon', domain:'aimon.io', visibility:11, sentiment:39, position:6.8, isMain:false, color:'#38bdf8' },
+  { id:10, name:'Visio AI', domain:'visio.ai', visibility:8, sentiment:35, position:7.3, isMain:false, color:'#94a3b8' },
+  { id:11, name:'SE Ranking', domain:'seranking.com', visibility:7, sentiment:42, position:7.6, isMain:false, color:'#f59e0b' },
+  { id:12, name:'Semrush', domain:'semrush.com', visibility:6, sentiment:38, position:7.9, isMain:false, color:'#2563eb' },
+  { id:13, name:'Ahrefs', domain:'ahrefs.com', visibility:6, sentiment:36, position:8.2, isMain:false, color:'#10b981' },
+  { id:14, name:'Writesonic', domain:'writesonic.com', visibility:5, sentiment:44, position:8.5, isMain:false, color:'#8b5cf6' },
+  { id:15, name:'NightWatch', domain:'nightwatch.io', visibility:5, sentiment:31, position:8.8, isMain:false, color:'#06b6d4' },
+  { id:16, name:'Rankability', domain:'rankability.com', visibility:4, sentiment:29, position:9.1, isMain:false, color:'#b352b3' },
+  { id:17, name:'Siftly', domain:'siftly.ai', visibility:4, sentiment:46, position:9.3, isMain:false, color:'#64748b' },
+  { id:18, name:'Brandwatch', domain:'brandwatch.com', visibility:3, sentiment:38, position:9.6, isMain:false, color:'#f472b6' },
+  { id:19, name:'Mentionlytics', domain:'mentionlytics.com', visibility:3, sentiment:35, position:9.9, isMain:false, color:'#38bdf8' },
+  { id:20, name:'AthenaHQ', domain:'athenahq.com', visibility:2, sentiment:28, position:10.3, isMain:false, color:'#94a3b8' }
+];
+
+const AIM_WORKSPACES = [
+  {
+    id: 1,
+    name: 'AI Peekaboo',
+    domain: 'aipeekaboo.com',
+    description: 'AI visibility monitoring platform',
+    country: 'All Markets',
+    brands: [
+      { id:1, name:'AI Peekaboo', domain:'aipeekaboo.com', visibility:52, sentiment:71, position:2.1, isMain:true, color:'#b352b3' },
+      { id:2, name:'Profound', domain:'tryprofound.com', visibility:67, sentiment:58, position:1.8, isMain:false, color:'#10b981' },
+      { id:3, name:'Scrunch', domain:'scrunch.ai', visibility:44, sentiment:62, position:3.2, isMain:false, color:'#2563eb' },
+      { id:4, name:'Otterly.AI', domain:'otterly.ai', visibility:38, sentiment:55, position:3.9, isMain:false, color:'#8b5cf6' },
+      { id:5, name:'Brandwise', domain:'brandwise.ai', visibility:29, sentiment:48, position:4.5, isMain:false, color:'#64748b' },
+      { id:6, name:'Peec.AI', domain:'peec.ai', visibility:23, sentiment:52, position:5.1, isMain:false, color:'#06b6d4' },
+      { id:7, name:'Rankscale', domain:'rankscale.ai', visibility:18, sentiment:44, position:5.7, isMain:false, color:'#f59e0b' },
+      { id:8, name:'Mention.ai', domain:'mention.ai', visibility:15, sentiment:41, position:6.2, isMain:false, color:'#f472b6' },
+      { id:9, name:'Aimon', domain:'aimon.io', visibility:11, sentiment:39, position:6.8, isMain:false, color:'#38bdf8' },
+      { id:10, name:'Visio AI', domain:'visio.ai', visibility:8, sentiment:35, position:7.3, isMain:false, color:'#94a3b8' },
+      { id:11, name:'SE Ranking', domain:'seranking.com', visibility:7, sentiment:42, position:7.6, isMain:false, color:'#f59e0b' },
+      { id:12, name:'Semrush', domain:'semrush.com', visibility:6, sentiment:38, position:7.9, isMain:false, color:'#2563eb' },
+      { id:13, name:'Ahrefs', domain:'ahrefs.com', visibility:6, sentiment:36, position:8.2, isMain:false, color:'#10b981' },
+      { id:14, name:'Writesonic', domain:'writesonic.com', visibility:5, sentiment:44, position:8.5, isMain:false, color:'#8b5cf6' },
+      { id:15, name:'NightWatch', domain:'nightwatch.io', visibility:5, sentiment:31, position:8.8, isMain:false, color:'#06b6d4' },
+      { id:16, name:'Rankability', domain:'rankability.com', visibility:4, sentiment:29, position:9.1, isMain:false, color:'#b352b3' },
+      { id:17, name:'Siftly', domain:'siftly.ai', visibility:4, sentiment:46, position:9.3, isMain:false, color:'#64748b' },
+      { id:18, name:'Brandwatch', domain:'brandwatch.com', visibility:3, sentiment:38, position:9.6, isMain:false, color:'#f472b6' },
+      { id:19, name:'Mentionlytics', domain:'mentionlytics.com', visibility:3, sentiment:35, position:9.9, isMain:false, color:'#38bdf8' },
+      { id:20, name:'AthenaHQ', domain:'athenahq.com', visibility:2, sentiment:28, position:10.3, isMain:false, color:'#94a3b8' }
+    ]
+  },
+  {
+    id: 2,
+    name: 'Source.One',
+    domain: 'source.one',
+    description: 'B2B marketplace platform',
+    country: 'United States',
+    brands: [
+      { id:1, name:'Source.One', domain:'source.one', visibility:14, sentiment:62, position:3.2, isMain:true, color:'#b352b3' },
+      { id:2, name:'Thomasnet', domain:'thomasnet.com', visibility:41, sentiment:71, position:1.8, isMain:false, color:'#10b981' },
+      { id:3, name:'Alibaba', domain:'alibaba.com', visibility:38, sentiment:65, position:2.1, isMain:false, color:'#2563eb' },
+      { id:4, name:'GlobalSpec', domain:'globalspec.com', visibility:32, sentiment:58, position:2.6, isMain:false, color:'#8b5cf6' },
+      { id:5, name:'Kompass', domain:'kompass.com', visibility:28, sentiment:52, position:3.1, isMain:false, color:'#64748b' },
+      { id:6, name:'IndiaMart', domain:'indiamart.com', visibility:24, sentiment:49, position:3.5, isMain:false, color:'#06b6d4' },
+      { id:7, name:'EC21', domain:'ec21.com', visibility:19, sentiment:44, position:4.0, isMain:false, color:'#f59e0b' },
+      { id:8, name:'TradeKey', domain:'tradekey.com', visibility:17, sentiment:41, position:4.4, isMain:false, color:'#f472b6' },
+      { id:9, name:'Made-in-China', domain:'made-in-china.com', visibility:15, sentiment:38, position:4.8, isMain:false, color:'#38bdf8' },
+      { id:10, name:'ExportHub', domain:'exporthub.com', visibility:12, sentiment:35, position:5.2, isMain:false, color:'#94a3b8' },
+      { id:11, name:'DHGate', domain:'dhgate.com', visibility:10, sentiment:32, position:5.7, isMain:false, color:'#f59e0b' },
+      { id:12, name:'TradeIndia', domain:'tradeindia.com', visibility:9, sentiment:30, position:6.1, isMain:false, color:'#10b981' },
+      { id:13, name:'BizVibe', domain:'bizvibe.com', visibility:8, sentiment:41, position:6.4, isMain:false, color:'#2563eb' },
+      { id:14, name:'Europages', domain:'europages.com', visibility:7, sentiment:38, position:6.8, isMain:false, color:'#8b5cf6' },
+      { id:15, name:'Panjiva', domain:'panjiva.com', visibility:7, sentiment:36, position:7.1, isMain:false, color:'#b352b3' },
+      { id:16, name:'Seasia', domain:'seasiainfotech.com', visibility:5, sentiment:29, position:7.5, isMain:false, color:'#64748b' },
+      { id:17, name:'Wer Liefert Was', domain:'wlw.de', visibility:5, sentiment:33, position:7.8, isMain:false, color:'#06b6d4' },
+      { id:18, name:'TradeGecko', domain:'tradegecko.com', visibility:4, sentiment:28, position:8.2, isMain:false, color:'#f472b6' },
+      { id:19, name:'Handshake', domain:'handshake.com', visibility:3, sentiment:44, position:8.6, isMain:false, color:'#38bdf8' },
+      { id:20, name:'Tundra', domain:'tundra.com', visibility:2, sentiment:31, position:9.0, isMain:false, color:'#94a3b8' },
+    ]
+  },
+  {
+    id: 3,
+    name: 'Flexzo',
+    domain: 'flexzo.ai',
+    description: 'Healthcare staffing platform',
+    country: 'United Kingdom',
+    brands: [
+      { id:1, name:'Flexzo', domain:'flexzo.ai', visibility:8, sentiment:68, position:4.1, isMain:true, color:'#b352b3' },
+      { id:2, name:'Aya Healthcare', domain:'ayahealthcare.com', visibility:45, sentiment:78, position:1.5, isMain:false, color:'#10b981' },
+      { id:3, name:'Conexus', domain:'conexusmedicalsolutions.com', visibility:38, sentiment:72, position:1.9, isMain:false, color:'#2563eb' },
+      { id:4, name:'AMN Healthcare', domain:'amnhealthcare.com', visibility:34, sentiment:69, position:2.3, isMain:false, color:'#8b5cf6' },
+      { id:5, name:'Cross Country', domain:'crosscountry.com', visibility:29, sentiment:65, position:2.8, isMain:false, color:'#64748b' },
+      { id:6, name:'Staffmark', domain:'staffmark.com', visibility:25, sentiment:61, position:3.2, isMain:false, color:'#06b6d4' },
+      { id:7, name:'Medical Solutions', domain:'medicalsolutions.com', visibility:21, sentiment:58, position:3.7, isMain:false, color:'#f59e0b' },
+      { id:8, name:'Acacium', domain:'acacium.com', visibility:18, sentiment:74, position:4.0, isMain:false, color:'#f472b6' },
+      { id:9, name:'Meridian', domain:'meridianstaffing.com', visibility:15, sentiment:55, position:4.4, isMain:false, color:'#38bdf8' },
+      { id:10, name:'Medacs', domain:'medacs.com', visibility:13, sentiment:62, position:4.8, isMain:false, color:'#94a3b8' },
+      { id:11, name:'Locum Meds', domain:'locummeds.com', visibility:11, sentiment:58, position:5.2, isMain:false, color:'#f59e0b' },
+      { id:12, name:'ID Medical', domain:'idmedical.com', visibility:10, sentiment:71, position:5.5, isMain:false, color:'#10b981' },
+      { id:13, name:'Pulse Healthcare', domain:'pulsejobs.com', visibility:9, sentiment:64, position:5.9, isMain:false, color:'#2563eb' },
+      { id:14, name:'NHS Professionals', domain:'nhsprofessionals.nhs.uk', visibility:8, sentiment:77, position:6.2, isMain:false, color:'#8b5cf6' },
+      { id:15, name:'Thornbury', domain:'thornburynursing.com', visibility:7, sentiment:69, position:6.5, isMain:false, color:'#b352b3' },
+      { id:16, name:'Unison Staffing', domain:'unisonstaffing.com', visibility:6, sentiment:52, position:6.9, isMain:false, color:'#64748b' },
+      { id:17, name:'Hays Healthcare', domain:'hays.co.uk', visibility:5, sentiment:61, position:7.3, isMain:false, color:'#b352b3' },
+      { id:18, name:'Staffline', domain:'staffline.co.uk', visibility:4, sentiment:48, position:7.7, isMain:false, color:'#f472b6' },
+      { id:19, name:'4Way Healthcare', domain:'4wayhealthcare.co.uk', visibility:3, sentiment:55, position:8.1, isMain:false, color:'#38bdf8' },
+      { id:20, name:'Recruit Healthcare', domain:'recruithealthcare.com', visibility:2, sentiment:44, position:8.5, isMain:false, color:'#94a3b8' },
+    ]
+  }
+];
+let aimSelectedWorkspaceId = 1;
+
+let aimCompMentionsPage = 0;
+let aimCompSentPage = 0;
+let aimCpHeatmapPageIdx = 0;
+let aimHmSortCol = 'all';
+let aimHmSortDir = 1;
+const AIM_HM_PAGE_SIZE = 8;
+const AIM_HM_MODELS = [
+  { key:'chatgpt',    label:'ChatGPT',       short:'GPT',  domain:'openai.com' },
+  { key:'gemini',     label:'Gemini',        short:'Gem',  domain:'gemini.google.com' },
+  { key:'google-aio', label:'Google AIO',    short:'AIO',  domain:'google.com' },
+  { key:'google-aim', label:'AI Mode',       short:'AIM',  domain:'google.com' },
+  { key:'perplexity', label:'Perplexity',    short:'PPX',  domain:'perplexity.ai' },
+];
+const AIM_HM_ALL = { key:'all', label:'All Models', short:'All', domain:'' };
+
+const AIM_COMP_INSIGHTS = {
+  1: {
+    'Profound':      { str:'Deep enterprise integrations and Salesforce connector', wk:'High price point limits SMB adoption, limited prompt customization' },
+    'Scrunch':       { str:'Clean onboarding, strong Perplexity coverage', wk:'Limited historical data depth and no export API' },
+    'Otterly.AI':    { str:'Real-time Slack alerts and quick no-code setup', wk:'Lacks multi-brand monitoring in base tier' },
+    'Brandwise':     { str:'Good Reddit and forum tracking capabilities', wk:'No Google AIO or AI Mode coverage yet' },
+    'Peec.AI':       { str:'Competitive pricing for early-stage startups', wk:'Narrow model coverage, limited analytics depth' },
+    'Rankscale':     { str:'SEO and AI monitoring combined in one tool', wk:'AI features are secondary to core SEO product' },
+    'Mention.ai':    { str:'Established brand monitoring history and brand trust', wk:'AI visibility features are newly added and shallow' },
+    'Aimon':         { str:'Simple UI and low cost entry point', wk:'Limited to 3 AI models, no sentiment detail' },
+    'Visio AI':      { str:'Visual reporting dashboards and clean export', wk:'Small customer base, limited integrations' },
+    'SE Ranking':    { str:'Broad SEO toolkit with AI add-ons', wk:'AI monitoring is a minor feature, not the core product' },
+    'Semrush':       { str:'Massive keyword and backlink data alongside AI tracking', wk:'AI visibility is a small add-on inside expensive bundles' },
+    'Ahrefs':        { str:'Industry-leading backlink data and trusted brand', wk:'AI monitoring coverage is minimal and recently added' },
+    'Writesonic':    { str:'Content generation and AI visibility in one platform', wk:'Monitoring is secondary to writing features' },
+    'NightWatch':    { str:'Rank tracking with basic AI mention alerts', wk:'No sentiment analysis, limited AI model coverage' },
+    'Rankability':   { str:'Strong content optimization focus', wk:'AI monitoring features are underdeveloped' },
+    'Siftly':        { str:'Lightweight and fast to deploy', wk:'Limited data retention and model coverage' },
+    'Brandwatch':    { str:'Enterprise social and AI monitoring combined', wk:'Very high cost and complex setup' },
+    'Mentionlytics': { str:'Social listening and AI citation tracking combined', wk:'AI features are basic compared to dedicated tools' },
+    'AthenaHQ':      { str:'Emerging player with a modern API', wk:'Limited brand recognition and track record' },
+  },
+  2: {
+    'Thomasnet':     { str:'Dominant US industrial supplier database', wk:'Outdated UI, no AI-native search features' },
+    'Alibaba':       { str:'Massive global supplier network and buyer trust', wk:'Quality verification issues and fraud risk perception' },
+    'GlobalSpec':    { str:'Engineering-focused supplier discovery', wk:'Narrow vertical focus limits broader B2B use' },
+    'Kompass':       { str:'Strong European market coverage', wk:'Limited US reach and dated interface' },
+    'IndiaMart':     { str:'Deep India market penetration at scale', wk:'Perceived as low-cost only, quality concerns' },
+    'EC21':          { str:'Large Asian supplier catalogue', wk:'Low trust scores in Western markets' },
+    'TradeKey':      { str:'Simple onboarding for suppliers', wk:'Low traffic and limited buyer activity' },
+    'Made-in-China': { str:'Direct factory access and low prices', wk:'Brand perception struggles in quality-first markets' },
+    'ExportHub':     { str:'SMB-friendly pricing', wk:'Limited analytics and buyer intent data' },
+    'DHGate':        { str:'Consumer goods strength', wk:'Not seen as a serious B2B platform' },
+    'TradeIndia':    { str:'Strong SME supplier base in India', wk:'Minimal adoption outside India' },
+    'BizVibe':       { str:'AI-enhanced supplier search capability', wk:'Small network and limited verified data' },
+    'Europages':     { str:'Strong European supplier directory', wk:'Low adoption outside Europe' },
+    'Panjiva':       { str:'Trade data and import/export intelligence', wk:'Expensive and niche use case' },
+    'Seasia':        { str:'IT services focus with niche depth', wk:'Very limited marketplace features' },
+    'Wer Liefert Was': { str:'Strong German B2B market presence', wk:'Minimal global reach' },
+    'TradeGecko':    { str:'Inventory and marketplace integration', wk:'Acquired by QuickBooks, limited standalone focus' },
+    'Handshake':     { str:'US wholesale marketplace, strong retailer network', wk:'Limited supplier discovery for manufacturing' },
+    'Tundra':        { str:'Zero-fee wholesale model', wk:'Niche product categories and low brand awareness' },
+  },
+  3: {
+    'Aya Healthcare':   { str:'Largest travel nurse network in the US with strong brand trust', wk:'Premium pricing, less focus on UK NHS market' },
+    'Conexus':          { str:'Specialized in Allied Health placements', wk:'Limited UK presence and brand recognition' },
+    'AMN Healthcare':   { str:'Enterprise-grade technology platform for large health systems', wk:'Complex onboarding and slow response times' },
+    'Cross Country':    { str:'Broad specialties and nationwide US coverage', wk:'Lower candidate satisfaction scores' },
+    'Staffmark':        { str:'Multi-industry staffing strength', wk:'Healthcare is not their primary focus' },
+    'Medical Solutions':{ str:'Competitive pay packages and strong recruiter relationships', wk:'Limited UK and international coverage' },
+    'Acacium':          { str:'Strong NHS framework agreements and UK coverage', wk:'Less digital, heavier on traditional recruitment' },
+    'Meridian':         { str:'Regional UK depth and responsive team', wk:'Limited tech platform compared to US competitors' },
+    'Medacs':           { str:'UK and international healthcare staffing experience', wk:'Older brand with limited innovation narrative' },
+    'Locum Meds':       { str:'Dedicated locum doctor focus', wk:'Narrow scope, limited nursing and allied health' },
+    'ID Medical':       { str:"One of UK's fastest-growing healthcare staffers", wk:'Less visibility outside NHS market' },
+    'Pulse Healthcare': { str:'Broad UK healthcare coverage', wk:'Lower tech maturity than US platforms' },
+    'NHS Professionals':{ str:'First-party NHS trust with high compliance standards', wk:'Limited to NHS only, no private sector coverage' },
+    'Thornbury':        { str:'High-quality nursing placements and strong reputation', wk:'Premium price point, limited scale' },
+    'Unison Staffing':  { str:'Cross-industry reach', wk:'Healthcare is not core, thin specialist depth' },
+    'Hays Healthcare':  { str:'Global brand with strong LinkedIn presence', wk:'Generalist recruiter, weaker healthcare specialization' },
+    'Staffline':        { str:'Large UK workforce solutions brand', wk:'Primarily blue collar, healthcare is secondary' },
+    '4Way Healthcare':  { str:'NHS specialist, compliant and trusted', wk:'Very small scale, limited marketing reach' },
+    'Recruit Healthcare':{ str:'International healthcare staffing focus', wk:'Low brand recognition in UK domestic market' },
+  }
+};
+
+const AIM_VIS_DATA = {
+  labels:['Apr 28','Apr 29','Apr 30','May 1','May 2','May 3','May 4'],
+  datasets: AI_BRANDS.slice(0,6).map(b => ({
+    label: b.name,
+    color: b.color,
+    data: Array.from({length:7}, (_,i) => Math.max(5, Math.round(b.visibility + (Math.sin(i*1.3 + b.id)*8))))
+  }))
+};
+
 const AIM_PROVIDER_KEYS = { chatgpt:'chatgpt', gemini:'gemini', perplexity:'perplexity', 'google-aio':'googleaio', 'google-aim':'googleaimode' };
 const AIM_PROVIDER_DISPLAY = { chatgpt:'ChatGPT', gemini:'Gemini', perplexity:'Perplexity', 'google-aio':'Google AIO', 'google-aim':'Google AI Mode' };
 const AIM_MODEL_CONFIGS = [
@@ -6984,7 +7188,7 @@ function aimAddSuggestedPrompt(id, el) {
     visibility: 0, sentiment: 50, position: null, status: 'active',
     frequency: 'daily', lastRun: null,
   });
-  const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = null;
+  const snap = window._AIM_SNAPSHOT || null;
   const prompt = AIM_PROMPTS.find(p=>p.id===id);
   if (!prompt) return;
   const listEl = document.getElementById('aim-prompts-list');
@@ -16951,7 +17155,7 @@ function _aimNbFinishScan(title, desc) {
 
 function _aimNbCreateBrand() {
   var nb = _aimNewBrand;
-  var snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = null;
+  var snap = window._AIM_SNAPSHOT || null;
   snap.all_brands.unshift(newBrand);
   // Add prompts to AIM_PROMPTS
   var baseId = AIM_PROMPTS.length + 1;
