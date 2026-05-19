@@ -6036,6 +6036,7 @@ function aimRefreshCurrentView() {
     aimRenderSourceHeatmap();
     aimRenderDomainsTable();
     aimRenderUrlHistoryChart();
+    aimRenderUrlLineChart();
     aimRenderUrlDonut();
     aimRenderUrlsTable();
   } else if (aimCurrentView === 'ai-todos') {
@@ -9117,11 +9118,33 @@ function aimRenderCompPromptMatrix() {
   const _brandLookup = {};
   AI_BRANDS.forEach(b => { _brandLookup[b.name] = b; });
   const _activePrompts = window.AIM_REAL_PROMPTS || AIM_PROMPTS;
+
+  // Pre-compute filtered brand counts per prompt from _aimAllResponses when date/model filter is active
+  const _activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  const _useFiltered = (aimFilterDate !== 'all' || _activeProvKey) && window._aimAllResponses && window._aimAllResponses.length;
+  const _filteredByPrompt = {};
+  if (_useFiltered) {
+    window._aimAllResponses.forEach(function(r) {
+      if (_activeProvKey && r.provider_key !== _activeProvKey) return;
+      if (!_aimSrcDateInRange(r.iso_date || r.date)) return;
+      var pid = r.prompt_numeric_id;
+      if (pid == null) return;
+      if (!_filteredByPrompt[pid]) _filteredByPrompt[pid] = {};
+      (r.brands || []).forEach(function(b) {
+        if (b && typeof b === 'string') { var k = b.trim(); if (k) _filteredByPrompt[pid][k] = (_filteredByPrompt[pid][k]||0)+1; }
+      });
+    });
+  }
+
   _activePrompts.forEach(p => {
     if (aimFilterTopic !== 'all' && p.topic !== aimFilterTopic) return;
     if (aimFilterIntent !== 'all' && p.intent !== aimFilterIntent) return;
     let brands;
-    if (window.AIM_REAL_MATRIX_DATA && window.AIM_REAL_MATRIX_DATA[p.id] && window.AIM_REAL_MATRIX_DATA[p.id].length) {
+    if (_useFiltered && _filteredByPrompt[p.id] && Object.keys(_filteredByPrompt[p.id]).length) {
+      brands = Object.entries(_filteredByPrompt[p.id])
+        .sort((a, b) => b[1] - a[1]).slice(0, NUM_COLS)
+        .map(([name]) => ({ n: name, d: null }));
+    } else if (window.AIM_REAL_MATRIX_DATA && window.AIM_REAL_MATRIX_DATA[p.id] && window.AIM_REAL_MATRIX_DATA[p.id].length) {
       brands = window.AIM_REAL_MATRIX_DATA[p.id].slice(0, NUM_COLS);
     } else {
       const rawBrands = mockRankings[p.id] || [];
@@ -9439,7 +9462,20 @@ function aimRenderUrlLineChart() {
   var _provColors  = { chatgpt:'#10a37f', googleaimode:'#06b6d4', googleaio:'#f59e0b', perplexity:'#8b5cf6', gemini:'#4285f4' };
   var _provOrder   = ['chatgpt','googleaimode','googleaio','perplexity','gemini'];
   var _provDomains = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
-  var allUrls = (window._aimTopSourceUrls || []).slice(0, _AIM_URL_CHART_MAX || 30);
+  var allUrls;
+  if (aimFilterDate !== 'all' && window._aimUrlsByDate && Object.keys(window._aimUrlsByDate).length) {
+    var _urlDateTotals = {};
+    Object.keys(window._aimUrlsByDate).filter(_aimSrcDateInRange).forEach(function(dt) {
+      (window._aimUrlsByDate[dt] || []).forEach(function(u) { _urlDateTotals[u.url] = (_urlDateTotals[u.url]||0)+u.citation_count; });
+    });
+    var _topByDate = (window._aimTopSourceUrls || [])
+      .filter(function(u) { return (_urlDateTotals[u.url]||0) > 0; })
+      .map(function(u) { return Object.assign({}, u, { mentions: _urlDateTotals[u.url]||0 }); })
+      .sort(function(a,b) { return b.mentions - a.mentions; });
+    allUrls = (_topByDate.length > 0 ? _topByDate : (window._aimTopSourceUrls || [])).slice(0, _AIM_URL_CHART_MAX || 30);
+  } else {
+    allUrls = (window._aimTopSourceUrls || []).slice(0, _AIM_URL_CHART_MAX || 30);
+  }
   var total = allUrls.length;
   var maxPage = Math.max(0, Math.ceil(total / (_AIM_URL_CHART_PAGE_SZ || 6)) - 1);
   if (_aimUrlChartPage > maxPage) _aimUrlChartPage = 0;
@@ -9598,9 +9634,17 @@ function aimRenderUrlHistoryChart() {
   }
   var allDates = Object.keys(urlByDate).sort().filter(_aimSrcDateInRange);
   if (!allDates.length) allDates = Object.keys(urlByDate).sort();
+  var _histProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  var _histProvUrls = null;
+  if (_histProvKey && window._aimTopSourceUrls && window._aimTopSourceUrls.length) {
+    _histProvUrls = new Set(window._aimTopSourceUrls
+      .filter(function(u) { return u.by_provider && (u.by_provider[_histProvKey] || 0) > 0; })
+      .map(function(u) { return u.url; }));
+  }
   var urlTotals = {};
   allDates.forEach(function(dt) {
     (urlByDate[dt] || []).forEach(function(u) {
+      if (_histProvUrls && !_histProvUrls.has(u.url)) return;
       urlTotals[u.url] = (urlTotals[u.url]||0) + u.citation_count;
     });
   });
@@ -9646,7 +9690,30 @@ function aimRenderUrlDonut() {
   if (aimChartInstances['urlDonut']) { aimChartInstances['urlDonut'].destroy(); delete aimChartInstances['urlDonut']; }
   const legendEl = document.getElementById('aim-url-donut-legend');
   const filteredUrls = _aimGetFilteredSourceUrls();
-  const urls = (filteredUrls && filteredUrls.length > 0) ? filteredUrls : AIM_SOURCE_URLS;
+  let urls;
+  if (filteredUrls && filteredUrls.length > 0) {
+    urls = filteredUrls;
+  } else if ((aimFilterDate !== 'all' || aimFilterModel !== 'all') && window._aimUrlsByDate && Object.keys(window._aimUrlsByDate).length) {
+    const _donutProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+    const _donutProvUrls = _donutProvKey && window._aimTopSourceUrls
+      ? new Set(window._aimTopSourceUrls.filter(u => u.by_provider && (u.by_provider[_donutProvKey]||0) > 0).map(u => u.url))
+      : null;
+    const _dtTotals = {};
+    Object.keys(window._aimUrlsByDate).filter(_aimSrcDateInRange).forEach(dt => {
+      (window._aimUrlsByDate[dt] || []).forEach(u => {
+        if (_donutProvUrls && !_donutProvUrls.has(u.url)) return;
+        _dtTotals[u.url] = (_dtTotals[u.url]||0) + u.citation_count;
+      });
+    });
+    const _dtTotal = Object.values(_dtTotals).reduce((a,b)=>a+b,0)||1;
+    const _dtEntries = Object.entries(_dtTotals).sort((a,b)=>b[1]-a[1]).slice(0,100).map(([url,count])=>({
+      url, domain: url.replace(/^https?:\/\/([^/]+).*/,'$1').replace(/^www\./,''),
+      mentions: count, share: parseFloat((count/_dtTotal*100).toFixed(1))
+    }));
+    urls = _dtEntries.length > 0 ? _dtEntries : AIM_SOURCE_URLS;
+  } else {
+    urls = AIM_SOURCE_URLS;
+  }
   const URL_TYPE_COLORS = {
     'Blog Post':'#b352b3','Review':'#38bdf8','Forum Thread':'#f59e0b',
     'News Article':'#10b981','Category Page':'#6366f1','Listicle':'#22d3ee',
