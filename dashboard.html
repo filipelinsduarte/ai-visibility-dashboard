@@ -7427,53 +7427,61 @@ function aimBuildSE() {
   if (!snap) return null;
   // Use pre-built SE injected by generate_snapshot.py (server-side, full history)
   if (snap.aim_se) {
-    // Enrich entries where the server-side reason is just the brand name or too short
+    // Always try to enrich reasons with a brand-specific snippet from the full LLM response.
+    // The server sometimes stores generic text or just the brand name as the reason.
     var _seBrand = snap.brand || '';
     var _seBrandLow = _seBrand.toLowerCase();
     var _seHist = snap.prompt_response_history || {};
     function _seExtractSnippet(text) {
       if (!text) return '';
-      var sents = text.replace(/\r?\n/g,' ').replace(/\s{2,}/g,' ').split(/[.!?]+\s+/);
+      var sents = text.replace(/\r?\n/g, ' ').replace(/\s{2,}/g, ' ').split(/[.!?]+\s+/);
       for (var i = 0; i < sents.length; i++) {
         if (_seBrandLow && sents[i].toLowerCase().indexOf(_seBrandLow) >= 0) {
-          var s = sents[i].trim().replace(/^[\d]+\.\s+/,'').replace(/^[-•*]\s+/,'');
-          if (s.length < 40 && i + 1 < sents.length) s = (s + ' ' + sents[i+1].trim()).trim();
-          return s.length > 240 ? s.slice(0,237)+'...' : s;
+          var s = sents[i].trim().replace(/^[\d]+[.)]\s+/, '').replace(/^[-•*]\s+/, '');
+          if (s.length < 40 && i + 1 < sents.length) s = (s + ' ' + sents[i + 1].trim()).trim();
+          return s.length > 240 ? s.slice(0, 237) + '...' : s;
         }
       }
       if (_seBrandLow) {
         var idx = text.toLowerCase().indexOf(_seBrandLow);
-        if (idx >= 0) return text.slice(Math.max(0,idx-80), Math.min(text.length,idx+_seBrandLow.length+200)).trim().slice(0,240);
+        if (idx >= 0) return text.slice(Math.max(0, idx - 80), Math.min(text.length, idx + _seBrandLow.length + 220)).trim().slice(0, 240);
       }
-      return text.slice(0,180).trim();
+      return '';
     }
-    ['positive','negative','neutral','uncertain'].forEach(function(t) {
+    ['positive', 'negative', 'neutral', 'uncertain'].forEach(function(t) {
       (snap.aim_se[t] || []).forEach(function(entry) {
-        var r = (entry.reason || '').trim();
-        var bad = r.length < 20 || r.toLowerCase() === _seBrandLow || r === _seBrand;
-        if (!bad) return;
-        var pid = entry.promptId || '';
-        var date = entry.date || '';
-        var model = entry.model || '';
-        var byDate = _seHist[pid] || _seHist[String(pid)];
-        if (!byDate) return;
-        var byModel = byDate[date];
-        if (!byModel) {
-          var dates = Object.keys(byDate);
-          if (dates.length) byModel = byDate[dates[0]];
-        }
-        if (!byModel) return;
-        var resp = byModel[model];
-        if (!resp) {
-          var mkeys = Object.keys(byModel);
-          for (var mi = 0; mi < mkeys.length; mi++) {
-            if (byModel[mkeys[mi]] && byModel[mkeys[mi]].is_mentioned) { resp = byModel[mkeys[mi]]; break; }
+        try {
+          var pid = entry.promptId || '';
+          var date = entry.date || '';
+          var model = entry.model || '';
+          // Try multiple key formats for promptId (string or number)
+          var byDate = _seHist[pid] || _seHist[String(pid)] || _seHist[parseInt(pid, 10)];
+          if (!byDate) return;
+          var byModel = byDate[date];
+          if (!byModel) {
+            // Try the most recent date if exact date not found
+            var dates = Object.keys(byDate).sort();
+            if (dates.length) byModel = byDate[dates[dates.length - 1]];
           }
-        }
-        if (!resp || !resp.is_mentioned) return;
-        var text = resp.text || resp.response_text || '';
-        var snippet = text ? _seExtractSnippet(text) : '';
-        if (snippet && snippet.length > 18) entry.reason = snippet;
+          if (!byModel) return;
+          // Try exact model key, then any model that has is_mentioned
+          var resp = byModel[model];
+          if (!resp) {
+            var mkeys = Object.keys(byModel);
+            for (var mi = 0; mi < mkeys.length; mi++) {
+              if (byModel[mkeys[mi]] && byModel[mkeys[mi]].is_mentioned) { resp = byModel[mkeys[mi]]; break; }
+            }
+            if (!resp && mkeys.length) resp = byModel[mkeys[0]];
+          }
+          if (!resp) return;
+          var text = resp.text || resp.response_text || '';
+          if (!text) return;
+          var snippet = _seExtractSnippet(text);
+          // Use snippet if it specifically references the brand and is more informative
+          if (snippet && snippet.length > 20 && snippet.toLowerCase().indexOf(_seBrandLow) >= 0) {
+            entry.reason = snippet;
+          }
+        } catch(enrichErr) { /* skip bad entry */ }
       });
     });
     return snap.aim_se;
@@ -8292,104 +8300,132 @@ function aimComputeAllCompSent() {
 function _aimExtractBrandSnippet(text, brandName) {
   if (!text || !brandName) return '';
   var brandLower = brandName.toLowerCase();
-  var sents = text.replace(/\r?\n/g,' ').replace(/\s{2,}/g,' ')
-    .split(/(?<=[.!?])\s+(?=[A-Z0-9\-"'])/);
+  // Simple split — no lookbehind (broad browser compat)
+  var sents = text.replace(/\r?\n/g, ' ').replace(/\s{2,}/g, ' ').split(/[.!?]+\s+/);
   for (var i = 0; i < sents.length; i++) {
     if (sents[i].toLowerCase().indexOf(brandLower) >= 0) {
-      var s = sents[i].trim();
-      if (s.length < 60 && i + 1 < sents.length) s = (s + ' ' + sents[i+1].trim()).trim();
-      return s.length > 280 ? s.slice(0,277)+'...' : s;
+      var s = sents[i].trim().replace(/^[\d]+[.)]\s+/, '').replace(/^[-•*]\s+/, '');
+      if (s.length < 60 && i + 1 < sents.length) s = (s + ' ' + sents[i + 1].trim()).trim();
+      return s.length > 280 ? s.slice(0, 277) + '...' : s;
     }
   }
   var idx = text.toLowerCase().indexOf(brandLower);
-  if (idx < 0) return text.slice(0,200).trim();
-  return text.slice(Math.max(0,idx-120), Math.min(text.length,idx+brandName.length+180)).trim();
+  if (idx < 0) return text.slice(0, 200).trim();
+  return text.slice(Math.max(0, idx - 100), Math.min(text.length, idx + brandLower.length + 200)).trim();
 }
 
-function _aimClassifySnippetSentiment(snippet, promptText) {
-  if (!snippet) return 'uncertain';
-  var s = snippet.toLowerCase();
-  var p = (promptText||'').toLowerCase();
+// Classify how a competitor is mentioned based on the surrounding snippet text.
+// Uses API sentiment_label when available (most reliable), then keyword scoring.
+function _aimClassifyMention(snippet, promptText, apiLabel, apiScore) {
+  // 1. Use API label if it was for this specific entry
+  var al = (apiLabel || '').toLowerCase();
+  if (al === 'positive' || al === 'negative' || al === 'neutral') return al;
+  // 2. Keyword scoring on the extracted snippet
+  var s = (snippet || '').toLowerCase();
+  var p = (promptText || '').toLowerCase();
   var posScore = 0, negScore = 0;
-  [/\b(best|top[\s\-]?\w*|leading|recommended|excellent|outstanding|superior|ideal|great|strong|powerful|comprehensive|robust|reliable|trusted|effective|accurate|scalable|affordable|user.friendly|intuitive|seamless|innovative)\b/,
-   /\b(stands out|excels|particularly well|widely used|highly rated|well.regarded|well.suited|best.in.class|market.leader|go.to choice)\b/,
-   /\b(ideal for|best for|great for|perfect for|designed for|built for|especially useful|particularly useful|well.positioned)\b/,
-   /\b(offers|provides|delivers|enables|features|supports|includes)\b.{1,50}\b(comprehensive|robust|advanced|powerful|strong|full|rich|broad|deep|wide)\b/
-  ].forEach(function(re){ if(re.test(s)) posScore++; });
-  [/\b(lacks?|limited|missing|weak|poor|expensive|costly|difficult|complex|clunky|slow|unreliable|basic|outdated|narrow|rigid|opaque|frustrating)\b/,
-   /\b(does\s+not|doesn't|won't|fails?\s+to|unable\s+to)\b.{0,50}\b(support|offer|include|provide|handle|scale)\b/,
-   /\b(drawback|limitation|downside|weakness|concern|issue|problem|gap|challenge|complaint|criticism|caveat)\b/,
-   /\b(lags?\s+behind|falls?\s+short|underwhelm|disappointing|overpriced|not\s+(suitable|ideal|designed|built)\s+for)\b/,
-   /\b(less\s+(capable|comprehensive|advanced|robust|suitable|accurate|flexible))\b/
-  ].forEach(function(re){ if(re.test(s)) negScore++; });
+  var posPatterns = [
+    /\b(best|top|leading|recommended|excellent|outstanding|superior|ideal|great|strong|powerful|comprehensive|robust|reliable|trusted|effective|accurate|scalable|affordable|intuitive|seamless|innovative|popular|widely\s+used)\b/,
+    /\b(stands?\s+out|excels?|highly\s+rated|well.regarded|well.suited|go.to|market.leader|gold\s+standard)\b/,
+    /\b(ideal\s+for|best\s+for|great\s+for|perfect\s+for|especially\s+useful|well.positioned|designed\s+for|built\s+for)\b/
+  ];
+  var negPatterns = [
+    /\b(lacks?|limited|missing|weak|poor|expensive|costly|difficult|clunky|slow|unreliable|outdated|rigid|frustrating|narrow|opaque)\b/,
+    /\b(does\s+not|doesn't|won't|fails?\s+to|unable\s+to)\b.{0,60}\b(support|offer|include|provide|handle|scale|integrate)\b/,
+    /\b(drawback|limitation|downside|weakness|issue|problem|gap|complaint|criticism|caveat|concern)\b/,
+    /\b(lags?\s+behind|falls?\s+short|disappointing|overpriced|not\s+(suitable|ideal|designed|built)\s+for|less\s+(capable|advanced|robust|flexible|accurate))\b/
+  ];
+  posPatterns.forEach(function(re) { if (re.test(s)) posScore++; });
+  negPatterns.forEach(function(re) { if (re.test(s)) negScore++; });
   if (posScore > 0 && negScore === 0) return 'positive';
   if (negScore > 0 && posScore === 0) return 'negative';
   if (posScore > 0 && negScore > 0) return posScore >= negScore ? 'positive' : 'negative';
-  if (/\b(best|top|which|recommend|should\s+i\s+use|leading|ideal|right\s+tool)\b/.test(p) && negScore === 0) return 'positive';
-  if (/\b(also|another|additionally|includes?|such\s+as|along\s+with|as\s+well\s+as|options?\s+include|tools?\s+include|platforms?\s+include)\b/.test(s)) return 'neutral';
+  // 3. Prompt intent hint: "best X" / "recommend" type queries lean positive when no negative signal
+  if (/\b(best|top|which|recommend|should\s+i\s+use|leading|ideal|right\s+tool|compare)\b/.test(p) && negScore === 0) return 'positive';
+  // 4. Enumeration context (just listed, no qualitative signal) = neutral
+  if (/\b(also|another|additionally|includes?|such\s+as|along\s+with|as\s+well\s+as|options?\s+include|tools?\s+include|platforms?\s+include|for\s+example|e\.g\.)\b/.test(s)) return 'neutral';
+  // 5. Score fallback
+  if (apiScore != null) return apiScore >= 65 ? 'positive' : apiScore <= 40 ? 'negative' : 'neutral';
   return 'uncertain';
 }
 
-function _aimSnippetToReason(snippet, sentType) {
-  if (!snippet || snippet.trim().length < 4) {
-    if (sentType === 'positive') return 'Listed as a recommended option for this type of query.';
-    if (sentType === 'negative') return 'Mentioned with limiting or critical framing.';
-    return 'Cited as a relevant option in this context.';
+function _aimSnippetToReason(snippet) {
+  if (!snippet || snippet.trim().length < 8) return '';
+  var r = snippet.trim().replace(/^[\d]+[.)]\s+/, '').replace(/^[-•*]\s+/, '');
+  return r.length > 220 ? r.slice(0, 217) + '...' : r;
+}
+
+// Fuzzy match: "Otterly" matches "Otterly AI" (otterlyai starts with otterly)
+function _aimFuzzyLookup(data, nn) {
+  if (data[nn]) return data[nn];
+  var keys = Object.keys(data);
+  for (var ki = 0; ki < keys.length; ki++) {
+    var k = keys[ki];
+    if (k.length > nn.length && k.indexOf(nn) === 0) return data[k];
+    if (nn.length > k.length && nn.indexOf(k) === 0 && k.length >= 4) return data[k];
   }
-  var r = snippet.trim().replace(/^[\d]+\.\s+/,'').replace(/^[-•*]\s+/,'');
-  if (r.length < 30) {
-    if (sentType === 'positive') return 'Listed as a recommended tool for this query.';
-    if (sentType === 'negative') return 'Mentioned with critical or limiting framing.';
-    return 'Cited as a relevant option in this context.';
-  }
-  return r.length > 220 ? r.slice(0,217)+'...' : r;
+  return null;
 }
 
 function _aimBuildCompMentionData() {
   if (_aimCompMentionData) return _aimCompMentionData;
-  var snap = window._AIM_SNAPSHOT;
-  if (!snap) return {};
   var result = {};
-  var pidText = {};
-  (snap.prompt_metrics||[]).forEach(function(pm){ if(pm.prompt_id) pidText[pm.prompt_id]=pm.prompt_text||''; });
-  function _nn(n){ return (n||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-  function processEntry(resp, pid, model, date) {
-    if (!resp) return;
-    var brands = resp.brands||[];
-    if (!brands.length) return;
-    var text = resp.text||resp.response_text||'';
-    var promptText = pidText[pid]||resp.prompt_text||'';
-    brands.forEach(function(brandName){
-      var nn = _nn(brandName);
-      if (!nn || nn.length < 2) return;
-      if (!result[nn]) result[nn]={pos:[],neg:[],neu:[],uncertain:[],total:0};
-      var snippet = _aimExtractBrandSnippet(text, brandName);
-      var sentType = snippet.length > 20
-        ? _aimClassifySnippetSentiment(snippet, promptText)
-        : _aimClassifySnippetSentiment(text.slice(0,300), promptText);
-      result[nn][sentType].push({
-        prompt: promptText, promptId: pid, model: model, date: date,
-        snippet: snippet, reason: _aimSnippetToReason(snippet, sentType)
+  try {
+    var snap = window._AIM_SNAPSHOT;
+    if (!snap) { _aimCompMentionData = result; return result; }
+    var pidText = {};
+    (snap.prompt_metrics || []).forEach(function(pm) {
+      if (pm.prompt_id) pidText[pm.prompt_id] = pm.prompt_text || '';
+    });
+    function _nn(n) { return (n || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    function processEntry(resp, pid, model, date) {
+      if (!resp) return;
+      var brands = resp.brands || [];
+      if (!brands.length) return;
+      var text = resp.text || resp.response_text || '';
+      var promptText = pidText[pid] || resp.prompt_text || '';
+      var apiLabel = (resp.sentiment_label || '').toLowerCase();
+      var apiScore = resp.sentiment_score != null ? resp.sentiment_score : null;
+      brands.forEach(function(brandName) {
+        try {
+          var nn = _nn(brandName);
+          if (!nn || nn.length < 2) return;
+          if (!result[nn]) result[nn] = { pos: [], neg: [], neu: [], uncertain: [], total: 0 };
+          var snippet = _aimExtractBrandSnippet(text, brandName);
+          var sentType = _aimClassifyMention(
+            snippet.length > 15 ? snippet : text.slice(0, 400),
+            promptText, apiLabel, apiScore
+          );
+          var reason = _aimSnippetToReason(snippet);
+          if (!reason) {
+            if (sentType === 'positive') reason = 'Cited as a recommended option for this query type.';
+            else if (sentType === 'negative') reason = 'Mentioned with limiting or critical framing.';
+            else reason = 'Listed as a relevant option in this context.';
+          }
+          result[nn][sentType].push({ prompt: promptText, promptId: pid, model: model, date: date, snippet: snippet, reason: reason });
+          result[nn].total++;
+        } catch(innerE) { /* skip bad brand entry */ }
       });
-      result[nn].total++;
+    }
+    var hist = snap.prompt_response_history || {};
+    Object.keys(hist).forEach(function(pid) {
+      var byDate = hist[pid];
+      if (!byDate || typeof byDate !== 'object' || Array.isArray(byDate)) return;
+      Object.keys(byDate).forEach(function(date) {
+        var byModel = byDate[date];
+        if (!byModel || typeof byModel !== 'object') return;
+        Object.keys(byModel).forEach(function(model) { processEntry(byModel[model], pid, model, date); });
+      });
     });
+    var pr = snap.prompt_responses || {};
+    Object.keys(pr).forEach(function(pid) {
+      var models = pr[pid] || {};
+      Object.keys(models).forEach(function(model) { processEntry(models[model], pid, model, ''); });
+    });
+  } catch(e) {
+    console.error('[AIM] CompMentionData build error:', e);
   }
-  var hist = snap.prompt_response_history||{};
-  Object.keys(hist).forEach(function(pid){
-    var byDate=hist[pid];
-    if (!byDate||typeof byDate!=='object'||Array.isArray(byDate)) return;
-    Object.keys(byDate).forEach(function(date){
-      var byModel=byDate[date];
-      if (!byModel||typeof byModel!=='object') return;
-      Object.keys(byModel).forEach(function(model){ processEntry(byModel[model],pid,model,date); });
-    });
-  });
-  var pr = snap.prompt_responses||{};
-  Object.keys(pr).forEach(function(pid){
-    var models=pr[pid]||{};
-    Object.keys(models).forEach(function(model){ processEntry(models[model],pid,model,''); });
-  });
-  _aimCompMentionData = result;
+  _aimCompMentionData = result; // always cache, even if empty or partial
   return result;
 }
 
@@ -8406,7 +8442,7 @@ function aimCompSentSplitReal(b) {
   }
   var data = _aimBuildCompMentionData();
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-  var entry = data[nn];
+  var entry = _aimFuzzyLookup(data, nn);
   if (entry && entry.total > 0) {
     return {
       pos: Math.round(entry.pos.length/entry.total*100),
@@ -8416,7 +8452,7 @@ function aimCompSentSplitReal(b) {
   }
   // Fallback to backend scores
   var cache = aimComputeAllCompSent();
-  var cached = cache[(b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'')];
+  var cached = cache[nn];
   if (!cached||!cached.total) return {pos:0,neu:100,neg:0};
   return {
     pos: Math.round(cached.pos/cached.total*100),
@@ -8429,11 +8465,11 @@ function aimComputeCompInsight(b) {
   try {
   var data = _aimBuildCompMentionData();
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-  var entry = data[nn];
+  var entry = _aimFuzzyLookup(data, nn);
   if (!entry || entry.total === 0) {
     // Fall back to backend sentiment counts for qualitative framing
     var _sentCache = aimComputeAllCompSent();
-    var _cached = _sentCache[nn];
+    var _cached = _sentCache[nn] || _aimFuzzyLookup(_sentCache, nn);
     if (!_cached || !_cached.total) {
       return { str: '', wk: '' };
     }
