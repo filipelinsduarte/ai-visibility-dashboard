@@ -2974,7 +2974,7 @@ window.AIM_INJECTED_DATA = null;
           <div class="card-header">
             <div>
               <div class="card-title">Sentiment by Competitor</div>
-              <div class="card-desc">Positive / neutral / negative split per brand with key strengths and weaknesses</div>
+              <div class="card-desc">Positive / neutral / negative split per brand with a summary of how AI models describe each competitor</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);">
               <button id="aim-cp-sent-prev" onclick="aimCpSentPage(-1)" style="border:none;background:none;cursor:pointer;color:var(--text-muted);padding:2px;line-height:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -2990,8 +2990,7 @@ window.AIM_INJECTED_DATA = null;
                     <th style="min-width:180px;">Brand</th>
                     <th style="width:200px;">Sentiment Split</th>
                     <th style="width:80px;">Visibility</th>
-                    <th style="min-width:180px;">Positive</th>
-                    <th style="min-width:180px;">Negative</th>
+                    <th style="min-width:220px;">What AI models think</th>
                   </tr>
                 </thead>
                 <tbody id="aim-cp-sent-tbody"></tbody>
@@ -7665,17 +7664,29 @@ function aimBuildSE() {
     var _seHist = snap.prompt_response_history || {};
     function _seExtractSnippet(text) {
       if (!text) return '';
+      // Build search terms: full brand name + each word >= 5 chars (catches "Peekaboo" from "AI Peekaboo")
+      var searchTerms = _seBrandLow ? [_seBrandLow] : [];
+      if (_seBrandLow) {
+        _seBrandLow.split(/\s+/).forEach(function(w) {
+          if (w.length >= 5 && searchTerms.indexOf(w) < 0) searchTerms.push(w);
+        });
+      }
+      if (!searchTerms.length) return text.slice(0, 200).trim();
       var sents = text.replace(/\r?\n/g, ' ').replace(/\s{2,}/g, ' ').split(/[.!?]+\s+/);
-      for (var i = 0; i < sents.length; i++) {
-        if (_seBrandLow && sents[i].toLowerCase().indexOf(_seBrandLow) >= 0) {
-          var s = sents[i].trim().replace(/^[\d]+[.)]\s+/, '').replace(/^[-•*]\s+/, '');
-          if (s.length < 40 && i + 1 < sents.length) s = (s + ' ' + sents[i + 1].trim()).trim();
-          return s.length > 240 ? s.slice(0, 237) + '...' : s;
+      for (var ti = 0; ti < searchTerms.length; ti++) {
+        var term = searchTerms[ti];
+        for (var i = 0; i < sents.length; i++) {
+          if (sents[i].toLowerCase().indexOf(term) >= 0) {
+            var s = sents[i].trim().replace(/^[\d]+[.)]\s+/, '').replace(/^[-•*]\s+/, '');
+            if (s.length < 40 && i + 1 < sents.length) s = (s + ' ' + sents[i + 1].trim()).trim();
+            return s.length > 240 ? s.slice(0, 237) + '...' : s;
+          }
         }
       }
-      if (_seBrandLow) {
-        var idx = text.toLowerCase().indexOf(_seBrandLow);
-        if (idx >= 0) return text.slice(Math.max(0, idx - 80), Math.min(text.length, idx + _seBrandLow.length + 220)).trim().slice(0, 240);
+      // Character window fallback — anchor to first occurrence of any search term
+      for (var ti2 = 0; ti2 < searchTerms.length; ti2++) {
+        var idx = text.toLowerCase().indexOf(searchTerms[ti2]);
+        if (idx >= 0) return text.slice(Math.max(0, idx - 80), Math.min(text.length, idx + searchTerms[ti2].length + 220)).trim().slice(0, 240);
       }
       return '';
     }
@@ -7708,8 +7719,8 @@ function aimBuildSE() {
           var text = resp.text || resp.response_text || '';
           if (!text) return;
           var snippet = _seExtractSnippet(text);
-          // Use snippet if it specifically references the brand and is more informative
-          if (snippet && snippet.length > 20 && snippet.toLowerCase().indexOf(_seBrandLow) >= 0) {
+          // Any snippet > 25 chars is more specific than the server's generic reason
+          if (snippet && snippet.length > 25) {
             entry.reason = snippet;
           }
         } catch(enrichErr) { /* skip bad entry */ }
@@ -8739,20 +8750,16 @@ function aimComputeCompInsight(b) {
     var entry = _aimFuzzyLookup(data, nn);
 
     if (!entry || entry.total === 0) {
-      // No snippet data: use backend counts for qualitative framing
       var _sc = aimComputeAllCompSent();
       var _cd = _sc[nn] || _aimFuzzyLookup(_sc, nn);
-      if (!_cd || !_cd.total) return { str: '', wk: '', strTip: '', wkTip: '' };
-      var _t = _cd.total, _pr = Math.round(_cd.pos/_t*100), _nr = Math.round(_cd.neg/_t*100), _eur = Math.round(_cd.neu/_t*100);
-      var _s = _pr >= 50 ? 'Frequently cited as a recommended option in AI responses about this category.'
-        : _eur >= 70 ? 'Mentioned across AI responses mainly in comparative or listing contexts.'
-        : 'Appears in AI responses with a mix of positive and neutral framing.';
-      var _w = _nr >= 30 ? 'Noted with critical or limiting framing in a portion of responses.'
-        : _eur >= 60 ? 'Rarely cited with strong positive endorsement; mostly listed neutrally.' : '';
-      return { str: _s, wk: _w, strTip: '', wkTip: '' };
+      if (!_cd || !_cd.total) return { summary: '', tip: '' };
+      var _t = _cd.total, _pr = Math.round(_cd.pos/_t*100), _nr = Math.round(_cd.neg/_t*100);
+      var _sum = _pr >= 60 ? 'Frequently cited as a recommended option across AI responses in this category.'
+        : _nr >= 30 ? 'Appears in AI responses with a mix of positive recommendations and critical framing.'
+        : 'Mentioned across AI responses mainly in comparative or listing contexts.';
+      return { summary: _sum, tip: '' };
     }
 
-    // Pick best snippet by qualitative score (not just length)
     function bestEntry(arr) {
       if (!arr.length) return null;
       return arr.slice().sort(function(a, b) {
@@ -8760,40 +8767,40 @@ function aimComputeCompInsight(b) {
       })[0];
     }
 
-    var posEntry = bestEntry(entry.pos);
-    var negEntry = bestEntry(entry.neg);
-    var neuEntry = bestEntry(entry.neu.concat(entry.uncertain));
+    // Pool all entries and pick the single most descriptive snippet
+    var allEntries = entry.pos.concat(entry.neg).concat(entry.neu).concat(entry.uncertain);
+    // Positive entries get a small score boost so they appear first when quality is equal
+    var scored = allEntries.map(function(e) {
+      var cat = entry.pos.indexOf(e) >= 0 ? 'pos' : entry.neg.indexOf(e) >= 0 ? 'neg' : 'neu';
+      return { e: e, cat: cat, score: _aimScoreSnippet(e.snippet || e.reason) + (cat === 'pos' ? 4 : 0) };
+    }).sort(function(a, b) { return b.score - a.score; });
 
-    var str = '', wk = '', strTip = '', wkTip = '';
+    var best = scored.length ? scored[0] : null;
+    var second = scored.length > 1 ? scored[1] : null;
 
-    if (posEntry) {
-      str = _aimCleanSnippet(posEntry.snippet || posEntry.reason, 115);
-      strTip = posEntry.fullText || posEntry.snippet || '';
+    if (!best) return { summary: '', tip: '' };
+
+    var mainSnippet = _aimCleanSnippet(best.e.snippet || best.e.reason, 130);
+    var tip = best.e.fullText || best.e.snippet || '';
+
+    // If there are both positive and negative entries, try to surface contrast in a second clause
+    var summary = mainSnippet;
+    if (!summary) {
+      var total = entry.total, posR = Math.round(entry.pos.length/total*100);
+      summary = posR >= 50 ? 'Cited as a recommended option in multiple AI responses for this category.'
+        : 'Mentioned across AI responses in listing and comparative contexts.';
     }
-    if (negEntry) {
-      wk = _aimCleanSnippet(negEntry.snippet || negEntry.reason, 115);
-      wkTip = negEntry.fullText || negEntry.snippet || '';
-    }
 
-    // Fallbacks that vary by actual counts (not generic copies)
-    if (!str) {
-      if (neuEntry && (neuEntry.snippet || '').length > 25) {
-        str = _aimCleanSnippet(neuEntry.snippet, 115);
-        strTip = neuEntry.fullText || neuEntry.snippet || '';
-      } else if (entry.pos.length > 0) {
-        str = 'Cited as a relevant option in multiple AI responses for this category.';
+    // If we have a strong second entry from a different sentiment bucket, append a contrast phrase
+    if (second && best.cat !== (entry.pos.indexOf(second.e) >= 0 ? 'pos' : entry.neg.indexOf(second.e) >= 0 ? 'neg' : 'neu')) {
+      var secondSnippet = _aimCleanSnippet(second.e.snippet || second.e.reason, 80);
+      if (secondSnippet && summary.length + secondSnippet.length < 200) {
+        tip = (tip ? tip + '\n\n' : '') + (second.e.fullText || second.e.snippet || '');
       }
     }
-    if (!wk) {
-      if (entry.neg.length === 0 && entry.pos.length >= entry.neu.length) {
-        wk = 'No limiting or critical framing detected across tracked AI responses.';
-      } else if (entry.neg.length === 0) {
-        wk = 'Mentioned primarily in neutral, listing contexts without critical framing.';
-      }
-    }
 
-    return { str: str, wk: wk, strTip: strTip, wkTip: wkTip };
-  } catch(e) { console.error('[AIM] CompInsight error:', e); return { str: '', wk: '', strTip: '', wkTip: '' }; }
+    return { summary: summary, tip: tip };
+  } catch(e) { console.error('[AIM] CompInsight error:', e); return { summary: '', tip: '' }; }
 }
 
 function aimCpSentPage(dir) {
@@ -8835,8 +8842,7 @@ function aimRenderCompSentimentTable() {
       </td>
       <td>${sentBar}</td>
       <td style="font-size:12px;font-weight:600;color:var(--text)">${vis.toFixed(0)}%</td>
-      <td>${ins.str ? `<span class="aim-comp-insight str" style="cursor:default" onmouseenter="aimShowInfoTip(this,'<div style=\\"max-width:360px;line-height:1.6;font-size:12px\\">${aimEscHtml(ins.strTip || ins.str)}</div>')" onmouseleave="aimHideInfoTip()">${ins.str}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
-      <td>${ins.wk ? `<span class="aim-comp-insight wk" style="cursor:default" onmouseenter="aimShowInfoTip(this,'<div style=\\"max-width:360px;line-height:1.6;font-size:12px\\">${aimEscHtml(ins.wkTip || ins.wk)}</div>')" onmouseleave="aimHideInfoTip()">${ins.wk}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
+      <td>${ins.summary ? `<span class="aim-comp-insight" style="cursor:default;color:var(--text-muted)" onmouseenter="aimShowInfoTip(this,'<div style=\\"max-width:380px;line-height:1.6;font-size:12px\\">${aimEscHtml(ins.tip || ins.summary)}</div>')" onmouseleave="aimHideInfoTip()">${ins.summary}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
     </tr>`;
     } catch(e) { console.error('[AIM] Row error:', b && b.name, e); return ''; }
   }).join('');
