@@ -11986,14 +11986,17 @@ function aimApplySnapshot(snap) {
     var totalDomCits = sortedDoms.reduce(function(s,d){ return s+domCount[d]; }, 0);
 
     // ── Rebuild _aimSourcesByDate ──────────────────────────────────
+    // Merge: history dates (full domain coverage) override pre-built; older script dates preserved
     var extByDate = {};
     Object.keys(domByDate).forEach(function(date) {
       extByDate[date] = Object.keys(domByDate[date]).map(function(d){
         return { domain: d, citation_count: domByDate[date][d] };
       }).sort(function(a,b){ return b.citation_count-a.citation_count; });
     });
-    window._aimSourcesByDate = extByDate;
-    snap.sources_by_date = extByDate;
+    var mergedByDate = Object.assign({}, snap.sources_by_date || {});
+    Object.keys(extByDate).forEach(function(date) { mergedByDate[date] = extByDate[date]; });
+    window._aimSourcesByDate = mergedByDate;
+    snap.sources_by_date = mergedByDate;
 
     // ── Rebuild _aimSourcesByProvider ─────────────────────────────
     var extByProv = {};
@@ -12366,12 +12369,7 @@ document.addEventListener('click', e => {
   if (window._AIM_SNAPSHOT) {
     aimApplySnapshot(window._AIM_SNAPSHOT);
   } else {
-    fetch('./ai-monitoring-dashboard/data/cloro_snapshot.json')
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(snap => {
-        aimApplySnapshot(snap);
-      })
-      .catch(e => console.error('[AIM] Snapshot fetch failed:', e));
+    console.warn('[AIM] No snapshot data found. Run scripts/generate_snapshot.py to populate the dashboard.');
   }
   if (window.AIM_INJECTED_DATA) aimApplyInjectedData();
 });

@@ -588,6 +588,7 @@ def main():
           'domain':         source_url_meta[url]['domain'],
           'label':          source_url_meta[url]['label'],
           'citation_count': count,
+          'mentions':       count,
           'run_count':      len(source_url_runs_map.get(url, set())),
           'last_seen':      source_url_meta[url]['last_seen'],
           'share':          round(count / total_url * 100, 1),
@@ -674,19 +675,19 @@ def main():
 
     sources_by_date = {
         d: [{'domain': dom, 'citation_count': count}
-            for dom, count in sorted(counts.items(), key=lambda x: -x[1])[:10]]
+            for dom, count in sorted(counts.items(), key=lambda x: -x[1])[:50]]
         for d, counts in src_by_date_raw.items()
     }
     sources_by_provider = {
         prov: [{'domain': dom, 'citation_count': count}
-               for dom, count in sorted(counts.items(), key=lambda x: -x[1])[:15]]
+               for dom, count in sorted(counts.items(), key=lambda x: -x[1])[:50]]
         for prov, counts in src_by_prov_raw.items()
     }
 
     # ── Final snapshot ────────────────────────────────────────────────────
     snapshot = {
         'generated_at':               datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
-        'brand':                      'AI Peekaboo',
+        'brand':                      next((b.get('name', '') for b in all_brands if b.get('id') == BRAND_ID), ''),
         'brand_id':                   BRAND_ID,
         'all_brands':                 all_brands,
         'total_runs':                 total_runs,
