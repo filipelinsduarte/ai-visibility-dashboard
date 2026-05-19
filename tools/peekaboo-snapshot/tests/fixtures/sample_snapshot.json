@@ -1,0 +1,91 @@
+{
+  "brand_id": "fixture-brand",
+  "brand_name": "AI Peekaboo",
+  "competitors": [
+    { "name": "AI Peekaboo", "url": "https://aipeekaboo.com", "score": 78.5, "rank": 1 },
+    { "name": "Brand Radar", "url": "https://example.com/radar", "score": 55.0, "rank": 2 },
+    { "name": "Ahrefs", "url": "https://ahrefs.com", "score": 30.0, "rank": 3 }
+  ],
+  "prompts": [
+    {
+      "promptId": "p1",
+      "promptText": "best AI visibility tools",
+      "category": "Commercial",
+      "searchIntent": "COMMERCIAL",
+      "history": [
+        {
+          "aiModel": "gpt-4o-mini",
+          "date": "2026-05-19",
+          "score": 67.0,
+          "rank": 2,
+          "mentioned": true,
+          "runId": "r-p1-chatgpt-20260519",
+          "fullResponse": "AI Peekaboo is a strong choice. Brand Radar is another. Ahrefs is also popular.",
+          "sources": [
+            { "domain": "aipeekaboo.com", "url": "https://aipeekaboo.com/post", "title": "Why Peekaboo" },
+            { "domain": "ahrefs.com", "url": "https://ahrefs.com/blog/ai-visibility", "title": "Ahrefs AI" }
+          ],
+          "brandMentions": [
+            { "entityName": "AI Peekaboo", "type": "brand", "score": 80.0, "rank": 1, "sentiment": "positive" },
+            { "entityName": "Brand Radar", "type": "competitor", "score": 50.0, "rank": 2, "sentiment": "neutral" },
+            { "entityName": "Ahrefs", "type": "competitor", "score": 30.0, "rank": 3, "sentiment": "neutral" }
+          ]
+        },
+        {
+          "aiModel": "gemini-2.5-flash",
+          "date": "2026-05-19",
+          "score": 50.0,
+          "rank": 2,
+          "mentioned": true,
+          "runId": "r-p1-gemini-20260519",
+          "fullResponse": "Brand Radar and AI Peekaboo are leading tools.",
+          "sources": [
+            { "domain": "aipeekaboo.com", "url": "https://aipeekaboo.com/landing", "title": "Peekaboo home" }
+          ],
+          "brandMentions": [
+            { "entityName": "Brand Radar", "type": "competitor", "score": 60.0, "rank": 1, "sentiment": "positive" },
+            { "entityName": "AI Peekaboo", "type": "brand", "score": 50.0, "rank": 2, "sentiment": "neutral" }
+          ]
+        },
+        {
+          "aiModel": "sonar",
+          "date": "2026-05-18",
+          "score": 0.0,
+          "rank": null,
+          "mentioned": false,
+          "runId": "r-p1-perplexity-20260518",
+          "fullResponse": "Brand Radar is the leading option.",
+          "sources": [
+            { "domain": "example.com", "url": "https://example.com/radar", "title": "Radar" }
+          ],
+          "brandMentions": [
+            { "entityName": "Brand Radar", "type": "competitor", "score": 90.0, "rank": 1, "sentiment": "positive" }
+          ]
+        }
+      ]
+    },
+    {
+      "promptId": "p2",
+      "promptText": "AI visibility tracker comparison",
+      "category": "Commercial",
+      "searchIntent": "COMMERCIAL",
+      "history": [
+        {
+          "aiModel": "google-aio",
+          "date": "2026-05-19",
+          "score": 50.0,
+          "rank": 1,
+          "mentioned": true,
+          "runId": "r-p2-googleaio-20260519",
+          "fullResponse": "AI Peekaboo tops the list.",
+          "sources": [
+            { "domain": "aipeekaboo.com", "url": "https://aipeekaboo.com/blog", "title": "Blog" }
+          ],
+          "brandMentions": [
+            { "entityName": "AI Peekaboo", "type": "brand", "score": 100.0, "rank": 1, "sentiment": "positive" }
+          ]
+        }
+      ]
+    }
+  ]
+}
