@@ -8822,6 +8822,10 @@ function aimComputeCompInsight(b) {
 }
 
 function aimGetCompMentionCount(b) {
+  if (b.isMain) {
+    var c = aimSEGetCounts();
+    return (c.positive||0)+(c.negative||0)+(c.neutral||0)+(c.uncertain||0);
+  }
   var data = _aimBuildCompMentionData();
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   var entry = _aimFuzzyLookup(data, nn);
