@@ -2848,7 +2848,7 @@ window.AIM_INJECTED_DATA = {
       <div class="page-content">
         <div class="card" style="overflow:hidden;">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border-light);gap:10px;flex-wrap:wrap;">
-            <div class="aim-tab-bar" id="aim-pr-tabs">
+            <div class="aim-tab-bar" id="aim-pr-tabs" style="margin-bottom:0;">
               <button class="aim-tab active" onclick="aimSetPromptsTab('Active')">Active</button>
               <button class="aim-tab" onclick="aimSetPromptsTab('Suggested')">Suggested</button>
               <button class="aim-tab" onclick="aimSetPromptsTab('Inactive')">Inactive</button>
@@ -2877,11 +2877,11 @@ window.AIM_INJECTED_DATA = {
                   </button>
                 </div>
               </div>
-              <button class="aim-st-btn-outlined" onclick="aimStOpenAddTopic()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
+              <button class="aim-st-btn-outlined" onclick="aimStOpenAddTopic()" style="display:flex;align-items:center;gap:5px;font-size:11px;white-space:nowrap;padding:5px 10px;">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                 Add Topic
               </button>
-              <button class="aim-st-btn-outlined" onclick="aimStOpenAddIntent()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
+              <button class="aim-st-btn-outlined" onclick="aimStOpenAddIntent()" style="display:flex;align-items:center;gap:5px;font-size:11px;white-space:nowrap;padding:5px 10px;">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 Add Intent
               </button>
@@ -2924,6 +2924,24 @@ window.AIM_INJECTED_DATA = {
   <!-- AI COMPETITORS -->
   <div id="view-ai-competitors" class="view">
     <div class="page-content">
+      <div class="card" style="margin-bottom:16px;overflow:hidden;">
+        <div style="display:flex;align-items:center;padding:10px 14px;gap:14px;min-height:52px;">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;">
+            <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap;flex-shrink:0;">Tracking</span>
+            <div id="aim-cp-banner-pills" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button class="aim-st-btn-outlined" onclick="showView('settings');aimSetStTab('competitors');" style="font-size:11px;padding:5px 10px;display:flex;align-items:center;gap:4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Manage Competitors
+            </button>
+            <button onclick="aimStAddCompetitor()" style="display:flex;align-items:center;gap:4px;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              Add Competitor
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="aim-two-col" style="align-items:stretch;">
         <div class="card" style="flex:1.6;display:flex;flex-direction:column;">
           <div class="card-header">
@@ -6010,7 +6028,7 @@ function aimFavFallback(img) {
   if (d && !img.dataset.fb) {
     img.dataset.fb = '1';
     img.onerror = function() { aimFavLetterFallback(this); };
-    img.onload = function() { if (this.naturalWidth <= 16) aimFavLetterFallback(this); };
+    img.onload = function() { if (this.naturalWidth <= 1) aimFavLetterFallback(this); };
     img.src = 'https://icons.duckduckgo.com/ip3/' + d + '.ico';
   } else {
     aimFavLetterFallback(img);
@@ -7668,10 +7686,32 @@ function aimCompSentSplit(sentScore) {
   return { pos, neu, neg };
 }
 
+function aimRenderCompBanner() {
+  var el = document.getElementById('aim-cp-banner-pills');
+  if (!el) return;
+  var snap = window._AIM_SNAPSHOT || {};
+  var comps = snap.competitor_entities || [];
+  var ws = AIM_WORKSPACES.find(function(w){ return w.id === aimSelectedWorkspaceId; }) || AIM_WORKSPACES[0];
+  var brandMap = {};
+  (ws.brands || []).forEach(function(b){ if (!b.isMain) brandMap[(b.name||'').toLowerCase()] = b; });
+  if (!comps.length) {
+    el.innerHTML = '<span style="font-size:11px;color:var(--text-faint);font-style:italic;">No competitors tracked yet</span>';
+    return;
+  }
+  el.innerHTML = comps.map(function(c) {
+    var b = brandMap[(c.name||'').toLowerCase()] || {};
+    var domain = b.domain || (c.name||'').toLowerCase().replace(/\s+/g,'') + '.com';
+    return '<div style="display:flex;align-items:center;gap:5px;background:var(--surface-alt);border:1px solid var(--border);border-radius:20px;padding:3px 8px 3px 5px;font-size:11px;color:var(--text);">'
+      + '<img src="https://www.google.com/s2/favicons?domain=' + domain + '&sz=32" style="width:14px;height:14px;border-radius:2px;flex-shrink:0" onerror="this.style.display=\'none\'">'
+      + '<span>' + aimEscHtml(c.name||'') + '</span></div>';
+  }).join('');
+}
+
 function initAiCompetitors() {
   aimRenderTopbar();
   aimCompMentionsPage = 0;
   aimCpHeatmapPageIdx = 0;
+  aimRenderCompBanner();
   aimRenderCompMentionsChart();
   aimRenderCompHeatmap();
   aimRenderCompPromptMatrix();
@@ -10907,7 +10947,7 @@ function aimRenderUrlsTable() {
     const titleLine = u.label ? `<div style="font-size:10px;color:var(--text-faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">${aimEscHtml(u.label.replace(/\.\s*Opens in new tab\.?/i,'').trim())}</div>` : '';
     return `<tr>
       <td style="min-width:340px"><div style="display:flex;align-items:flex-start;gap:7px">
-        <img src="https://www.google.com/s2/favicons?domain=${u.domain}&sz=32" onmouseenter="aimShowFaviconTip(this,'${u.domain}')" onmouseleave="aimHideFaviconTip()" style="width:14px;height:14px;border-radius:2px;margin-top:1px;flex-shrink:0;cursor:default">
+        <img src="https://www.google.com/s2/favicons?domain=${u.domain}&sz=32" data-domain="${u.domain}" data-fl="${(u.domain||'?')[0].toUpperCase()}" data-fbs="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:2px;background:#e2e8f0;color:#64748b;font-size:8px;font-weight:700;flex-shrink:0" onload="aimFavCheck(this)" onerror="aimFavFallback(this)" onmouseenter="aimShowFaviconTip(this,'${u.domain}')" onmouseleave="aimHideFaviconTip()" style="width:14px;height:14px;border-radius:2px;margin-top:1px;flex-shrink:0;cursor:default">
         <div style="min-width:0"><a href="${/^https?:\/\//i.test(u.url)?u.url:'#'}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;display:block" title="${aimEscHtml(u.url)}">${aimEscHtml(u.url)}</a>${titleLine}</div>
       </div></td>
       <td style="white-space:nowrap"><span class="aim-source-type-badge ${urlType.toLowerCase().replace(/[\s\/]+/g, '-')}" style="white-space:nowrap">${urlType}</span></td>
@@ -12009,7 +12049,8 @@ function aimApplySnapshot(snap) {
               if (!urlDom[url]) urlDom[url] = domain;
               if (!urlLbl[url] && label !== domain) urlLbl[url] = label;
               if (!urlProv[url]) urlProv[url] = {};
-              urlProv[url][provKey] = (urlProv[url][provKey] || 0) + 1;
+              var _upk=(function(k){k=(k||'').toLowerCase();if(/^gpt|^o[13]|^chatgpt/.test(k))return'chatgpt';if(/^gemini|^bard/.test(k))return'gemini';if(/^perplexity|^sonar/.test(k))return'perplexity';if(k==='googleaio')return'googleaio';if(k==='googleaimode')return'googleaimode';return k;})(provKey);
+              urlProv[url][_upk]=(urlProv[url][_upk]||0)+1;
             }
           });
         });
@@ -13045,7 +13086,8 @@ function _aimGetAllUrls() {
             urlProv[url]  = {};
           }
           urlCount[url]++;
-          urlProv[url][provKey] = (urlProv[url][provKey] || 0) + 1;
+          var _upk2=(function(k){k=(k||'').toLowerCase();if(/^gpt|^o[13]|^chatgpt/.test(k))return'chatgpt';if(/^gemini|^bard/.test(k))return'gemini';if(/^perplexity|^sonar/.test(k))return'perplexity';if(k==='googleaio')return'googleaio';if(k==='googleaimode')return'googleaimode';return k;})(provKey);
+          urlProv[url][_upk2]=(urlProv[url][_upk2]||0)+1;
         });
         // Also count domain-level hits from plain sources array (when source_objects absent)
         if (!srcObjs.length) {
