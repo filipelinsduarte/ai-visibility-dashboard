@@ -7727,18 +7727,28 @@ function aimBuildSE() {
         } catch(enrichErr) { /* skip bad entry */ }
       });
     });
-    // Deduplicate across all buckets: same promptId + model + date must appear at most once.
-    // Process positive first so higher-signal entries survive when the same response
-    // is repeated across sentiment types by the server.
-    var _seenKeys = {};
+    // Deduplicate: keep only the most recent entry per prompt+model.
+    // The server tracks each prompt daily, so the same prompt+model can appear
+    // dozens of times. Show only the latest run for each combination.
+    var _seAllBuckets = [];
     ['positive', 'negative', 'neutral', 'uncertain'].forEach(function(t) {
-      snap.aim_se[t] = (snap.aim_se[t] || []).filter(function(entry) {
-        var k = (entry.promptId || '') + '|' + (entry.model || '') + '|' + (entry.date || '');
-        if (_seenKeys[k]) return false;
-        _seenKeys[k] = true;
-        return true;
-      });
+      (snap.aim_se[t] || []).forEach(function(e) { _seAllBuckets.push({ entry: e, type: t }); });
     });
+    _seAllBuckets.sort(function(a, b) {
+      var da = a.entry.date || '', db = b.entry.date || '';
+      return db < da ? -1 : db > da ? 1 : 0;
+    });
+    var _seSeenPM = {};
+    var _seKept = _seAllBuckets.filter(function(item) {
+      var k = (item.entry.promptId || item.entry.prompt || '') + '|' + (item.entry.model || '');
+      if (_seSeenPM[k]) return false;
+      _seSeenPM[k] = true;
+      return true;
+    });
+    snap.aim_se.positive  = _seKept.filter(function(x) { return x.type === 'positive';  }).map(function(x) { return x.entry; });
+    snap.aim_se.negative  = _seKept.filter(function(x) { return x.type === 'negative';  }).map(function(x) { return x.entry; });
+    snap.aim_se.neutral   = _seKept.filter(function(x) { return x.type === 'neutral';   }).map(function(x) { return x.entry; });
+    snap.aim_se.uncertain = _seKept.filter(function(x) { return x.type === 'uncertain'; }).map(function(x) { return x.entry; });
     return snap.aim_se;
   }
   // Fallback: build client-side from embedded snapshot data
