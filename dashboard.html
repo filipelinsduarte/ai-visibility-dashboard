@@ -7863,6 +7863,7 @@ function aimBuildSE() {
 }
 
 function aimSEGetFiltered() {
+  if (!_aimSE) _aimSE = aimBuildSE();
   var SE = _aimSE || { positive: [], negative: [], neutral: [], uncertain: [] };
   var catF = _aimSentFilters.cat;
   var result = {};
@@ -8774,10 +8775,18 @@ function aimComputeCompInsight(b) {
     var sc = aimComputeAllCompSent();
     var cd = sc[nn] || _aimFuzzyLookup(sc, nn) || null;
     var visRaw = Math.min(100, aimGetBrandMetrics(b).vis || b.visibility || 0);
-    var cdTotal = cd ? (cd.total || 0) : 0;
-    var posR = cdTotal ? Math.round(cd.pos / cdTotal * 100) : 0;
-    var negR = cdTotal ? Math.round(cd.neg / cdTotal * 100) : 0;
-    var neuR = cdTotal ? Math.round(((cd.neu || 0) + (cd.uncertain || 0)) / cdTotal * 100) : 0;
+    // Prefer _aimBuildCompMentionData counts for %s (same source as the sentiment bar)
+    var posR, negR, neuR;
+    if (entry && entry.total > 0) {
+      posR = Math.round(entry.pos.length / entry.total * 100);
+      negR = Math.round(entry.neg.length / entry.total * 100);
+      neuR = Math.round((entry.neu.length + entry.uncertain.length) / entry.total * 100);
+    } else {
+      var cdTotal = cd ? (cd.total || 0) : 0;
+      posR = cdTotal ? Math.round(cd.pos / cdTotal * 100) : 0;
+      negR = cdTotal ? Math.round(cd.neg / cdTotal * 100) : 0;
+      neuR = cdTotal ? Math.round(((cd.neu || 0) + (cd.uncertain || 0)) / cdTotal * 100) : 0;
+    }
     var vis = Math.round(visRaw);
 
     function buildTipHtml(snippetText) {
