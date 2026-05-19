@@ -2853,6 +2853,10 @@ window.AIM_INJECTED_DATA = {
               <button class="aim-tab" onclick="aimSetPromptsTab('Suggested')">Suggested</button>
               <button class="aim-tab" onclick="aimSetPromptsTab('Inactive')">Inactive</button>
             </div>
+            <div class="aim-search-wrap">
+              <svg class="aim-search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <input class="aim-search-input" id="aim-pr-search" placeholder="Search prompts..." oninput="aimFilterPromptsSearch()" style="width:200px;">
+            </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--text-muted);">
                 <span id="aim-pr-used-count" style="font-weight:700;color:var(--text);">12</span><span>/</span><span id="aim-pr-total-count">30</span><span> prompts</span>
@@ -2873,6 +2877,14 @@ window.AIM_INJECTED_DATA = {
                   </button>
                 </div>
               </div>
+              <button class="aim-st-btn-outlined" onclick="aimStOpenAddTopic()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Add Topic
+              </button>
+              <button class="aim-st-btn-outlined" onclick="aimStOpenAddIntent()" style="display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Add Intent
+              </button>
             </div>
           </div>
           <div id="aim-pr-active-table" class="aim-table-wrap" style="max-height:calc(100vh - 360px);overflow-y:auto;">
@@ -3191,6 +3203,7 @@ window.AIM_INJECTED_DATA = {
             <table class="aim-full-table" style="min-width:800px;">
               <thead><tr>
                 <th style="min-width:340px;">URL / Page Title</th><th style="width:110px;">Page Type</th>
+                <th style="width:110px;">AI Models</th>
                 <th style="width:90px;text-align:right;">Citations</th><th style="text-align:right;width:70px;">Runs</th>
                 <th style="text-align:right;width:80px;">Share</th><th style="width:100px;">Last Seen</th><th style="width:80px;"></th>
               </tr></thead>
@@ -9112,15 +9125,17 @@ function aimRenderUrlLineChart() {
   if (activeProvKey) {
     const color = _provColors[activeProvKey] || '#6b7280';
     const data = topUrls.map(u => (u.by_provider && u.by_provider[activeProvKey]) || 0);
-    if (urlLegendEl) urlLegendEl.innerHTML = `<div class="chart-legend-item"><span style="width:8px;height:8px;border-radius:2px;background:${color};display:inline-block;flex-shrink:0;margin-right:4px"></span>${_provDisplay[activeProvKey]||activeProvKey}</div>`;
+    const _provDomains = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
+    if (urlLegendEl) urlLegendEl.innerHTML = `<div class="chart-legend-item" style="gap:5px;">${aimBrandIcon(_provDomains[activeProvKey]||'',_provDisplay[activeProvKey]||activeProvKey,14)}${_provDisplay[activeProvKey]||activeProvKey}</div>`;
     aimChartInstances['urlLine'] = new Chart(ctx, {
       type:'bar',
       data:{labels, datasets:[{label:_provDisplay[activeProvKey]||activeProvKey, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:3}]},
       options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{enabled:true, callbacks:{title:(_i)=>topUrls[_i[0]?.dataIndex]?.label||_i[0]?.label||''}}},
+        plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{enabled:false, external:(function(){const _pDom={'ChatGPT':'openai.com','AI Mode':'google.com','AI Overview':'google.com','Perplexity':'perplexity.ai','Gemini':'gemini.google.com'};return function({chart,tooltip}){let el=document.getElementById('aim-url-line-tt');if(!el){el=document.createElement('div');el.id='aim-url-line-tt';el.className='aim-chart-tooltip';el.style.cssText='position:fixed;pointer-events:none;z-index:9999';document.body.appendChild(el);}if(tooltip.opacity===0){el.style.opacity='0';return;}const ttl=tooltip.title?.[0]||'';el.innerHTML='<div class="aim-ct-title">'+ttl+'</div>'+(tooltip.dataPoints||[]).filter(dp=>dp.raw>0).map(dp=>{const lbl=dp.dataset.label||'';const icon=aimBrandIcon(_pDom[lbl]||'',lbl,14);return '<div class="aim-ct-row">'+icon+'<span class="aim-ct-label">'+lbl+'</span><span class="aim-ct-val">'+dp.raw+'</span></div>';}).join('');el.style.opacity='1';const rect=chart.canvas.getBoundingClientRect();let left=rect.left+tooltip.caretX+14,top=rect.top+tooltip.caretY-10;if(left+240>window.innerWidth-8)left=rect.left+tooltip.caretX-248;el.style.left=Math.max(8,left)+'px';el.style.top=Math.max(8,Math.min(top,window.innerHeight-220))+'px';};}())}},
         scales:{x:{beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.03)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}
     });
   } else {
+    const _provDomains2 = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
     const activeProvs = _provOrder.filter(pk => topUrls.some(u => u.by_provider && u.by_provider[pk]));
     const datasets = activeProvs.map(pk => ({
       label:_provDisplay[pk]||pk,
@@ -9129,13 +9144,15 @@ function aimRenderUrlLineChart() {
       borderColor:_provColors[pk]||'#6b7280',
       borderWidth:1, borderRadius:3
     }));
-    if (urlLegendEl) urlLegendEl.innerHTML = activeProvs.map(pk =>
-      `<div class="chart-legend-item"><span style="width:8px;height:8px;border-radius:2px;background:${_provColors[pk]||'#6b7280'};display:inline-block;flex-shrink:0;margin-right:4px"></span>${_provDisplay[pk]||pk}</div>`).join('');
+    if (urlLegendEl) urlLegendEl.innerHTML = _provOrder.map(pk => {
+      const hasData = activeProvs.includes(pk);
+      return `<div class="chart-legend-item" style="gap:5px;${hasData?'':'opacity:0.35;'}">${aimBrandIcon(_provDomains2[pk]||'',_provDisplay[pk]||pk,14)}${_provDisplay[pk]||pk}</div>`;
+    }).join('');
     aimChartInstances['urlLine'] = new Chart(ctx, {
       type:'bar',
       data:{labels, datasets},
       options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{mode:'index', intersect:false, callbacks:{title:(_i)=>topUrls[_i[0]?.dataIndex]?.label||_i[0]?.label||''}}},
+        plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{enabled:false, external:(function(){const _pDom={'ChatGPT':'openai.com','AI Mode':'google.com','AI Overview':'google.com','Perplexity':'perplexity.ai','Gemini':'gemini.google.com'};return function({chart,tooltip}){let el=document.getElementById('aim-url-line-tt');if(!el){el=document.createElement('div');el.id='aim-url-line-tt';el.className='aim-chart-tooltip';el.style.cssText='position:fixed;pointer-events:none;z-index:9999';document.body.appendChild(el);}if(tooltip.opacity===0){el.style.opacity='0';return;}const ttl=tooltip.title?.[0]||'';el.innerHTML='<div class="aim-ct-title">'+ttl+'</div>'+(tooltip.dataPoints||[]).filter(dp=>dp.raw>0).map(dp=>{const lbl=dp.dataset.label||'';const icon=aimBrandIcon(_pDom[lbl]||'',lbl,14);return '<div class="aim-ct-row">'+icon+'<span class="aim-ct-label">'+lbl+'</span><span class="aim-ct-val">'+dp.raw+'</span></div>';}).join('');el.style.opacity='1';const rect=chart.canvas.getBoundingClientRect();let left=rect.left+tooltip.caretX+14,top=rect.top+tooltip.caretY-10;if(left+240>window.innerWidth-8)left=rect.left+tooltip.caretX-248;el.style.left=Math.max(8,left)+'px';el.style.top=Math.max(8,Math.min(top,window.innerHeight-220))+'px';};}())}},
         scales:{x:{stacked:true,beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.03)'}},y:{stacked:true,ticks:{font:{size:11}},grid:{display:false}}}}
     });
   }
@@ -10894,6 +10911,7 @@ function aimRenderUrlsTable() {
         <div style="min-width:0"><a href="${/^https?:\/\//i.test(u.url)?u.url:'#'}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;display:block" title="${aimEscHtml(u.url)}">${aimEscHtml(u.url)}</a>${titleLine}</div>
       </div></td>
       <td style="white-space:nowrap"><span class="aim-source-type-badge ${urlType.toLowerCase().replace(/[\s\/]+/g, '-')}" style="white-space:nowrap">${urlType}</span></td>
+      <td><div style="display:flex;align-items:center;gap:3px;">${['chatgpt','googleaimode','googleaio','perplexity','gemini'].map(function(pk){const _pd={chatgpt:'openai.com',googleaimode:'google.com',googleaio:'google.com',perplexity:'perplexity.ai',gemini:'gemini.google.com'};const _pn={chatgpt:'ChatGPT',googleaimode:'AI Mode',googleaio:'AI Overview',perplexity:'Perplexity',gemini:'Gemini'};const has=u.by_provider&&u.by_provider[pk]>0;return '<img src="https://www.google.com/s2/favicons?domain='+_pd[pk]+'&sz=16" title="'+_pn[pk]+'" style="width:14px;height:14px;border-radius:2px;flex-shrink:0;'+(has?'':'opacity:0.12;filter:grayscale(1);')+'">';}).join('')}</div></td>
       <td style="text-align:right;font-size:12px;font-weight:500">${u.mentions}</td>
       <td style="text-align:right;font-size:12px">${u.run_count || '–'}</td>
       <td style="text-align:right;font-size:12px">${u.share}%</td>
@@ -10901,6 +10919,16 @@ function aimRenderUrlsTable() {
       <td><button style="padding:3px 7px;border:1px solid var(--border);background:none;border-radius:4px;font-size:10px;cursor:pointer;font-family:var(--font);color:var(--text-muted)">View</button></td>
     </tr>`;
   }).join('');
+}
+
+function aimFilterPromptsSearch() {
+  const q = (document.getElementById('aim-pr-search')?.value || '').toLowerCase().trim();
+  const tbody = document.getElementById('aim-pr-active-tbody');
+  if (!tbody) return;
+  Array.from(tbody.querySelectorAll('tr')).forEach(function(tr) {
+    const text = tr.querySelector('td:nth-child(2)')?.textContent?.toLowerCase() || '';
+    tr.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
 }
 
 /* ── ADD PROMPTS MODAL ───────────────────────────────────────────── */
