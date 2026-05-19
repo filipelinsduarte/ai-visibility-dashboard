@@ -5670,7 +5670,8 @@ function aimGetBrandMetrics(brand) {
   }
 
   // Fallback
-  return { vis: parseFloat(brand.visibility.toFixed(1)), sent: brand.sentiment ?? 50, pos: brand.position ?? null };
+  var _fv = brand.visibility != null ? parseFloat(brand.visibility) : 0;
+  return { vis: parseFloat(_fv.toFixed(1)), sent: brand.sentiment ?? 50, pos: brand.position ?? null };
 }
 
 function aimEscHtml(s) {
@@ -7425,7 +7426,58 @@ function aimBuildSE() {
   var snap = window._AIM_SNAPSHOT;
   if (!snap) return null;
   // Use pre-built SE injected by generate_snapshot.py (server-side, full history)
-  if (snap.aim_se) return snap.aim_se;
+  if (snap.aim_se) {
+    // Enrich entries where the server-side reason is just the brand name or too short
+    var _seBrand = snap.brand || '';
+    var _seBrandLow = _seBrand.toLowerCase();
+    var _seHist = snap.prompt_response_history || {};
+    function _seExtractSnippet(text) {
+      if (!text) return '';
+      var sents = text.replace(/\r?\n/g,' ').replace(/\s{2,}/g,' ').split(/[.!?]+\s+/);
+      for (var i = 0; i < sents.length; i++) {
+        if (_seBrandLow && sents[i].toLowerCase().indexOf(_seBrandLow) >= 0) {
+          var s = sents[i].trim().replace(/^[\d]+\.\s+/,'').replace(/^[-•*]\s+/,'');
+          if (s.length < 40 && i + 1 < sents.length) s = (s + ' ' + sents[i+1].trim()).trim();
+          return s.length > 240 ? s.slice(0,237)+'...' : s;
+        }
+      }
+      if (_seBrandLow) {
+        var idx = text.toLowerCase().indexOf(_seBrandLow);
+        if (idx >= 0) return text.slice(Math.max(0,idx-80), Math.min(text.length,idx+_seBrandLow.length+200)).trim().slice(0,240);
+      }
+      return text.slice(0,180).trim();
+    }
+    ['positive','negative','neutral','uncertain'].forEach(function(t) {
+      (snap.aim_se[t] || []).forEach(function(entry) {
+        var r = (entry.reason || '').trim();
+        var bad = r.length < 20 || r.toLowerCase() === _seBrandLow || r === _seBrand;
+        if (!bad) return;
+        var pid = entry.promptId || '';
+        var date = entry.date || '';
+        var model = entry.model || '';
+        var byDate = _seHist[pid] || _seHist[String(pid)];
+        if (!byDate) return;
+        var byModel = byDate[date];
+        if (!byModel) {
+          var dates = Object.keys(byDate);
+          if (dates.length) byModel = byDate[dates[0]];
+        }
+        if (!byModel) return;
+        var resp = byModel[model];
+        if (!resp) {
+          var mkeys = Object.keys(byModel);
+          for (var mi = 0; mi < mkeys.length; mi++) {
+            if (byModel[mkeys[mi]] && byModel[mkeys[mi]].is_mentioned) { resp = byModel[mkeys[mi]]; break; }
+          }
+        }
+        if (!resp || !resp.is_mentioned) return;
+        var text = resp.text || resp.response_text || '';
+        var snippet = text ? _seExtractSnippet(text) : '';
+        if (snippet && snippet.length > 18) entry.reason = snippet;
+      });
+    });
+    return snap.aim_se;
+  }
   // Fallback: build client-side from embedded snapshot data
   var brand = snap.brand || '';
   var brandLow = brand.toLowerCase();
@@ -8220,7 +8272,7 @@ function aimComputeAllCompSent() {
         var brands = resp.brands || [];
         var sLabel = (resp.sentiment_label || 'neutral').toLowerCase();
         brands.forEach(function(bn) {
-          var lo = (bn || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+          var lo = (bn || '').toLowerCase().replace(/[^a-z0-9]/g, '');
           if (!lo) return;
           if (!cache[lo]) cache[lo] = { pos: 0, neg: 0, neu: 0, total: 0 };
           cache[lo].total++;
@@ -8300,7 +8352,7 @@ function _aimBuildCompMentionData() {
   var result = {};
   var pidText = {};
   (snap.prompt_metrics||[]).forEach(function(pm){ if(pm.prompt_id) pidText[pm.prompt_id]=pm.prompt_text||''; });
-  function _nn(n){ return (n||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim(); }
+  function _nn(n){ return (n||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
   function processEntry(resp, pid, model, date) {
     if (!resp) return;
     var brands = resp.brands||[];
@@ -8353,7 +8405,7 @@ function aimCompSentSplitReal(b) {
     };
   }
   var data = _aimBuildCompMentionData();
-  var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   var entry = data[nn];
   if (entry && entry.total > 0) {
     return {
@@ -8364,7 +8416,7 @@ function aimCompSentSplitReal(b) {
   }
   // Fallback to backend scores
   var cache = aimComputeAllCompSent();
-  var cached = cache[nn];
+  var cached = cache[(b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'')];
   if (!cached||!cached.total) return {pos:0,neu:100,neg:0};
   return {
     pos: Math.round(cached.pos/cached.total*100),
@@ -8376,7 +8428,7 @@ function aimCompSentSplitReal(b) {
 function aimComputeCompInsight(b) {
   try {
   var data = _aimBuildCompMentionData();
-  var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   var entry = data[nn];
   if (!entry || entry.total === 0) {
     // Fall back to backend sentiment counts for qualitative framing
@@ -8392,7 +8444,7 @@ function aimComputeCompInsight(b) {
     var _str = _posR >= 50 ? 'Consistently cited as a recommended option across tracked AI responses.'
       : _neuR >= 70 ? 'Frequently referenced in AI responses, mostly in factual or comparative context.'
       : 'Appears across multiple tracked responses with mixed framing.';
-    var _wk = _negR >= 30 ? 'Appears with critical framing in a notable share of responses — often in trade-off or limitation contexts.'
+    var _wk = _negR >= 30 ? 'Appears with critical framing in a notable share of responses, often in trade-off or limitation contexts.'
       : _neuR >= 60 ? 'Mostly cited neutrally — rarely with strong positive endorsement.'
       : '';
     return { str: _str, wk: _wk };
@@ -8422,7 +8474,7 @@ function aimComputeCompInsight(b) {
   }
   if (!wk) {
     if (entry.uncertain.length > 0 && entry.neu.length >= entry.pos.length) {
-      wk = 'Mostly neutral or ambiguous mentions — cited without strong qualitative signal.';
+      wk = 'Mostly neutral or ambiguous mentions: cited without strong qualitative signal.';
     } else {
       wk = 'No significant negative framing detected in tracked AI responses.';
     }
