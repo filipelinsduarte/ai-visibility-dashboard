@@ -7393,6 +7393,7 @@ function initAiCompetitors() {
 var _aimSE = null;
 var _aimSentApiCache = null; // kept for cache-bust in aimApplySnapshot
 var _aimCompSentCache = null;
+var _aimCompMentionData = null;
 var _aimSentFilters = { cat: 'all' };
 var _aimSentDonut2 = null;
 var _aimSentCatChart2 = null;
@@ -7442,14 +7443,24 @@ function aimBuildSE() {
 
   function extractReason(text) {
     if (!text) return '';
-    var sents = text.replace(/\n+/g, ' ').split(/(?<=[.!?])\s+/);
+    var sents = text.replace(/\r?\n/g,' ').replace(/\s{2,}/g,' ')
+      .split(/(?<=[.!?])\s+(?=[A-Z0-9\-"'])/);
     for (var i = 0; i < sents.length; i++) {
       if (brandLow && sents[i].toLowerCase().indexOf(brandLow) >= 0) {
-        var s = sents[i].trim();
-        return s.length > 240 ? s.slice(0, 237) + '...' : s;
+        var s = sents[i].trim().replace(/^[\d]+\.\s+/,'').replace(/^[-•*]\s+/,'');
+        // If very short (just a list entry), grab the next sentence for context
+        if (s.length < 35 && i + 1 < sents.length) {
+          s = (s + ' ' + sents[i+1].trim()).trim();
+        }
+        // Still too short — use character window around the mention
+        if (s.length < 35 && brandLow) {
+          var idx2 = text.toLowerCase().indexOf(brandLow);
+          if (idx2 >= 0) s = text.slice(Math.max(0,idx2-80), Math.min(text.length,idx2+brandLow.length+200)).trim();
+        }
+        return s.length > 240 ? s.slice(0,237)+'...' : s;
       }
     }
-    return text.slice(0, 180).trim();
+    return text.slice(0,180).trim();
   }
 
   function addEntry(r, pid, mk) {
@@ -8224,66 +8235,184 @@ function aimComputeAllCompSent() {
   return cache;
 }
 
+// ─── Context-aware sentiment helpers ─────────────────────────────────────────
+
+function _aimExtractBrandSnippet(text, brandName) {
+  if (!text || !brandName) return '';
+  var brandLower = brandName.toLowerCase();
+  var sents = text.replace(/\r?\n/g,' ').replace(/\s{2,}/g,' ')
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9\-"'])/);
+  for (var i = 0; i < sents.length; i++) {
+    if (sents[i].toLowerCase().indexOf(brandLower) >= 0) {
+      var s = sents[i].trim();
+      if (s.length < 60 && i + 1 < sents.length) s = (s + ' ' + sents[i+1].trim()).trim();
+      return s.length > 280 ? s.slice(0,277)+'...' : s;
+    }
+  }
+  var idx = text.toLowerCase().indexOf(brandLower);
+  if (idx < 0) return text.slice(0,200).trim();
+  return text.slice(Math.max(0,idx-120), Math.min(text.length,idx+brandName.length+180)).trim();
+}
+
+function _aimClassifySnippetSentiment(snippet, promptText) {
+  if (!snippet) return 'uncertain';
+  var s = snippet.toLowerCase();
+  var p = (promptText||'').toLowerCase();
+  var posScore = 0, negScore = 0;
+  [/\b(best|top[\s\-]?\w*|leading|recommended|excellent|outstanding|superior|ideal|great|strong|powerful|comprehensive|robust|reliable|trusted|effective|accurate|scalable|affordable|user.friendly|intuitive|seamless|innovative)\b/,
+   /\b(stands out|excels|particularly well|widely used|highly rated|well.regarded|well.suited|best.in.class|market.leader|go.to choice)\b/,
+   /\b(ideal for|best for|great for|perfect for|designed for|built for|especially useful|particularly useful|well.positioned)\b/,
+   /\b(offers|provides|delivers|enables|features|supports|includes)\b.{1,50}\b(comprehensive|robust|advanced|powerful|strong|full|rich|broad|deep|wide)\b/
+  ].forEach(function(re){ if(re.test(s)) posScore++; });
+  [/\b(lacks?|limited|missing|weak|poor|expensive|costly|difficult|complex|clunky|slow|unreliable|basic|outdated|narrow|rigid|opaque|frustrating)\b/,
+   /\b(does\s+not|doesn't|won't|fails?\s+to|unable\s+to)\b.{0,50}\b(support|offer|include|provide|handle|scale)\b/,
+   /\b(drawback|limitation|downside|weakness|concern|issue|problem|gap|challenge|complaint|criticism|caveat)\b/,
+   /\b(lags?\s+behind|falls?\s+short|underwhelm|disappointing|overpriced|not\s+(suitable|ideal|designed|built)\s+for)\b/,
+   /\b(less\s+(capable|comprehensive|advanced|robust|suitable|accurate|flexible))\b/
+  ].forEach(function(re){ if(re.test(s)) negScore++; });
+  if (posScore > 0 && negScore === 0) return 'positive';
+  if (negScore > 0 && posScore === 0) return 'negative';
+  if (posScore > 0 && negScore > 0) return posScore >= negScore ? 'positive' : 'negative';
+  if (/\b(best|top|which|recommend|should\s+i\s+use|leading|ideal|right\s+tool)\b/.test(p) && negScore === 0) return 'positive';
+  if (/\b(also|another|additionally|includes?|such\s+as|along\s+with|as\s+well\s+as|options?\s+include|tools?\s+include|platforms?\s+include)\b/.test(s)) return 'neutral';
+  return 'uncertain';
+}
+
+function _aimSnippetToReason(snippet, sentType) {
+  if (!snippet || snippet.trim().length < 4) {
+    if (sentType === 'positive') return 'Listed as a recommended option for this type of query.';
+    if (sentType === 'negative') return 'Mentioned with limiting or critical framing.';
+    return 'Cited as a relevant option in this context.';
+  }
+  var r = snippet.trim().replace(/^[\d]+\.\s+/,'').replace(/^[-•*]\s+/,'');
+  if (r.length < 30) {
+    if (sentType === 'positive') return 'Listed as a recommended tool for this query.';
+    if (sentType === 'negative') return 'Mentioned with critical or limiting framing.';
+    return 'Cited as a relevant option in this context.';
+  }
+  return r.length > 220 ? r.slice(0,217)+'...' : r;
+}
+
+function _aimBuildCompMentionData() {
+  if (_aimCompMentionData) return _aimCompMentionData;
+  var snap = window._AIM_SNAPSHOT;
+  if (!snap) return {};
+  var result = {};
+  var pidText = {};
+  (snap.prompt_metrics||[]).forEach(function(pm){ if(pm.prompt_id) pidText[pm.prompt_id]=pm.prompt_text||''; });
+  function _nn(n){ return (n||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim(); }
+  function processEntry(resp, pid, model, date) {
+    if (!resp) return;
+    var brands = resp.brands||[];
+    if (!brands.length) return;
+    var text = resp.text||resp.response_text||'';
+    var promptText = pidText[pid]||resp.prompt_text||'';
+    brands.forEach(function(brandName){
+      var nn = _nn(brandName);
+      if (!nn || nn.length < 2) return;
+      if (!result[nn]) result[nn]={pos:[],neg:[],neu:[],uncertain:[],total:0};
+      var snippet = _aimExtractBrandSnippet(text, brandName);
+      var sentType = snippet.length > 20
+        ? _aimClassifySnippetSentiment(snippet, promptText)
+        : _aimClassifySnippetSentiment(text.slice(0,300), promptText);
+      result[nn][sentType].push({
+        prompt: promptText, promptId: pid, model: model, date: date,
+        snippet: snippet, reason: _aimSnippetToReason(snippet, sentType)
+      });
+      result[nn].total++;
+    });
+  }
+  var hist = snap.prompt_response_history||{};
+  Object.keys(hist).forEach(function(pid){
+    var byDate=hist[pid];
+    if (!byDate||typeof byDate!=='object'||Array.isArray(byDate)) return;
+    Object.keys(byDate).forEach(function(date){
+      var byModel=byDate[date];
+      if (!byModel||typeof byModel!=='object') return;
+      Object.keys(byModel).forEach(function(model){ processEntry(byModel[model],pid,model,date); });
+    });
+  });
+  var pr = snap.prompt_responses||{};
+  Object.keys(pr).forEach(function(pid){
+    var models=pr[pid]||{};
+    Object.keys(models).forEach(function(model){ processEntry(models[model],pid,model,''); });
+  });
+  _aimCompMentionData = result;
+  return result;
+}
+
 function aimCompSentSplitReal(b) {
-  // For the user's own brand, use SE entries (same source as donut)
   if (b.isMain) {
     var counts = aimSEGetCounts();
-    var total = (counts.positive || 0) + (counts.negative || 0) + (counts.neutral || 0) + (counts.uncertain || 0);
-    if (!total) return { pos: 0, neu: 100, neg: 0 };
+    var total = (counts.positive||0)+(counts.negative||0)+(counts.neutral||0)+(counts.uncertain||0);
+    if (!total) return {pos:0,neu:100,neg:0};
     return {
-      pos: Math.round((counts.positive || 0) / total * 100),
-      neg: Math.round((counts.negative || 0) / total * 100),
-      neu: Math.round(((counts.neutral || 0) + (counts.uncertain || 0)) / total * 100)
+      pos: Math.round((counts.positive||0)/total*100),
+      neg: Math.round((counts.negative||0)/total*100),
+      neu: Math.round(((counts.neutral||0)+(counts.uncertain||0))/total*100)
     };
   }
-  // For competitors, use _aimPromptResponseHistory co-mention counts
+  var data = _aimBuildCompMentionData();
+  var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  var entry = data[nn];
+  if (entry && entry.total > 0) {
+    return {
+      pos: Math.round(entry.pos.length/entry.total*100),
+      neg: Math.round(entry.neg.length/entry.total*100),
+      neu: Math.round((entry.neu.length+entry.uncertain.length)/entry.total*100)
+    };
+  }
+  // Fallback to backend scores
   var cache = aimComputeAllCompSent();
-  var nameLo = (b.name || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
-  var entry = cache[nameLo];
-  if (!entry || !entry.total) return { pos: 0, neu: 100, neg: 0 };
+  var cached = cache[nn];
+  if (!cached||!cached.total) return {pos:0,neu:100,neg:0};
   return {
-    pos: Math.round(entry.pos / entry.total * 100),
-    neg: Math.round(entry.neg / entry.total * 100),
-    neu: Math.round(entry.neu / entry.total * 100)
+    pos: Math.round(cached.pos/cached.total*100),
+    neg: Math.round(cached.neg/cached.total*100),
+    neu: Math.round(cached.neu/cached.total*100)
   };
 }
 
 function aimComputeCompInsight(b) {
-  var sentCache = aimComputeAllCompSent();
-  var nameLo = (b.name || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
-  var cached = sentCache[nameLo];
-  var cPos = 0, cNeg = 0, cNeu = 0, total = 0;
-  if (cached && cached.total > 0) {
-    cPos = cached.pos; cNeg = cached.neg; cNeu = cached.neu; total = cached.total;
+  var data = _aimBuildCompMentionData();
+  var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  var entry = data[nn];
+  if (!entry || entry.total === 0) {
+    return {
+      str: 'No AI responses mention this brand in the tracked period.',
+      wk: 'Expand prompt coverage to capture mentions of this competitor.'
+    };
   }
-  var posRate = total > 0 ? Math.round(cPos / total * 100) : 0;
-  var negRate = total > 0 ? Math.round(cNeg / total * 100) : 0;
-  var neuRate = total > 0 ? Math.round(cNeu / total * 100) : 0;
-
-  var str, wk;
-  if (total === 0) {
-    str = 'No tracked AI responses mention this brand yet.';
-    wk = 'Increase coverage by targeting prompts where this brand is expected to appear.';
-  } else if (posRate >= 60) {
-    str = 'Cited positively in ' + cPos + ' of ' + total + ' tracked response' + (total !== 1 ? 's' : '') + ' — consistently framed as a strong option across comparison and buying-intent prompts.';
-    wk = negRate >= 15 ? 'Negative mentions account for ' + negRate + '% of responses, often in pricing or feature trade-off contexts.' : 'Neutral coverage (' + neuRate + '%) suggests some prompts mention it without strong recommendation.';
-  } else if (negRate >= 35) {
-    str = total > 1 ? 'Appears in ' + total + ' tracked response' + (total !== 1 ? 's' : '') + ', giving it reasonable AI visibility.' : 'Has some presence in AI responses.';
-    wk = 'More than a third of mentions carry a critical framing — commonly in comparisons where a competing brand is preferred or when discussing limitations.';
-  } else if (posRate > negRate && posRate >= 30) {
-    str = 'Positive mentions outpace negative by ' + (posRate - negRate) + ' percentage points across ' + total + ' response' + (total !== 1 ? 's' : '') + ' — generally viewed favorably when cited.';
-    wk = neuRate >= 50 ? 'A majority of mentions are neutral, suggesting AI models cite it as a reference rather than a clear recommendation.' : 'Has room to improve positive framing across more prompt categories.';
-  } else if (neuRate >= 70) {
-    str = 'Mentioned in ' + total + ' response' + (total !== 1 ? 's' : '') + ' with consistent AI visibility across tracked prompts.';
-    wk = 'Mostly neutral coverage (' + neuRate + '%) — AI models reference it factually but rarely with strong positive endorsement.';
-  } else if (total < 5) {
-    str = 'Limited data — appears in only ' + total + ' tracked response' + (total !== 1 ? 's' : '') + '.';
-    wk = 'Too few mentions to identify a clear sentiment pattern. Expand prompt coverage to get a reliable signal.';
-  } else {
-    str = 'Cited in ' + total + ' AI response' + (total !== 1 ? 's' : '') + ' with a mixed sentiment profile (' + posRate + '% positive, ' + neuRate + '% neutral, ' + negRate + '% negative).';
-    wk = 'No dominant pattern — mentions vary by prompt context. Review which prompt categories drive negative framing.';
+  function bestSnippet(arr) {
+    if (!arr.length) return null;
+    return arr.slice().sort(function(a,b){ return (b.snippet||'').length-(a.snippet||'').length; })[0];
   }
-
+  var str = '', wk = '';
+  var posEntry = bestSnippet(entry.pos);
+  if (posEntry) {
+    str = posEntry.reason || posEntry.snippet || '';
+    if (str.length > 130) str = str.slice(0,127)+'...';
+  }
+  var negEntry = bestSnippet(entry.neg);
+  if (negEntry) {
+    wk = negEntry.reason || negEntry.snippet || '';
+    if (wk.length > 130) wk = wk.slice(0,127)+'...';
+  }
+  if (!str) {
+    var neuEntry = bestSnippet(entry.neu);
+    if (neuEntry && (neuEntry.snippet||'').length > 30) {
+      str = (neuEntry.snippet||'').slice(0,120);
+    } else {
+      str = 'Cited across tracked prompts without strong positive or negative framing.';
+    }
+  }
+  if (!wk) {
+    if (entry.uncertain.length > 0 && entry.neu.length >= entry.pos.length) {
+      wk = 'Mostly neutral or ambiguous mentions — cited without strong qualitative signal.';
+    } else {
+      wk = 'No significant negative framing detected in tracked AI responses.';
+    }
+  }
   return { str: str, wk: wk };
 }
 
@@ -11792,6 +11921,7 @@ function aimApplySnapshot(snap) {
   _aimExtUrlCache = null;
   _aimSentApiCache = null;
   _aimCompSentCache = null;
+  _aimCompMentionData = null;
   _aimSE = null;
   _aimSentFilters = { cat: 'all' };
   const lbp = snap.latest_by_provider || {};
