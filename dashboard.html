@@ -7727,6 +7727,18 @@ function aimBuildSE() {
         } catch(enrichErr) { /* skip bad entry */ }
       });
     });
+    // Deduplicate across all buckets: same promptId + model + date must appear at most once.
+    // Process positive first so higher-signal entries survive when the same response
+    // is repeated across sentiment types by the server.
+    var _seenKeys = {};
+    ['positive', 'negative', 'neutral', 'uncertain'].forEach(function(t) {
+      snap.aim_se[t] = (snap.aim_se[t] || []).filter(function(entry) {
+        var k = (entry.promptId || '') + '|' + (entry.model || '') + '|' + (entry.date || '');
+        if (_seenKeys[k]) return false;
+        _seenKeys[k] = true;
+        return true;
+      });
+    });
     return snap.aim_se;
   }
   // Fallback: build client-side from embedded snapshot data
