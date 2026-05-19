@@ -110,10 +110,11 @@ Why these five? They're the functions where a bug would silently corrupt every c
 
 - Start: **this file** (you're here).
 - Then: **`README.md` → "Debugging log"** for the worked example of the recent fix.
-- Then: **`REVIEW_ARCHITECTURE.md`** for KISS/SOLID/TDD with line refs.
+- Then: **`COMPONENT_STRUCTURE.md`** for the rules behind when to extract anything (the *why*, not the *what*).
+- Then: **`REVIEW_ARCHITECTURE.md`** for KISS/SOLID/TDD with line refs (applies those rules to this repo).
 - Then: **`REVIEW_FRONTEND.md`** for perf/a11y/render with line refs.
 
-Total reading: ~30 minutes if you skim, ~90 minutes if you check every line ref.
+Total reading: ~45 minutes if you skim, ~2 hours if you check every line ref.
 
 ---
 
