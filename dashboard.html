@@ -5211,137 +5211,7 @@ Example: 10 prompts x 5 models = 50 runs
     </div>
   </div>
 
-<!-- AIM_SNAPSHOT_INJECT_START --><script>window._AIM_SNAPSHOT=null;</script><!-- AIM_SNAPSHOT_INJECT_END -->
-<script>
-if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
-/* ── DATA ─────────────────────────────────────────────────────────── */
-const AI_BRANDS = [
-  { id:1, name:'AI Peekaboo', domain:'aipeekaboo.com', visibility:52, sentiment:71, position:2.1, isMain:true, color:'#b352b3' },
-  { id:2, name:'Profound', domain:'tryprofound.com', visibility:67, sentiment:58, position:1.8, isMain:false, color:'#10b981' },
-  { id:3, name:'Scrunch', domain:'scrunch.ai', visibility:44, sentiment:62, position:3.2, isMain:false, color:'#2563eb' },
-  { id:4, name:'Otterly.AI', domain:'otterly.ai', visibility:38, sentiment:55, position:3.9, isMain:false, color:'#8b5cf6' },
-  { id:5, name:'Brandwise', domain:'brandwise.ai', visibility:29, sentiment:48, position:4.5, isMain:false, color:'#64748b' },
-  { id:6, name:'Peec.AI', domain:'peec.ai', visibility:23, sentiment:52, position:5.1, isMain:false, color:'#06b6d4' },
-  { id:7, name:'Rankscale', domain:'rankscale.ai', visibility:18, sentiment:44, position:5.7, isMain:false, color:'#f59e0b' },
-  { id:8, name:'Mention.ai', domain:'mention.ai', visibility:15, sentiment:41, position:6.2, isMain:false, color:'#f472b6' },
-  { id:9, name:'Aimon', domain:'aimon.io', visibility:11, sentiment:39, position:6.8, isMain:false, color:'#38bdf8' },
-  { id:10, name:'Visio AI', domain:'visio.ai', visibility:8, sentiment:35, position:7.3, isMain:false, color:'#94a3b8' },
-  { id:11, name:'SE Ranking', domain:'seranking.com', visibility:7, sentiment:42, position:7.6, isMain:false, color:'#f59e0b' },
-  { id:12, name:'Semrush', domain:'semrush.com', visibility:6, sentiment:38, position:7.9, isMain:false, color:'#2563eb' },
-  { id:13, name:'Ahrefs', domain:'ahrefs.com', visibility:6, sentiment:36, position:8.2, isMain:false, color:'#10b981' },
-  { id:14, name:'Writesonic', domain:'writesonic.com', visibility:5, sentiment:44, position:8.5, isMain:false, color:'#8b5cf6' },
-  { id:15, name:'NightWatch', domain:'nightwatch.io', visibility:5, sentiment:31, position:8.8, isMain:false, color:'#06b6d4' },
-  { id:16, name:'Rankability', domain:'rankability.com', visibility:4, sentiment:29, position:9.1, isMain:false, color:'#b352b3' },
-  { id:17, name:'Siftly', domain:'siftly.ai', visibility:4, sentiment:46, position:9.3, isMain:false, color:'#64748b' },
-  { id:18, name:'Brandwatch', domain:'brandwatch.com', visibility:3, sentiment:38, position:9.6, isMain:false, color:'#f472b6' },
-  { id:19, name:'Mentionlytics', domain:'mentionlytics.com', visibility:3, sentiment:35, position:9.9, isMain:false, color:'#38bdf8' },
-  { id:20, name:'AthenaHQ', domain:'athenahq.com', visibility:2, sentiment:28, position:10.3, isMain:false, color:'#94a3b8' }
-];
-
-const AIM_WORKSPACES = [
-  {
-    id: 1,
-    name: 'AI Peekaboo',
-    domain: 'aipeekaboo.com',
-    description: 'AI visibility monitoring platform',
-    country: 'All Markets',
-    brands: [
-      { id:1, name:'AI Peekaboo', domain:'aipeekaboo.com', visibility:52, sentiment:71, position:2.1, isMain:true, color:'#b352b3' },
-      { id:2, name:'Profound', domain:'tryprofound.com', visibility:67, sentiment:58, position:1.8, isMain:false, color:'#10b981' },
-      { id:3, name:'Scrunch', domain:'scrunch.ai', visibility:44, sentiment:62, position:3.2, isMain:false, color:'#2563eb' },
-      { id:4, name:'Otterly.AI', domain:'otterly.ai', visibility:38, sentiment:55, position:3.9, isMain:false, color:'#8b5cf6' },
-      { id:5, name:'Brandwise', domain:'brandwise.ai', visibility:29, sentiment:48, position:4.5, isMain:false, color:'#64748b' },
-      { id:6, name:'Peec.AI', domain:'peec.ai', visibility:23, sentiment:52, position:5.1, isMain:false, color:'#06b6d4' },
-      { id:7, name:'Rankscale', domain:'rankscale.ai', visibility:18, sentiment:44, position:5.7, isMain:false, color:'#f59e0b' },
-      { id:8, name:'Mention.ai', domain:'mention.ai', visibility:15, sentiment:41, position:6.2, isMain:false, color:'#f472b6' },
-      { id:9, name:'Aimon', domain:'aimon.io', visibility:11, sentiment:39, position:6.8, isMain:false, color:'#38bdf8' },
-      { id:10, name:'Visio AI', domain:'visio.ai', visibility:8, sentiment:35, position:7.3, isMain:false, color:'#94a3b8' },
-      { id:11, name:'SE Ranking', domain:'seranking.com', visibility:7, sentiment:42, position:7.6, isMain:false, color:'#f59e0b' },
-      { id:12, name:'Semrush', domain:'semrush.com', visibility:6, sentiment:38, position:7.9, isMain:false, color:'#2563eb' },
-      { id:13, name:'Ahrefs', domain:'ahrefs.com', visibility:6, sentiment:36, position:8.2, isMain:false, color:'#10b981' },
-      { id:14, name:'Writesonic', domain:'writesonic.com', visibility:5, sentiment:44, position:8.5, isMain:false, color:'#8b5cf6' },
-      { id:15, name:'NightWatch', domain:'nightwatch.io', visibility:5, sentiment:31, position:8.8, isMain:false, color:'#06b6d4' },
-      { id:16, name:'Rankability', domain:'rankability.com', visibility:4, sentiment:29, position:9.1, isMain:false, color:'#b352b3' },
-      { id:17, name:'Siftly', domain:'siftly.ai', visibility:4, sentiment:46, position:9.3, isMain:false, color:'#64748b' },
-      { id:18, name:'Brandwatch', domain:'brandwatch.com', visibility:3, sentiment:38, position:9.6, isMain:false, color:'#f472b6' },
-      { id:19, name:'Mentionlytics', domain:'mentionlytics.com', visibility:3, sentiment:35, position:9.9, isMain:false, color:'#38bdf8' },
-      { id:20, name:'AthenaHQ', domain:'athenahq.com', visibility:2, sentiment:28, position:10.3, isMain:false, color:'#94a3b8' }
-    ]
-  },
-  {
-    id: 2,
-    name: 'Source.One',
-    domain: 'source.one',
-    description: 'B2B marketplace platform',
-    country: 'United States',
-    brands: [
-      { id:1, name:'Source.One', domain:'source.one', visibility:14, sentiment:62, position:3.2, isMain:true, color:'#b352b3' },
-      { id:2, name:'Thomasnet', domain:'thomasnet.com', visibility:41, sentiment:71, position:1.8, isMain:false, color:'#10b981' },
-      { id:3, name:'Alibaba', domain:'alibaba.com', visibility:38, sentiment:65, position:2.1, isMain:false, color:'#2563eb' },
-      { id:4, name:'GlobalSpec', domain:'globalspec.com', visibility:32, sentiment:58, position:2.6, isMain:false, color:'#8b5cf6' },
-      { id:5, name:'Kompass', domain:'kompass.com', visibility:28, sentiment:52, position:3.1, isMain:false, color:'#64748b' },
-      { id:6, name:'IndiaMart', domain:'indiamart.com', visibility:24, sentiment:49, position:3.5, isMain:false, color:'#06b6d4' },
-      { id:7, name:'EC21', domain:'ec21.com', visibility:19, sentiment:44, position:4.0, isMain:false, color:'#f59e0b' },
-      { id:8, name:'TradeKey', domain:'tradekey.com', visibility:17, sentiment:41, position:4.4, isMain:false, color:'#f472b6' },
-      { id:9, name:'Made-in-China', domain:'made-in-china.com', visibility:15, sentiment:38, position:4.8, isMain:false, color:'#38bdf8' },
-      { id:10, name:'ExportHub', domain:'exporthub.com', visibility:12, sentiment:35, position:5.2, isMain:false, color:'#94a3b8' },
-      { id:11, name:'DHGate', domain:'dhgate.com', visibility:10, sentiment:32, position:5.7, isMain:false, color:'#f59e0b' },
-      { id:12, name:'TradeIndia', domain:'tradeindia.com', visibility:9, sentiment:30, position:6.1, isMain:false, color:'#10b981' },
-      { id:13, name:'BizVibe', domain:'bizvibe.com', visibility:8, sentiment:41, position:6.4, isMain:false, color:'#2563eb' },
-      { id:14, name:'Europages', domain:'europages.com', visibility:7, sentiment:38, position:6.8, isMain:false, color:'#8b5cf6' },
-      { id:15, name:'Panjiva', domain:'panjiva.com', visibility:7, sentiment:36, position:7.1, isMain:false, color:'#b352b3' },
-      { id:16, name:'Seasia', domain:'seasiainfotech.com', visibility:5, sentiment:29, position:7.5, isMain:false, color:'#64748b' },
-      { id:17, name:'Wer Liefert Was', domain:'wlw.de', visibility:5, sentiment:33, position:7.8, isMain:false, color:'#06b6d4' },
-      { id:18, name:'TradeGecko', domain:'tradegecko.com', visibility:4, sentiment:28, position:8.2, isMain:false, color:'#f472b6' },
-      { id:19, name:'Handshake', domain:'handshake.com', visibility:3, sentiment:44, position:8.6, isMain:false, color:'#38bdf8' },
-      { id:20, name:'Tundra', domain:'tundra.com', visibility:2, sentiment:31, position:9.0, isMain:false, color:'#94a3b8' },
-    ]
-  },
-  {
-    id: 3,
-    name: 'Flexzo',
-    domain: 'flexzo.ai',
-    description: 'Healthcare staffing platform',
-    country: 'United Kingdom',
-    brands: [
-      { id:1, name:'Flexzo', domain:'flexzo.ai', visibility:8, sentiment:68, position:4.1, isMain:true, color:'#b352b3' },
-      { id:2, name:'Aya Healthcare', domain:'ayahealthcare.com', visibility:45, sentiment:78, position:1.5, isMain:false, color:'#10b981' },
-      { id:3, name:'Conexus', domain:'conexusmedicalsolutions.com', visibility:38, sentiment:72, position:1.9, isMain:false, color:'#2563eb' },
-      { id:4, name:'AMN Healthcare', domain:'amnhealthcare.com', visibility:34, sentiment:69, position:2.3, isMain:false, color:'#8b5cf6' },
-      { id:5, name:'Cross Country', domain:'crosscountry.com', visibility:29, sentiment:65, position:2.8, isMain:false, color:'#64748b' },
-      { id:6, name:'Staffmark', domain:'staffmark.com', visibility:25, sentiment:61, position:3.2, isMain:false, color:'#06b6d4' },
-      { id:7, name:'Medical Solutions', domain:'medicalsolutions.com', visibility:21, sentiment:58, position:3.7, isMain:false, color:'#f59e0b' },
-      { id:8, name:'Acacium', domain:'acacium.com', visibility:18, sentiment:74, position:4.0, isMain:false, color:'#f472b6' },
-      { id:9, name:'Meridian', domain:'meridianstaffing.com', visibility:15, sentiment:55, position:4.4, isMain:false, color:'#38bdf8' },
-      { id:10, name:'Medacs', domain:'medacs.com', visibility:13, sentiment:62, position:4.8, isMain:false, color:'#94a3b8' },
-      { id:11, name:'Locum Meds', domain:'locummeds.com', visibility:11, sentiment:58, position:5.2, isMain:false, color:'#f59e0b' },
-      { id:12, name:'ID Medical', domain:'idmedical.com', visibility:10, sentiment:71, position:5.5, isMain:false, color:'#10b981' },
-      { id:13, name:'Pulse Healthcare', domain:'pulsejobs.com', visibility:9, sentiment:64, position:5.9, isMain:false, color:'#2563eb' },
-      { id:14, name:'NHS Professionals', domain:'nhsprofessionals.nhs.uk', visibility:8, sentiment:77, position:6.2, isMain:false, color:'#8b5cf6' },
-      { id:15, name:'Thornbury', domain:'thornburynursing.com', visibility:7, sentiment:69, position:6.5, isMain:false, color:'#b352b3' },
-      { id:16, name:'Unison Staffing', domain:'unisonstaffing.com', visibility:6, sentiment:52, position:6.9, isMain:false, color:'#64748b' },
-      { id:17, name:'Hays Healthcare', domain:'hays.co.uk', visibility:5, sentiment:61, position:7.3, isMain:false, color:'#06b6d4' },
-      { id:18, name:'Staffline', domain:'staffline.co.uk', visibility:4, sentiment:48, position:7.7, isMain:false, color:'#f472b6' },
-      { id:19, name:'4Way Healthcare', domain:'4wayhealthcare.co.uk', visibility:3, sentiment:55, position:8.1, isMain:false, color:'#38bdf8' },
-      { id:20, name:'Recruit Healthcare', domain:'recruithealthcare.com', visibility:2, sentiment:44, position:8.5, isMain:false, color:'#94a3b8' },
-    ]
-  }
-];
-let aimSelectedWorkspaceId = 1;
-let aimCompMentionsPage = 0;
-let aimCompSentPage = 0;
-let aimCpHeatmapPageIdx = 0;
-let aimHmSortCol = 'all';
-let aimHmSortDir = 1;
-const AIM_HM_PAGE_SIZE = 8;
-const AIM_HM_MODELS = [
-  { key:'chatgpt',    label:'ChatGPT',       short:'GPT',  domain:'openai.com' },
-  { key:'gemini',     label:'Gemini',        short:'Gem',  domain:'gemini.google.com' },
-  { key:'google-aio', label:'Google AIO',    short:'AIO',  domain:'google.com' },
-  { key:'google-aim', label:'AI Mode',       short:'AIM',  domain:'google.com' },
-  { key:'perplexity', label:'Perplexity',    short:'PPX',  domain:'perplexity.ai' },
-];
-const AIM_HM_ALL = { key:'all', label:'All Models', short:'All', domain:'' };
+<!-- AIM_SNAPSHOT_INJECT_START --><script>window._AIM_SNAPSHOT=null;
 
 const AIM_COMP_INSIGHTS = {
   1: {
@@ -7159,108 +7029,7 @@ function aimAddSuggestedPrompt(id, el) {
     visibility: 0, sentiment: 50, position: null, status: 'active',
     frequency: 'daily', lastRun: null,
   });
-  const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = {});
-  if (!snap.prompt_metrics) snap.prompt_metrics = [];
-  snap.prompt_metrics.push({
-    prompt_id: 'ap' + newId, prompt_text: sug.text,
-    topic: sug.topic || 'General', intent: 'Commercial',
-    visibility_all: 0, sentiment_all: 50, position_all: null, last_run: null,
-  });
-
-  aimUpdatePromptCounters();
-  aimRebuildTopicDropdown();
-  aimStRenderPrompts();
-  if (aimPromptsTab === 'Active') aimRenderPromptsTable();
-
-  el.textContent = 'Added!';
-  el.disabled = true;
-  el.style.background = 'var(--success)';
-}
-
-function aimApManAddRow() {
-  var tbody = document.getElementById('aim-ap-man-body');
-  if (!tbody) return;
-  var i = window._aimApManRowCount || 0;
-  window._aimApManRowCount = i + 1;
-  var topics  = Object.keys(AIM_TOPIC_COLORS);
-  var intents = ['Commercial','Informational','Transactional','Navigational'];
-  var topicSel  = _aimCtpBuildSelect('aim-ap-man-topic-'  + i, topics,  topics[0], '');
-  var intentSel = _aimCtpBuildSelect('aim-ap-man-intent-' + i, intents, 'Commercial', '');
-  var tr = document.createElement('tr');
-  tr.id = 'aim-ap-man-row-' + i;
-  tr.innerHTML =
-    '<td><textarea class="aim-ctp-tbl-input" id="aim-ap-man-text-' + i + '" rows="2" placeholder="Enter the question or phrase to monitor..."></textarea></td>'
-  + '<td style="width:168px;">' + topicSel + '</td>'
-  + '<td style="width:148px;">' + intentSel + '</td>'
-  + '<td style="width:36px;text-align:center;vertical-align:middle;"><button class="aim-ctp-tbl-rm" onclick="aimApManRemoveRow(' + i + ')" title="Remove">'
-  +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'
-  + '</button></td>';
-  tbody.appendChild(tr);
-  var ta = document.getElementById('aim-ap-man-text-' + i);
-  if (ta) ta.focus();
-}
-
-function aimApManRemoveRow(i) {
-  var row = document.getElementById('aim-ap-man-row-' + i);
-  if (row) row.remove();
-}
-
-function aimManualAddPrompt() {
-  var rows = document.querySelectorAll('#aim-ap-man-body tr');
-  var added = 0;
-  var firstEmpty = null;
-  rows.forEach(function(row) {
-    var id = row.id.replace('aim-ap-man-row-', '');
-    var text   = (document.getElementById('aim-ap-man-text-'   + id) || {}).value || '';
-    var intentWrap = document.getElementById('aim-ap-man-intent-' + id);
-    var topicWrap  = document.getElementById('aim-ap-man-topic-'  + id);
-    var intent = (intentWrap && intentWrap.dataset.value) || 'Commercial';
-    var topic  = (topicWrap  && topicWrap.dataset.value)  || 'General';
-    text = text.trim();
-    if (!text) {
-      if (!firstEmpty) firstEmpty = document.getElementById('aim-ap-man-text-' + id);
-      return;
-    }
-    aimAddPromptToDb({ text: text, intent: intent, topic: topic });
-    added++;
-  });
-  if (!added) {
-    if (firstEmpty) { firstEmpty.style.outline = '2px solid var(--danger)'; firstEmpty.focus(); }
-    return;
-  }
-  aimUpdatePromptCounters();
-  aimRebuildTopicDropdown();
-  aimCloseAddPrompts();
-}
-
-/* ── PROMPT DETAIL ───────────────────────────────────────────────── */
-function aimToggleDateSection(btn) {
-  const section = btn.closest('.aim-pd-day-section');
-  if (!section) return;
-  const body = section.querySelector('.aim-pd-day-body');
-  const icon = btn.querySelector('.aim-pd-chevron');
-  if (!body) return;
-  const collapsed = body.style.display === 'none';
-  body.style.display = collapsed ? '' : 'none';
-  if (icon) icon.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
-}
-
-function _aimHistDaysLimit() {
-  if (_aimHistDays !== null) return _aimHistDays;
-  if (aimFilterDate === '7d')  return 7;
-  if (aimFilterDate === '30d') return 30;
-  if (aimFilterDate === '90d') return 90;
-  return Infinity;
-}
-function aimSetHistDays(val) {
-  _aimHistDays = val === 'all' ? Infinity : parseInt(val, 10);
-  if (aimCurrentPromptId != null) aimOpenPromptDetail(aimCurrentPromptId);
-}
-
-function aimOpenPromptDetail(id) {
-  if (id !== aimCurrentPromptId) _aimHistDays = null;
-  aimCurrentPromptId = id;
-  window._aimChatStore = {};
+  const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = null;
   const prompt = AIM_PROMPTS.find(p=>p.id===id);
   if (!prompt) return;
   const listEl = document.getElementById('aim-prompts-list');
@@ -9359,7 +9128,7 @@ function aimRenderSourceLineChart() {
       ? new Set(window._aimSourcesByProvider[provKey].map(s=>s.domain)) : null;
     allDates.forEach(dt => {
       (srcByDate[dt] || []).forEach(s => {
-        if (provSrcDomains && !provSrcDomains.has(s.domain)) return;
+        if (provSrcDomains && provSrcDomains.size > 0 && !provSrcDomains.has(s.domain)) return;
         domainTotals[s.domain] = (domainTotals[s.domain]||0) + s.citation_count;
       });
     });
@@ -9476,6 +9245,20 @@ function aimRenderUrlLineChart() {
   } else {
     allUrls = (window._aimTopSourceUrls || []).slice(0, _AIM_URL_CHART_MAX || 30);
   }
+  // When model filter active, re-sort by that provider's count and fall back to
+  // domain-level filter when by_provider is not populated.
+  var _urlActiveProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  if (_urlActiveProvKey) {
+    var _provHasData = allUrls.some(function(u) { return u.by_provider && u.by_provider[_urlActiveProvKey]; });
+    if (_provHasData) {
+      allUrls = allUrls.slice().sort(function(a, b) {
+        return ((b.by_provider && b.by_provider[_urlActiveProvKey]) || 0) - ((a.by_provider && a.by_provider[_urlActiveProvKey]) || 0);
+      });
+    } else if (window._aimSourcesByProvider && window._aimSourcesByProvider[_urlActiveProvKey] && window._aimSourcesByProvider[_urlActiveProvKey].length) {
+      var _pdSet = new Set(window._aimSourcesByProvider[_urlActiveProvKey].map(function(s) { return (s.domain||'').replace(/^www\./,''); }));
+      if (_pdSet.size > 0) allUrls = allUrls.filter(function(u) { return _pdSet.has((u.domain||'').replace(/^www\./,'')); });
+    }
+  }
   var total = allUrls.length;
   var maxPage = Math.max(0, Math.ceil(total / (_AIM_URL_CHART_PAGE_SZ || 6)) - 1);
   if (_aimUrlChartPage > maxPage) _aimUrlChartPage = 0;
@@ -9488,7 +9271,7 @@ function aimRenderUrlLineChart() {
   if (descEl) descEl.textContent = total > 0 ? 'Top ' + (start+1) + '–' + end + ' of ' + total + ' URLs' : 'No URL data';
   if (rangeEl) rangeEl.textContent = total > 0 ? (start+1) + '–' + end : '0';
   if (!topUrls.length) { if (urlLegendEl) urlLegendEl.innerHTML = ''; container.innerHTML = ''; return; }
-  var activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  var activeProvKey = _urlActiveProvKey;
   var activeProvs = activeProvKey ? [activeProvKey] : _provOrder.filter(function(pk){ return topUrls.some(function(u){ return u.by_provider && u.by_provider[pk]; }); });
 
   // Legend
@@ -9644,7 +9427,7 @@ function aimRenderUrlHistoryChart() {
   var urlTotals = {};
   allDates.forEach(function(dt) {
     (urlByDate[dt] || []).forEach(function(u) {
-      if (_histProvUrls && !_histProvUrls.has(u.url)) return;
+      if (_histProvUrls && _histProvUrls.size > 0 && !_histProvUrls.has(u.url)) return;
       urlTotals[u.url] = (urlTotals[u.url]||0) + u.citation_count;
     });
   });
@@ -9701,7 +9484,7 @@ function aimRenderUrlDonut() {
     const _dtTotals = {};
     Object.keys(window._aimUrlsByDate).filter(_aimSrcDateInRange).forEach(dt => {
       (window._aimUrlsByDate[dt] || []).forEach(u => {
-        if (_donutProvUrls && !_donutProvUrls.has(u.url)) return;
+        if (_donutProvUrls && _donutProvUrls.size > 0 && !_donutProvUrls.has(u.url)) return;
         _dtTotals[u.url] = (_dtTotals[u.url]||0) + u.citation_count;
       });
     });
@@ -12737,6 +12520,20 @@ function aimApplySnapshot(snap) {
     var domCount = {}, domProv = {}, domByDate = {};
     var urlCount = {}, urlDom = {}, urlLbl = {}, urlProv = {}, urlByDate = {};
 
+    // Seed from original snap.top_source_urls BEFORE the history loop, so that
+    // by_provider and citation counts from the API are preserved even when
+    // prompt_response_history only contains domain strings (not full URLs).
+    (snap.top_source_urls || []).forEach(function(u) {
+      if (!u.url) return;
+      var _uk = u.url.split('?')[0];
+      if (urlCount[_uk] == null) urlCount[_uk] = u.citation_count || 0;
+      if (!urlDom[_uk] && u.domain) urlDom[_uk] = u.domain;
+      if (!urlLbl[_uk] && u.label) urlLbl[_uk] = u.label;
+      if (u.by_provider && Object.keys(u.by_provider).length && !urlProv[_uk]) {
+        urlProv[_uk] = Object.assign({}, u.by_provider);
+      }
+    });
+
     Object.keys(hist).forEach(function(promptId) {
       var dates = hist[promptId];
       Object.keys(dates).forEach(function(date) {
@@ -12777,6 +12574,27 @@ function aimApplySnapshot(snap) {
     });
 
     if (!Object.keys(domCount).length) return; // no history data — leave existing assignments intact
+
+    // When history responses have only domain strings (no full URLs), urlByDate stays empty.
+    // Approximate URL-by-date distribution using domain-date proportions from domByDate.
+    if (!Object.keys(urlByDate).length && Object.keys(domByDate).length && Object.keys(urlCount).length) {
+      var _dTots = {};
+      Object.keys(domByDate).forEach(function(date) {
+        Object.keys(domByDate[date]).forEach(function(d) { _dTots[d] = (_dTots[d]||0) + domByDate[date][d]; });
+      });
+      Object.keys(urlCount).forEach(function(uk) {
+        var dom = (urlDom[uk] || '').replace(/^www\./, '');
+        var tot = _dTots[dom] || 0;
+        if (!tot) return;
+        Object.keys(domByDate).forEach(function(date) {
+          var dc = domByDate[date][dom] || 0;
+          if (!dc) return;
+          var uc = Math.max(1, Math.round((urlCount[uk]||1) * dc / tot));
+          if (!urlByDate[date]) urlByDate[date] = {};
+          urlByDate[date][uk] = (urlByDate[date][uk]||0) + uc;
+        });
+      });
+    }
 
     var sortedDoms = Object.keys(domCount).sort(function(a,b){ return domCount[b]-domCount[a]; });
     var totalDomCits = sortedDoms.reduce(function(s,d){ return s+domCount[d]; }, 0);
@@ -17003,17 +16821,7 @@ function _aimNbFinishScan(title, desc) {
 
 function _aimNbCreateBrand() {
   var nb = _aimNewBrand;
-  var snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = {});
-  if (!snap.all_brands) snap.all_brands = [];
-  var newId = 'nb-' + Date.now();
-  var domain = nb.url.replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*$/,'');
-  var newBrand = {
-    id: newId, name: nb.name, domain: domain,
-    industry: nb.industry, location: nb.location,
-    promptCount: nb.prompts.length,
-    analysisEnabled: true,
-    lastAnalysisAt: new Date().toISOString(),
-  };
+  var snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = null;
   snap.all_brands.unshift(newBrand);
   // Add prompts to AIM_PROMPTS
   var baseId = AIM_PROMPTS.length + 1;
