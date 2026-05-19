@@ -2990,7 +2990,7 @@ window.AIM_INJECTED_DATA = null;
                     <th style="min-width:180px;">Brand</th>
                     <th style="width:200px;">Sentiment Split</th>
                     <th style="width:80px;">Visibility</th>
-                    <th style="width:80px;text-align:right;">Mentions</th>
+                    <th style="width:80px;text-align:center;">Mentions</th>
                     <th style="min-width:220px;">What AI models think</th>
                   </tr>
                 </thead>
@@ -8746,33 +8746,6 @@ function _aimCleanSnippet(s, maxLen) {
 
 function aimComputeCompInsight(b) {
   try {
-    // Main brand uses aim_se data to stay consistent with the overview donut chart
-    if (b.isMain) {
-      var seCount = aimSEGetCounts();
-      var seTotal = (seCount.positive||0)+(seCount.negative||0)+(seCount.neutral||0)+(seCount.uncertain||0);
-      var sePosR = seTotal ? Math.round(seCount.positive/seTotal*100) : 0;
-      var seNeuR = seTotal ? Math.round(((seCount.neutral||0)+(seCount.uncertain||0))/seTotal*100) : 0;
-      var seVis = Math.round(Math.min(100, aimGetBrandMetrics(b).vis || b.visibility || 0));
-      var seVisStr = seVis >= 30 ? 'in ' + seVis + '% of AI responses'
-        : seVis >= 10 ? 'in roughly ' + seVis + '% of tracked responses'
-        : seVis > 0 ? 'in about ' + seVis + '% of tracked responses' : 'in tracked AI responses';
-      var seSE = _aimSE || {};
-      var seAll = (seSE.positive||[]).concat(seSE.negative||[]).concat(seSE.neutral||[]).concat(seSE.uncertain||[]);
-      var seSnippet = '';
-      if (seAll.length) {
-        var seBest = seAll.reduce(function(best, e) {
-          return (_aimScoreSnippet(e.reason||'') > _aimScoreSnippet(best.reason||'')) ? e : best;
-        }, seAll[0]);
-        seSnippet = seBest ? (seBest.reason || '') : '';
-      }
-      var seSum = seSnippet && seSnippet.length >= 25 ? _aimCleanSnippet(seSnippet, 140)
-        : sePosR >= 50 ? 'Cited ' + seVisStr + ' with ' + sePosR + '% positive framing; consistently positioned as a recommended tool.'
-        : 'Present ' + seVisStr + '; ' + sePosR + '% positive, ' + seNeuR + '% neutral across tracked model responses.';
-      var seTip = seSnippet && seSnippet.length > 20
-        ? '<div style="font-size:12px;line-height:1.7;max-width:380px;color:var(--text)">' + aimEscHtml(seSnippet) + '</div>' : '';
-      return { summary: seSum, tipHtml: seTip };
-    }
-
     var data = _aimBuildCompMentionData();
     var nn = (b.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     var entry = _aimFuzzyLookup(data, nn);
@@ -8827,10 +8800,6 @@ function aimComputeCompInsight(b) {
 }
 
 function aimGetCompMentionCount(b) {
-  if (b.isMain) {
-    var c = aimSEGetCounts();
-    return (c.positive||0)+(c.negative||0)+(c.neutral||0)+(c.uncertain||0);
-  }
   var data = _aimBuildCompMentionData();
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   var entry = _aimFuzzyLookup(data, nn);
@@ -8845,8 +8814,11 @@ function aimShowCompInsightTip(el) {
   var b = AI_BRANDS.find(function(x) { return x.name === bn; });
   if (!b) return;
   var ins = aimComputeCompInsight(b);
-  if (!ins.tipHtml) return;
-  aimShowInfoTip(el, ins.tipHtml);
+  var html = ins.tipHtml || (ins.summary
+    ? '<div style="font-size:12px;line-height:1.7;max-width:380px;color:var(--text)">' + aimEscHtml(ins.summary) + '</div>'
+    : '');
+  if (!html) return;
+  aimShowInfoTip(el, html);
 }
 
 function aimCpSentPage(dir) {
@@ -8888,7 +8860,7 @@ function aimRenderCompSentimentTable() {
       </td>
       <td>${sentBar}</td>
       <td style="font-size:12px;font-weight:600;color:var(--text)">${vis.toFixed(0)}%</td>
-      <td style="font-size:12px;font-weight:600;color:var(--text);text-align:right;">${aimGetCompMentionCount(b) || '–'}</td>
+      <td style="font-size:12px;font-weight:600;color:var(--text);text-align:center;">${aimGetCompMentionCount(b) || '–'}</td>
       <td>${ins.summary ? `<span class="aim-comp-insight" data-bn="${aimEscHtml(b.name)}" style="cursor:default;color:var(--text-muted)" onmouseenter="aimShowCompInsightTip(this)" onmouseleave="aimHideInfoTip()">${ins.summary}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
     </tr>`;
     } catch(e) { console.error('[AIM] Row error:', b && b.name, e); return ''; }
