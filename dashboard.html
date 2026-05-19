@@ -2848,14 +2848,16 @@ window.AIM_INJECTED_DATA = {
       <div class="page-content">
         <div class="card" style="overflow:hidden;">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border-light);gap:10px;flex-wrap:wrap;">
-            <div class="aim-tab-bar" id="aim-pr-tabs" style="margin-bottom:0;">
-              <button class="aim-tab active" onclick="aimSetPromptsTab('Active')">Active</button>
-              <button class="aim-tab" onclick="aimSetPromptsTab('Suggested')">Suggested</button>
-              <button class="aim-tab" onclick="aimSetPromptsTab('Inactive')">Inactive</button>
-            </div>
-            <div class="aim-search-wrap">
-              <svg class="aim-search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input class="aim-search-input" id="aim-pr-search" placeholder="Search prompts..." oninput="aimFilterPromptsSearch()" style="width:200px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="aim-tab-bar" id="aim-pr-tabs" style="margin-bottom:0;">
+                <button class="aim-tab active" onclick="aimSetPromptsTab('Active')">Active</button>
+                <button class="aim-tab" onclick="aimSetPromptsTab('Suggested')">Suggested</button>
+                <button class="aim-tab" onclick="aimSetPromptsTab('Inactive')">Inactive</button>
+              </div>
+              <div class="aim-search-wrap">
+                <svg class="aim-search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <input class="aim-search-input" id="aim-pr-search" placeholder="Search prompts..." oninput="aimFilterPromptsSearch()" style="width:170px;">
+              </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--text-muted);">
@@ -3172,7 +3174,7 @@ window.AIM_INJECTED_DATA = {
         <div class="aim-sr-chart-grid" style="display:grid;grid-template-columns:1fr 280px;gap:18px;margin-bottom:18px;">
           <div class="card">
             <div class="card-header"><div><div class="card-title">Top URL Citations by Provider</div><div class="card-desc">Citation breakdown for the top 6 URLs across AI providers</div></div></div>
-            <div class="card-body"><div id="aim-url-line-legend" class="chart-legend" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;"></div><div class="chart-wrap" style="height:220px;"><canvas id="aim-url-line-chart"></canvas></div></div>
+            <div class="card-body"><div id="aim-url-line-legend" class="chart-legend" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;"></div><div id="aim-url-line-chart" style="min-height:160px;padding:4px 0;"></div></div>
           </div>
           <div class="card">
             <div class="card-header"><div class="card-title">Content Type</div></div>
@@ -9151,51 +9153,82 @@ function aimRenderSourceDonut() {
 }
 
 function aimRenderUrlLineChart() {
-  const ctx = document.getElementById('aim-url-line-chart');
-  if (!ctx) return;
-  if (aimChartInstances['urlLine']) { aimChartInstances['urlLine'].destroy(); delete aimChartInstances['urlLine']; }
-  const urlLegendEl = document.getElementById('aim-url-line-legend');
-  const _provDisplay = { chatgpt:'ChatGPT', googleaimode:'AI Mode', googleaio:'AI Overview', perplexity:'Perplexity', gemini:'Gemini' };
-  const _provColors  = { chatgpt:'#10a37f', googleaimode:'#06b6d4', googleaio:'#f59e0b', perplexity:'#8b5cf6', gemini:'#4285f4' };
-  const _provOrder   = ['chatgpt','googleaimode','googleaio','perplexity','gemini'];
-  const topUrls = (window._aimTopSourceUrls || []).slice(0, 6);
-  if (!topUrls.length) { if (urlLegendEl) urlLegendEl.innerHTML = ''; return; }
-  const activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
-  const labels = topUrls.map(u => (u.domain || '').replace(/^www\./, ''));
-  if (activeProvKey) {
-    const color = _provColors[activeProvKey] || '#6b7280';
-    const data = topUrls.map(u => (u.by_provider && u.by_provider[activeProvKey]) || 0);
-    const _provDomains = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
-    if (urlLegendEl) urlLegendEl.innerHTML = `<div class="chart-legend-item" style="gap:5px;">${aimBrandIcon(_provDomains[activeProvKey]||'',_provDisplay[activeProvKey]||activeProvKey,14)}${_provDisplay[activeProvKey]||activeProvKey}</div>`;
-    aimChartInstances['urlLine'] = new Chart(ctx, {
-      type:'bar',
-      data:{labels, datasets:[{label:_provDisplay[activeProvKey]||activeProvKey, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:3}]},
-      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{enabled:false, external:(function(){const _pDom={'ChatGPT':'openai.com','AI Mode':'google.com','AI Overview':'google.com','Perplexity':'perplexity.ai','Gemini':'gemini.google.com'};return function({chart,tooltip}){let el=document.getElementById('aim-url-line-tt');if(!el){el=document.createElement('div');el.id='aim-url-line-tt';el.className='aim-chart-tooltip';el.style.cssText='position:fixed;pointer-events:none;z-index:9999';document.body.appendChild(el);}if(tooltip.opacity===0){el.style.opacity='0';return;}const ttl=tooltip.title?.[0]||'';el.innerHTML='<div class="aim-ct-title">'+ttl+'</div>'+(tooltip.dataPoints||[]).filter(dp=>dp.raw>0).map(dp=>{const lbl=dp.dataset.label||'';const icon=aimBrandIcon(_pDom[lbl]||'',lbl,14);return '<div class="aim-ct-row">'+icon+'<span class="aim-ct-label">'+lbl+'</span><span class="aim-ct-val">'+dp.raw+'</span></div>';}).join('');el.style.opacity='1';const rect=chart.canvas.getBoundingClientRect();let left=rect.left+tooltip.caretX+14,top=rect.top+tooltip.caretY-10;if(left+240>window.innerWidth-8)left=rect.left+tooltip.caretX-248;el.style.left=Math.max(8,left)+'px';el.style.top=Math.max(8,Math.min(top,window.innerHeight-220))+'px';};}())}},
-        scales:{x:{beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.03)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}
-    });
-  } else {
-    const _provDomains2 = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
-    const activeProvs = _provOrder.filter(pk => topUrls.some(u => u.by_provider && u.by_provider[pk]));
-    const datasets = activeProvs.map(pk => ({
-      label:_provDisplay[pk]||pk,
-      data:topUrls.map(u => (u.by_provider && u.by_provider[pk]) || 0),
-      backgroundColor:(_provColors[pk]||'#6b7280')+'cc',
-      borderColor:_provColors[pk]||'#6b7280',
-      borderWidth:1, borderRadius:3
-    }));
-    if (urlLegendEl) urlLegendEl.innerHTML = _provOrder.map(pk => {
-      const hasData = activeProvs.includes(pk);
-      return `<div class="chart-legend-item" style="gap:5px;${hasData?'':'opacity:0.35;'}">${aimBrandIcon(_provDomains2[pk]||'',_provDisplay[pk]||pk,14)}${_provDisplay[pk]||pk}</div>`;
+  var container = document.getElementById('aim-url-line-chart');
+  if (!container) return;
+  var urlLegendEl = document.getElementById('aim-url-line-legend');
+  var _provDisplay = { chatgpt:'ChatGPT', googleaimode:'AI Mode', googleaio:'AI Overview', perplexity:'Perplexity', gemini:'Gemini' };
+  var _provColors  = { chatgpt:'#10a37f', googleaimode:'#06b6d4', googleaio:'#f59e0b', perplexity:'#8b5cf6', gemini:'#4285f4' };
+  var _provOrder   = ['chatgpt','googleaimode','googleaio','perplexity','gemini'];
+  var _provDomains = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
+  var topUrls = (window._aimTopSourceUrls || []).slice(0, 6);
+  if (!topUrls.length) { if (urlLegendEl) urlLegendEl.innerHTML = ''; container.innerHTML = ''; return; }
+  var activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  var activeProvs = activeProvKey ? [activeProvKey] : _provOrder.filter(function(pk){ return topUrls.some(function(u){ return u.by_provider && u.by_provider[pk]; }); });
+
+  // Legend
+  if (urlLegendEl) urlLegendEl.innerHTML = _provOrder.map(function(pk) {
+    var hasData = activeProvs.indexOf(pk) >= 0;
+    return '<div class="chart-legend-item" style="gap:5px;' + (hasData ? '' : 'opacity:0.35;') + '">' + aimBrandIcon(_provDomains[pk]||'', _provDisplay[pk]||pk, 14) + (_provDisplay[pk]||pk) + '</div>';
+  }).join('');
+
+  // Max total value across all rows for bar scaling
+  var maxVal = 0;
+  topUrls.forEach(function(u) {
+    var t = activeProvs.reduce(function(s,pk){ return s + ((u.by_provider && u.by_provider[pk]) || 0); }, 0);
+    if (t > maxVal) maxVal = t;
+  });
+
+  // Render HTML horizontal bars with favicons
+  container.innerHTML = topUrls.map(function(u) {
+    var domain = (u.domain || '').replace(/^www\./, '');
+    var total  = activeProvs.reduce(function(s,pk){ return s + ((u.by_provider && u.by_provider[pk]) || 0); }, 0);
+    var barWidthPct = maxVal > 0 ? (total / maxVal * 100) : 0;
+    var provBreakdown = JSON.stringify(activeProvs.map(function(pk){ return {pk:pk, v:(u.by_provider&&u.by_provider[pk])||0}; }));
+    var segments = activeProvs.map(function(pk) {
+      var val = (u.by_provider && u.by_provider[pk]) || 0;
+      if (!val || !total) return '';
+      var pct = (val / total * 100).toFixed(1);
+      return '<div style="height:100%;width:' + pct + '%;background:' + _provColors[pk] + 'dd;flex-shrink:0;" title="' + aimEscHtml(_provDisplay[pk]) + ': ' + val + '"></div>';
     }).join('');
-    aimChartInstances['urlLine'] = new Chart(ctx, {
-      type:'bar',
-      data:{labels, datasets},
-      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{enabled:false, external:(function(){const _pDom={'ChatGPT':'openai.com','AI Mode':'google.com','AI Overview':'google.com','Perplexity':'perplexity.ai','Gemini':'gemini.google.com'};return function({chart,tooltip}){let el=document.getElementById('aim-url-line-tt');if(!el){el=document.createElement('div');el.id='aim-url-line-tt';el.className='aim-chart-tooltip';el.style.cssText='position:fixed;pointer-events:none;z-index:9999';document.body.appendChild(el);}if(tooltip.opacity===0){el.style.opacity='0';return;}const ttl=tooltip.title?.[0]||'';el.innerHTML='<div class="aim-ct-title">'+ttl+'</div>'+(tooltip.dataPoints||[]).filter(dp=>dp.raw>0).map(dp=>{const lbl=dp.dataset.label||'';const icon=aimBrandIcon(_pDom[lbl]||'',lbl,14);return '<div class="aim-ct-row">'+icon+'<span class="aim-ct-label">'+lbl+'</span><span class="aim-ct-val">'+dp.raw+'</span></div>';}).join('');el.style.opacity='1';const rect=chart.canvas.getBoundingClientRect();let left=rect.left+tooltip.caretX+14,top=rect.top+tooltip.caretY-10;if(left+240>window.innerWidth-8)left=rect.left+tooltip.caretX-248;el.style.left=Math.max(8,left)+'px';el.style.top=Math.max(8,Math.min(top,window.innerHeight-220))+'px';};}())}},
-        scales:{x:{stacked:true,beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.03)'}},y:{stacked:true,ticks:{font:{size:11}},grid:{display:false}}}}
-    });
-  }
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:default;"'
+      + ' data-domain="' + aimEscHtml(domain) + '" data-bp="' + aimEscHtml(provBreakdown) + '"'
+      + ' onmouseenter="aimShowUrlBarTip(this,event)" onmouseleave="aimHideUrlBarTip()">'
+      + '<div style="display:flex;align-items:center;gap:4px;width:130px;flex-shrink:0;overflow:hidden;">'
+      + '<img src="https://www.google.com/s2/favicons?domain=' + aimEscHtml(domain) + '&sz=32" style="width:13px;height:13px;border-radius:2px;flex-shrink:0;" onerror="this.style.display=\'none\'">'
+      + '<span style="font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + aimEscHtml(domain) + '</span>'
+      + '</div>'
+      + '<div style="flex:1;height:18px;border-radius:3px;overflow:hidden;background:var(--surface-alt,#f8f8f8);display:flex;">'
+      + '<div style="width:' + barWidthPct.toFixed(1) + '%;display:flex;overflow:hidden;">' + segments + '</div>'
+      + '</div>'
+      + '<span style="width:28px;text-align:right;font-size:11px;color:var(--text-muted);flex-shrink:0;">' + total + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function aimShowUrlBarTip(el, evt) {
+  var domain = el.dataset.domain || '';
+  var tipItems = [];
+  try { tipItems = JSON.parse(el.dataset.bp || '[]'); } catch(e) {}
+  var _provDisplay = { chatgpt:'ChatGPT', googleaimode:'AI Mode', googleaio:'AI Overview', perplexity:'Perplexity', gemini:'Gemini' };
+  var _provDomains = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
+  var tt = document.getElementById('aim-url-bar-tt');
+  if (!tt) { tt = document.createElement('div'); tt.id = 'aim-url-bar-tt'; tt.className = 'aim-chart-tooltip'; tt.style.cssText = 'position:fixed;pointer-events:none;z-index:9999'; document.body.appendChild(tt); }
+  tt.innerHTML = '<div class="aim-ct-title">' + aimEscHtml(domain) + '</div>'
+    + tipItems.filter(function(d){ return d.v > 0; }).map(function(d) {
+      return '<div class="aim-ct-row">' + aimBrandIcon(_provDomains[d.pk]||'', _provDisplay[d.pk]||d.pk, 14)
+        + '<span class="aim-ct-label">' + aimEscHtml(_provDisplay[d.pk]||d.pk) + '</span>'
+        + '<span class="aim-ct-val">' + d.v + '</span></div>';
+    }).join('');
+  tt.style.opacity = '1';
+  var left = evt.clientX + 14, top = evt.clientY - 10;
+  if (left + 240 > window.innerWidth - 8) left = evt.clientX - 248;
+  tt.style.left = Math.max(8, left) + 'px';
+  tt.style.top = Math.max(8, Math.min(top, window.innerHeight - 200)) + 'px';
+}
+
+function aimHideUrlBarTip() {
+  var tt = document.getElementById('aim-url-bar-tt');
+  if (tt) tt.style.opacity = '0';
 }
 
 function aimHeatmapPage(dir) {
@@ -12045,12 +12078,13 @@ function aimApplySnapshot(snap) {
 
             // URL aggregates (only when we have a real URL)
             if (url) {
-              urlCount[url] = (urlCount[url] || 0) + 1;
-              if (!urlDom[url]) urlDom[url] = domain;
-              if (!urlLbl[url] && label !== domain) urlLbl[url] = label;
-              if (!urlProv[url]) urlProv[url] = {};
+              var urlKey = url.split('?')[0];
+              urlCount[urlKey] = (urlCount[urlKey] || 0) + 1;
+              if (!urlDom[urlKey]) urlDom[urlKey] = domain;
+              if (!urlLbl[urlKey] && label !== domain) urlLbl[urlKey] = label;
+              if (!urlProv[urlKey]) urlProv[urlKey] = {};
               var _upk=(function(k){k=(k||'').toLowerCase();if(/^gpt|^o[13]|^chatgpt/.test(k))return'chatgpt';if(/^gemini|^bard/.test(k))return'gemini';if(/^perplexity|^sonar/.test(k))return'perplexity';if(k==='googleaio')return'googleaio';if(k==='googleaimode')return'googleaimode';return k;})(provKey);
-              urlProv[url][_upk]=(urlProv[url][_upk]||0)+1;
+              urlProv[urlKey][_upk]=(urlProv[urlKey][_upk]||0)+1;
             }
           });
         });
@@ -13061,9 +13095,10 @@ function _aimGetAllUrls() {
   // Seed from pre-built top_source_urls (accurate counts, richer metadata)
   (snap.top_source_urls || []).forEach(function(u) {
     if (!u.url) return;
-    urlCount[u.url] = u.citation_count || 0;
-    urlMeta[u.url]  = { domain: u.domain || '', label: u.label || '' };
-    urlProv[u.url]  = u.by_provider || {};
+    var _sk = u.url.split('?')[0];
+    urlCount[_sk] = u.citation_count || 0;
+    urlMeta[_sk]  = { domain: u.domain || '', label: u.label || '' };
+    urlProv[_sk]  = u.by_provider || {};
   });
 
   // Extend from prompt_response_history (full citation corpus)
@@ -13080,14 +13115,15 @@ function _aimGetAllUrls() {
           var domain = (typeof s.domain === 'string' ? s.domain : '') || (url ? url.replace(/^https?:\/\/([^\/]+).*/, '$1').replace(/^www\./, '') : '');
           var label  = (typeof s.label === 'string' ? s.label : '') || (typeof s.title === 'string' ? s.title : '') || domain;
           if (!url || !domain) return;
-          if (urlCount[url] == null) {
-            urlCount[url] = 0;
-            urlMeta[url]  = { domain: domain, label: label };
-            urlProv[url]  = {};
+          var urlKey2 = url.split('?')[0];
+          if (urlCount[urlKey2] == null) {
+            urlCount[urlKey2] = 0;
+            urlMeta[urlKey2]  = { domain: domain, label: label };
+            urlProv[urlKey2]  = {};
           }
-          urlCount[url]++;
+          urlCount[urlKey2]++;
           var _upk2=(function(k){k=(k||'').toLowerCase();if(/^gpt|^o[13]|^chatgpt/.test(k))return'chatgpt';if(/^gemini|^bard/.test(k))return'gemini';if(/^perplexity|^sonar/.test(k))return'perplexity';if(k==='googleaio')return'googleaio';if(k==='googleaimode')return'googleaimode';return k;})(provKey);
-          urlProv[url][_upk2]=(urlProv[url][_upk2]||0)+1;
+          urlProv[urlKey2][_upk2]=(urlProv[urlKey2][_upk2]||0)+1;
         });
         // Also count domain-level hits from plain sources array (when source_objects absent)
         if (!srcObjs.length) {
