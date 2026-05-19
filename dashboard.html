@@ -6496,14 +6496,15 @@ function aimRenderCompetitorsTablePage() {
   if (!tbody) return;
 
   // Separate main brand from competitors.
-  // Sort + display use CE scores (b.visibility) — the API-authoritative values.
-  // aimGetBrandMetrics averages brand_timeline from our 38 tracked prompts only,
-  // which badly under-represents tools like SEMrush that rarely appear in
-  // Peekaboo-focused queries but rank high in the global CE endpoint.
+  // Sort + display use aimGetBrandMetrics so both date and model filters are applied.
   const mainBrand = AI_BRANDS.find(b => b.isMain);
+  // Pre-compute filtered metrics for each brand once to avoid redundant calls
+  const _compMetrics = new Map();
+  AI_BRANDS.forEach(b => { _compMetrics.set(b.id, aimGetBrandMetrics(b)); });
+
   const competitors = AI_BRANDS.filter(b => !b.isMain)
     .slice()
-    .sort((a, b) => (b.visibility ?? 0) - (a.visibility ?? 0));
+    .sort((a, b) => (_compMetrics.get(b.id).vis ?? 0) - (_compMetrics.get(a.id).vis ?? 0));
 
   const start = aimCompPageIdx * AIM_COMP_PAGE_SIZE;
   const end = Math.min(start + AIM_COMP_PAGE_SIZE, competitors.length);
@@ -6514,9 +6515,10 @@ function aimRenderCompetitorsTablePage() {
   // Build paginated competitor rows
   const competitorRows = pageCompetitors.map((b, idx) => {
     const rank = start + idx + 1;
-    const vis  = parseFloat((b.visibility ?? 0).toFixed(1));
-    const pos  = b.position != null ? parseFloat(b.position).toFixed(1) : null;
-    const sent = b.sentiment ?? 50;
+    const metrics = _compMetrics.get(b.id);
+    const vis  = parseFloat((metrics.vis ?? 0).toFixed(1));
+    const pos  = metrics.pos != null ? parseFloat(metrics.pos).toFixed(1) : null;
+    const sent = metrics.sent ?? 50;
     const sentInfo = aimSentimentLabel(sent);
     return `<tr>
       <td style="width:28px;font-size:11px;color:var(--text-faint)">${rank}</td>
@@ -6530,13 +6532,13 @@ function aimRenderCompetitorsTablePage() {
     </tr>`;
   }).join('');
 
-  // Build pinned main-brand row (always last, rank = actual rank among all brands by vis)
+  // Build pinned main-brand row (always last, rank = actual rank among all brands by filtered vis)
   let mainBrandRow = '';
   if (mainBrand) {
-    // Rank = position among all brands sorted by CE visibility score
-    const allSorted = AI_BRANDS.slice().sort((a, b) => (b.visibility ?? 0) - (a.visibility ?? 0));
+    // Rank = position among all brands sorted by filtered visibility score
+    const allSorted = AI_BRANDS.slice().sort((a, b) => (_compMetrics.get(b.id).vis ?? 0) - (_compMetrics.get(a.id).vis ?? 0));
     const mainRank = allSorted.findIndex(b => b.isMain) + 1;
-    const { vis, sent, pos } = aimGetBrandMetrics(mainBrand);
+    const { vis, sent, pos } = _compMetrics.get(mainBrand.id);
     const sentInfo = aimSentimentLabel(sent);
     mainBrandRow = `<tr class="main-brand" style="border-top:1.5px solid rgba(179,82,179,0.25)">
       <td style="width:28px;font-size:11px;color:var(--text-faint)">${mainRank}</td>
@@ -6681,9 +6683,16 @@ function aimRenderRecentChats() {
     }
     allSource = _filtered;
   } else {
-    allSource = aimRecentMentionedOnly
+    // Fallback path: filter AIM_RECENT_CHATS by date and model filters
+    const _fallbackPool = aimRecentMentionedOnly
       ? (AIM_MENTIONED_CHATS.length > 0 ? AIM_MENTIONED_CHATS : AIM_RECENT_CHATS.filter(c => c.is_mentioned === 1))
       : AIM_RECENT_CHATS;
+    allSource = _fallbackPool.filter(c => {
+      const iso = c.iso_date || c.date || '';
+      if (!_withinDateFilter(iso)) return false;
+      if (activeModel && c.model !== activeModel) return false;
+      return true;
+    });
   }
 
   const total = allSource.length;
@@ -6865,13 +6874,12 @@ function aimRenderPromptsTable() {
     const visIdx = AIM_PROMPTS.findIndex(ap => ap.id === p.id);
     const vis = Math.min(100, Math.round((promptVisArr[visIdx] ?? p.visibility) * dateCfg.df));
     const sent = Math.min(100, Math.round(p.sentiment * dateCfg.df));
-    const pos = p.position != null ? parseFloat(p.position).toFixed(1) : null;
     const sentInfo = aimSentimentLabel(sent);
     const checked = aimCheckedPrompts.has(p.id);
     if (aimPromptsTab === 'Inactive') {
       const _topicColor = (AIM_TOPIC_COLORS && AIM_TOPIC_COLORS[p.topic]) || '#6b7280';
-      const _topicCell = p.topic ? '<span class="aim-topic-badge" style="cursor:pointer" onclick="aimPrTopicPop(this,' + p.id + ')"><span style="color:' + _topicColor + ';font-size:7px;line-height:1">●</span>' + aimEscHtml(p.topic) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">—</span>';
-      const _intentCell = p.intent ? '<span class="aim-intent-badge ' + (p.intent||'').toLowerCase() + '" style="cursor:pointer" onclick="aimPrIntentPop(this,' + p.id + ')">' + aimEscHtml(p.intent) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">—</span>';
+      const _topicCell = p.topic ? '<span class="aim-topic-badge" style="cursor:pointer" onclick="aimPrTopicPop(this,' + p.id + ')"><span style="color:' + _topicColor + ';font-size:7px;line-height:1">&#9679;</span>' + aimEscHtml(p.topic) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">&#8211;</span>';
+      const _intentCell = p.intent ? '<span class="aim-intent-badge ' + (p.intent||'').toLowerCase() + '" style="cursor:pointer" onclick="aimPrIntentPop(this,' + p.id + ')">' + aimEscHtml(p.intent) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">&#8211;</span>';
       return `<tr onclick="aimOpenPromptDetail(${p.id})" style="cursor:pointer">
         <td onclick="event.stopPropagation()"><input type="checkbox" ${checked?'checked':''} onchange="aimToggleCheck(${p.id},this.checked)" style="cursor:pointer;accent-color:var(--accent);width:13px;height:13px"></td>
         <td class="col-left" style="min-width:260px"><div class="aim-prompt-text">${aimEscHtml(p.text)}</div></td>
@@ -6882,6 +6890,9 @@ function aimRenderPromptsTable() {
     }
     const _apId = 'ap' + (AIM_PROMPTS.findIndex(ap => ap.id === p.id) + 1);
     const _pd = _aimGetPromptData(p.id, _apId);
+    // Position: prefer filtered avg from _aimGetPromptData; fall back to static p.position only when no filtered data
+    const _filteredPos = _pd?.avgPosition ?? null;
+    const pos = _filteredPos !== null ? parseFloat(_filteredPos).toFixed(1) : (p.position != null ? parseFloat(p.position).toFixed(1) : null);
     // Mentions column: top 3 brand favicons, each with white popup tooltip
     const _brandFavs = (_pd?.topBrands || []).map(name => {
       const domain = _aimBrandNameToDomain(name);
@@ -6906,10 +6917,10 @@ function aimRenderPromptsTable() {
       <td class="col-left" style="min-width:260px"><div class="aim-prompt-text">${aimEscHtml(p.text)}</div></td>
       <td><span class="aim-vis-pct ${vis>=60?'high':vis>=35?'mid':'low'}">${vis}%</span></td>
       <td><span class="aim-sent-badge ${sentInfo.cls}">${sentInfo.label}</span></td>
-      <td><span class="aim-pos-val">${pos != null ? '#' + parseFloat(pos).toFixed(1) : '–'}</span></td>
+      <td><span class="aim-pos-val">${pos !== null ? '#' + pos : '&#8211;'}</span></td>
       <td>${_mentionsCell}</td>
       <td>${_citeCell}</td>
-      <td onclick="event.stopPropagation()">${p.topic ? '<span class="aim-topic-badge" style="cursor:pointer" onclick="aimPrTopicPop(this,' + p.id + ')"><span style="color:' + (AIM_TOPIC_COLORS[p.topic]||'#6b7280') + ';font-size:7px;line-height:1">●</span>' + aimEscHtml(p.topic) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
+      <td onclick="event.stopPropagation()">${p.topic ? '<span class="aim-topic-badge" style="cursor:pointer" onclick="aimPrTopicPop(this,' + p.id + ')"><span style="color:' + (AIM_TOPIC_COLORS[p.topic]||'#6b7280') + ';font-size:7px;line-height:1">&#9679;</span>' + aimEscHtml(p.topic) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">&#8211;</span>'}</td>
       <td onclick="event.stopPropagation()">${p.intent ? '<span class="aim-intent-badge ' + p.intent.toLowerCase() + '" style="cursor:pointer" onclick="aimPrIntentPop(this,' + p.id + ')">' + aimEscHtml(p.intent) + '</span>' : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
     </tr>`;
   }).join('');
@@ -7156,42 +7167,28 @@ function aimAddSuggestedPrompt(id, el) {
 
   const noData = dates.length === 0 ? '<div style="color:var(--text-faint);font-size:13px;padding:20px 0">No response history available yet. Run the pipeline to collect data.</div>' : '';
 
-  // Aggregate most-mentioned brands across all history
-  const _pdBrands = {};
-  Object.values(history).forEach(byProv => {
-    Object.values(byProv).forEach(chat => {
-      (chat.brands || []).forEach(b => { _pdBrands[b] = (_pdBrands[b] || 0) + 1; });
+  // Aggregate top brands, citations, and avg position using filtered data (respects date + model filters)
+  const _pdDetailApId = 'ap' + (AIM_PROMPTS.findIndex(ap => ap.id === id) + 1);
+  const _pdActiveM = aimFilterModel !== 'all' ? (AIM_PROVIDER_DISPLAY[aimFilterModel] || null) : null;
+  const _pdBrandCounts = {}, _pdDomainCounts = {}, _pdPosVals = [];
+  if (window._aimAllResponses && window._aimAllResponses.length) {
+    window._aimAllResponses.forEach(r => {
+      if (r.prompt_numeric_id !== id && r.prompt_id !== _pdDetailApId) return;
+      if (!_aimSrcDateInRange(r.iso_date || r.date)) return;
+      if (_pdActiveM && r.model !== _pdActiveM) return;
+      (r.brands || []).forEach(b => { const k = (b || '').trim(); if (k) _pdBrandCounts[k] = (_pdBrandCounts[k] || 0) + 1; });
+      (r.source_objects || r.sources || []).forEach(s => {
+        const url = typeof s === 'string' ? s : (s.url || s.link || '');
+        if (!url || !url.startsWith('http')) return;
+        try { const d = new URL(url).hostname.replace(/^www\./, ''); _pdDomainCounts[d] = (_pdDomainCounts[d] || 0) + 1; } catch(e) {}
+      });
+      if (r.position != null && r.position > 0) _pdPosVals.push(r.position);
     });
-  });
-  Object.values(latestByProv).forEach(chat => {
-    (chat.brands || []).forEach(b => { _pdBrands[b] = (_pdBrands[b] || 0) + 1; });
-  });
-  const _pdTopBrands = Object.entries(_pdBrands).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n])=>n);
-
-  // Aggregate most-cited domains across all history
-  const _pdCites = {};
-  const _pdExtractSrcs = chat => chat.source_objects && chat.source_objects.length ? chat.source_objects : (chat.sources||[]).filter(Boolean).map(s=>({domain:typeof s==='string'?s:(s.domain||'')}));
-  Object.values(history).forEach(byProv => {
-    Object.values(byProv).forEach(chat => {
-      _pdExtractSrcs(chat).forEach(s => { const d = s.domain||s; if(d && typeof d==='string' && d.includes('.')) _pdCites[d] = (_pdCites[d]||0)+1; });
-    });
-  });
-  Object.values(latestByProv).forEach(chat => {
-    _pdExtractSrcs(chat).forEach(s => { const d = s.domain||s; if(d && typeof d==='string' && d.includes('.')) _pdCites[d] = (_pdCites[d]||0)+1; });
-  });
-  const _pdTopCites = Object.entries(_pdCites).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([d])=>d);
-
-  // Avg position across all history with deterministic dummy fallback
-  const _pdPosAll = [];
-  Object.entries(history).forEach(([hDate, byP]) => {
-    Object.entries(byP).forEach(([pk, chat]) => {
-      _pdPosAll.push(chat._aim_position ?? chat.position ?? null);
-    });
-  });
-  Object.entries(latestByProv).forEach(([pk, chat]) => {
-    _pdPosAll.push(chat._aim_position ?? chat.position ?? null);
-  });
-  const _pdAvgPos = _pdPosAll.length ? (_pdPosAll.reduce((s,v)=>s+v,0)/_pdPosAll.length).toFixed(1) : '2.4';
+  }
+  const _pdTopBrands = Object.entries(_pdBrandCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n]) => n);
+  const _pdTopCites = Object.entries(_pdDomainCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([d]) => d);
+  const _pdAvgPosNum = _pdPosVals.length ? (_pdPosVals.reduce((s, v) => s + v, 0) / _pdPosVals.length).toFixed(1) : null;
+  const _pdAvgPos = _pdAvgPosNum;
 
   const _pdBrandIcons = _pdTopBrands.slice(0,4).map(b => {
     const br = typeof AI_BRANDS !== 'undefined' ? AI_BRANDS.find(x => x.name === b || x.name.toLowerCase() === b.toLowerCase()) : null;
@@ -7224,7 +7221,7 @@ function aimAddSuggestedPrompt(id, el) {
           <div style="display:flex;gap:20px;flex-shrink:0">
             <div><div style="font-size:20px;font-weight:700;color:var(--accent)">${vis}%</div><div style="font-size:11px;color:var(--text-muted)">Visibility</div></div>
             <div><div style="font-size:20px;font-weight:700;line-height:1.4"><span class="aim-sent-badge ${sentInfo.cls}">${sentInfo.label}</span></div><div style="font-size:11px;color:var(--text-muted)">Sentiment</div></div>
-            <div><div style="font-size:20px;font-weight:700;color:var(--text-muted)">#${_pdAvgPos}</div><div style="font-size:11px;color:var(--text-muted)">Avg Position</div></div>
+            <div><div style="font-size:20px;font-weight:700;color:var(--text-muted)">${_pdAvgPos != null ? '#' + _pdAvgPos : '&#8211;'}</div><div style="font-size:11px;color:var(--text-muted)">Avg Position</div></div>
             <div><div style="font-size:20px;font-weight:700;color:var(--text-muted)">${dates.length}</div><div style="font-size:11px;color:var(--text-muted)">Run days</div></div>
           </div>
           <div style="border-left:1px solid var(--border);padding-left:18px;margin-left:18px;flex-shrink:0">
@@ -7636,10 +7633,15 @@ function aimSEGetFiltered() {
   if (!_aimSE) _aimSE = aimBuildSE();
   var SE = _aimSE || { positive: [], negative: [], neutral: [], uncertain: [] };
   var catF = _aimSentFilters.cat;
+  // Apply top-nav date and model filters in addition to category filter
+  var activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
   var result = {};
   ['positive', 'negative', 'neutral', 'uncertain'].forEach(function(t) {
     result[t] = (SE[t] || []).filter(function(x) {
-      return (catF === 'all' || x.category === catF);
+      if (catF !== 'all' && x.category !== catF) return false;
+      if (!_aimSrcDateInRange(x.date || '')) return false;
+      if (activeProvKey && x.model !== activeProvKey) return false;
+      return true;
     });
   });
   return result;
@@ -8120,18 +8122,47 @@ function aimCpMentionsPage(dir) {
 function aimRenderCompMentionsChart() {
   const el = document.getElementById('aim-cp-mentions-chart');
   if (!el) return;
-  const sorted = [...AI_BRANDS].sort((a,b) => aimGetBrandMetrics(b).vis * _aimTopicMult(b.name) - aimGetBrandMetrics(a).vis * _aimTopicMult(a.name));
-  const maxVis = aimGetBrandMetrics(sorted[0]).vis * _aimTopicMult(sorted[0].name) || 1;
+
+  // Build filtered mention counts from _aimAllResponses when date or model filter is active
+  const _mcProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  const _mcUseFiltered = (aimFilterDate !== 'all' || _mcProvKey) && window._aimAllResponses && window._aimAllResponses.length;
+  const _mcCounts = {};
+  if (_mcUseFiltered) {
+    window._aimAllResponses.forEach(function(r) {
+      if (_mcProvKey && r.provider_key !== _mcProvKey) return;
+      if (!_aimSrcDateInRange(r.iso_date || r.date)) return;
+      (r.brands || []).forEach(function(brandName) {
+        if (!brandName || typeof brandName !== 'string') return;
+        var nn = brandName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (nn) _mcCounts[nn] = (_mcCounts[nn] || 0) + 1;
+      });
+    });
+  }
+
+  function _mcScore(b) {
+    if (_mcUseFiltered) {
+      var nn = (b.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return _mcCounts[nn] || 0;
+    }
+    return aimGetBrandMetrics(b).vis * _aimTopicMult(b.name);
+  }
+
+  const sorted = [...AI_BRANDS].sort((a, b) => _mcScore(b) - _mcScore(a));
+  const maxScore = _mcScore(sorted[0]) || 1;
   const page = aimCompMentionsPage;
   const total = sorted.length;
   const start = page * AIM_COMP_PAGE_SIZE;
   const end = Math.min(start + AIM_COMP_PAGE_SIZE, total);
   const slice = sorted.slice(start, end);
   el.innerHTML = slice.map((b, i) => {
-    const vis = Math.min(100, aimGetBrandMetrics(b).vis * _aimTopicMult(b.name));
-    const pct = (vis / maxVis * 100).toFixed(1);
+    const score = _mcScore(b);
+    const pct = (score / maxScore * 100).toFixed(1);
     const barColor = b.isMain ? '#b352b3' : (b.color || '#94a3b8');
     const youBadge = b.isMain ? `<span class="aim-you-badge" style="margin-left:5px;flex-shrink:0">You</span>` : '';
+    // Show raw mention count when filtered by date/model, vis% when using full timeline data
+    const label = _mcUseFiltered
+      ? score.toString()
+      : Math.min(100, aimGetBrandMetrics(b).vis * _aimTopicMult(b.name)).toFixed(0) + '%';
     return `<div class="aim-comp-bar-row" style="flex:1;${b.isMain ? 'background:linear-gradient(90deg,rgba(248,200,255,0.09),transparent);' : ''}">
       <span class="aim-comp-bar-rank">${start + i + 1}</span>
       <div class="aim-comp-bar-info">
@@ -8141,7 +8172,7 @@ function aimRenderCompMentionsChart() {
       <div class="aim-comp-bar-track">
         <div class="aim-comp-bar-fill" style="width:${pct}%;background:${barColor};"></div>
       </div>
-      <span class="aim-comp-bar-pct">${vis.toFixed(0)}%</span>
+      <span class="aim-comp-bar-pct">${label}</span>
     </div>`;
   }).join('');
   const rangeEl = document.getElementById('aim-cp-men-range');
@@ -8221,11 +8252,58 @@ function aimRenderCompHeatmap() {
   if (!wrap) return;
   const ws = AIM_WORKSPACES.find(w => w.id === aimSelectedWorkspaceId) || AIM_WORKSPACES[0];
 
+  // Pre-compute filtered response counts per model for the current date/model window.
+  // AIM_HM_MODELS uses dashboard keys like 'google-aio'; r.provider_key uses snapshot keys like 'googleaio'.
+  // Build a reverse map so counts are keyed consistently by AIM_HM_MODELS key.
+  const _hmProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+  const _hmUseFiltered = (aimFilterDate !== 'all' || _hmProvKey) && window._aimAllResponses && window._aimAllResponses.length;
+  // _hmProvToHmKey: snapshot key (e.g. 'googleaio') -> heatmap model key (e.g. 'google-aio')
+  const _hmProvToHmKey = {};
+  Object.entries(AIM_PROVIDER_KEYS).forEach(function(kv) { _hmProvToHmKey[kv[1]] = kv[0]; });
+
+  // _hmData[hmModelKey][brandNorm] = mention count; _hmTotals[hmModelKey] = total responses for that model
+  const _hmData = {};
+  const _hmTotals = {};
+  if (_hmUseFiltered) {
+    window._aimAllResponses.forEach(function(r) {
+      if (_hmProvKey && r.provider_key !== _hmProvKey) return;
+      if (!_aimSrcDateInRange(r.iso_date || r.date)) return;
+      const provKey = r.provider_key;
+      if (!provKey) return;
+      const mk = _hmProvToHmKey[provKey] || provKey; // normalize to heatmap model key
+      _hmTotals[mk] = (_hmTotals[mk] || 0) + 1;
+      if (!_hmData[mk]) _hmData[mk] = {};
+      (r.brands || []).forEach(function(brandName) {
+        if (!brandName || typeof brandName !== 'string') return;
+        var nn = brandName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (nn) _hmData[mk][nn] = (_hmData[mk][nn] || 0) + 1;
+      });
+    });
+  }
+
+  // Get filtered heatmap value for a brand + heatmap model key; falls back to static aimHeatmapVal
+  function _hmVal(brand, modelKey) {
+    if (!_hmUseFiltered) return modelKey === 'all' ? aimHeatmapAllVal(brand) : aimHeatmapVal(brand, modelKey);
+    if (modelKey === 'all') {
+      // Average across all heatmap model keys
+      const vals = AIM_HM_MODELS.map(m => _hmVal(brand, m.key));
+      return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
+    }
+    const nn = (brand.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const total = _hmTotals[modelKey] || 0;
+    if (total > 0 && _hmData[modelKey]) {
+      const count = _hmData[modelKey][nn] || 0;
+      return Math.min(100, Math.round(count / total * 100));
+    }
+    // No filtered data for this model in the window: fall back to static value
+    return aimHeatmapVal(brand, modelKey);
+  }
+
   // sort brands, main brand always pinned to row 1
   const hmMain = ws.brands.find(b => b.isMain);
   const hmOthers = ws.brands.filter(b => !b.isMain).sort((a, b) => {
-    const va = aimHmSortCol === 'all' ? aimHeatmapAllVal(a) : aimHeatmapVal(a, aimHmSortCol);
-    const vb = aimHmSortCol === 'all' ? aimHeatmapAllVal(b) : aimHeatmapVal(b, aimHmSortCol);
+    const va = _hmVal(a, aimHmSortCol);
+    const vb = _hmVal(b, aimHmSortCol);
     return aimHmSortDir * (vb - va);
   });
   const sortedBrands = hmMain ? [hmMain, ...hmOthers] : hmOthers;
@@ -8264,7 +8342,7 @@ function aimRenderCompHeatmap() {
       </div>
     </td>`;
     const cells = visCols.map(m => {
-      const val = m.key === 'all' ? aimHeatmapAllVal(b) : aimHeatmapVal(b, m.key);
+      const val = _hmVal(b, m.key);
       const [r, g, bv] = aimHmTrafficColor(val);
       const textColor = val < 35 || val >= 65 ? '#fff' : '#1a1a1a';
       const isActive = aimHmSortCol === m.key;
@@ -8303,14 +8381,17 @@ function aimRenderCompHeatmap() {
 }
 
 function aimComputeAllCompSent() {
-  if (_aimCompSentCache) return _aimCompSentCache;
+  // Do not cache globally since result depends on active date/model filters
   var cache = {};
+  var activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
   var history = window._aimPromptResponseHistory || {};
   Object.keys(history).forEach(function(pid) {
     var byDate = history[pid] || {};
     Object.keys(byDate).forEach(function(date) {
+      if (!_aimSrcDateInRange(date)) return;
       var byProv = byDate[date] || {};
       Object.keys(byProv).forEach(function(prov) {
+        if (activeProvKey && prov !== activeProvKey) return;
         var resp = byProv[prov] || {};
         if (!resp.is_mentioned) return;
         var brands = resp.brands || [];
@@ -8327,7 +8408,6 @@ function aimComputeAllCompSent() {
       });
     });
   });
-  _aimCompSentCache = cache;
   return cache;
 }
 
@@ -8487,13 +8567,30 @@ function aimCompSentSplitReal(b) {
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   var entry = _aimFuzzyLookup(data, nn);
   if (entry && entry.total > 0) {
-    return {
-      pos: Math.round(entry.pos.length/entry.total*100),
-      neg: Math.round(entry.neg.length/entry.total*100),
-      neu: Math.round((entry.neu.length+entry.uncertain.length)/entry.total*100)
-    };
+    // Apply current date and model filters to the cached per-mention arrays
+    var activeProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+    function _filterMentions(arr) {
+      return (arr || []).filter(function(m) {
+        if (!_aimSrcDateInRange(m.date || '')) return false;
+        if (activeProvKey && m.model !== activeProvKey) return false;
+        return true;
+      });
+    }
+    var fPos = _filterMentions(entry.pos);
+    var fNeg = _filterMentions(entry.neg);
+    var fNeu = _filterMentions(entry.neu);
+    var fUnc = _filterMentions(entry.uncertain);
+    var fTotal = fPos.length + fNeg.length + fNeu.length + fUnc.length;
+    if (fTotal > 0) {
+      return {
+        pos: Math.round(fPos.length/fTotal*100),
+        neg: Math.round(fNeg.length/fTotal*100),
+        neu: Math.round((fNeu.length+fUnc.length)/fTotal*100)
+      };
+    }
+    // No filtered data: fall through to backend scores
   }
-  // Fallback to backend scores
+  // Fallback to backend scores (not filter-aware, used when no per-mention data exists)
   var cache = aimComputeAllCompSent();
   var cached = cache[nn];
   if (!cached||!cached.total) return {pos:0,neu:100,neg:0};
@@ -8608,7 +8705,22 @@ function aimGetCompMentionCount(b) {
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   var data = _aimBuildCompMentionData();
   var entry = _aimFuzzyLookup(data, nn);
-  if (entry && entry.total) return entry.total;
+  if (entry && entry.total) {
+    // Apply active date and model filters to per-mention arrays
+    var _mcProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
+    var _mcFiltered = aimFilterDate !== 'all' || _mcProvKey;
+    if (_mcFiltered) {
+      var _mcCount = entry.pos.concat(entry.neg).concat(entry.neu).concat(entry.uncertain || []).filter(function(m) {
+        if (!_aimSrcDateInRange(m.date || '')) return false;
+        if (_mcProvKey && m.model !== _mcProvKey) return false;
+        return true;
+      }).length;
+      if (_mcCount > 0) return _mcCount;
+      // Fall through if no matches after filtering
+    } else {
+      return entry.total;
+    }
+  }
   var sc = aimComputeAllCompSent();
   var cd = sc[nn] || _aimFuzzyLookup(sc, nn);
   if (cd && cd.total) return cd.total;
@@ -9041,7 +9153,10 @@ function _aimGetPromptData(numericId, apId) {
     });
   });
   const topDomains = Object.entries(domainCounts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([d])=>d);
-  return { topBrands, topDomains, totalBrands: Object.keys(brandCounts).length, totalDomains: Object.keys(domainCounts).length };
+  // Compute average position from filtered responses
+  const posVals = filtered.map(r => r.position ?? null).filter(v => v !== null && v > 0);
+  const avgPosition = posVals.length ? posVals.reduce((s, v) => s + v, 0) / posVals.length : null;
+  return { topBrands, topDomains, totalBrands: Object.keys(brandCounts).length, totalDomains: Object.keys(domainCounts).length, avgPosition };
 }
 
 function _aimGetFilteredSourceUrls() {
@@ -9081,6 +9196,30 @@ function _aimGetFilteredSourceDomains() {
   const provKey = aimFilterModel !== 'all' ? (_pm[aimFilterModel] || null) : null;
   const domainCounts = {};
 
+  // When model filter is active and _aimAllResponses is available, aggregate
+  // domain citations directly from responses for accurate date + model filtering.
+  if (provKey && window._aimAllResponses && window._aimAllResponses.length > 0) {
+    window._aimAllResponses.forEach(function(r) {
+      if (!_aimSrcDateInRange(r.iso_date || r.date)) return;
+      if (r.provider_key !== provKey) return;
+      (r.source_objects || r.sources || []).forEach(function(s) {
+        const url = typeof s === 'string' ? s : (s.url || s.link || '');
+        const domain = (url && url.startsWith('http'))
+          ? url.replace(/^https?:\/\/([^/]+).*/, '$1').replace(/^www\./, '')
+          : (typeof s === 'string' ? s : (s.domain || '')).replace(/^www\./, '');
+        if (domain) domainCounts[domain] = (domainCounts[domain] || 0) + 1;
+      });
+    });
+    if (Object.keys(domainCounts).length > 0) {
+      const total = Object.values(domainCounts).reduce((a,b)=>a+b,0) || 1;
+      return Object.entries(domainCounts).sort((a,b)=>b[1]-a[1]).slice(0,300).map(([domain,count]) => ({
+        domain, favicon:`https://www.google.com/s2/favicons?domain=${domain}&sz=32`,
+        mentions:count, share:parseFloat((count/total*100).toFixed(1))
+      }));
+    }
+    // Fall through to provider-aggregate path if _aimAllResponses has no source data
+  }
+
   if (provKey && window._aimSourcesByProvider?.[provKey]) {
     const provSrc = window._aimSourcesByProvider[provKey];
     if (aimFilterDate !== 'all' && window._aimSourcesByDate) {
@@ -9119,20 +9258,12 @@ function aimRenderSourceLineChart() {
   const _pm = AIM_PROVIDER_KEYS;
   const provKey = aimFilterModel !== 'all' ? (_pm[aimFilterModel] || null) : null;
 
-  if (srcByDate && Object.keys(srcByDate).length > 0) {
-    let allDates = Object.keys(srcByDate).sort().filter(_aimSrcDateInRange);
-    if (!allDates.length) allDates = Object.keys(srcByDate).sort();
-
-    const domainTotals = {};
-    const provSrcDomains = provKey && window._aimSourcesByProvider?.[provKey]
-      ? new Set(window._aimSourcesByProvider[provKey].map(s=>s.domain)) : null;
-    allDates.forEach(dt => {
-      (srcByDate[dt] || []).forEach(s => {
-        if (provSrcDomains && provSrcDomains.size > 0 && !provSrcDomains.has(s.domain)) return;
-        domainTotals[s.domain] = (domainTotals[s.domain]||0) + s.citation_count;
-      });
-    });
+  // Shared render helper: accepts {date: {domain: count}} and draws the line chart
+  function _srLineRender(domByDate) {
     const _SR_LINE_MAX = 20, _SR_LINE_SZ = 5;
+    const allDates = Object.keys(domByDate).sort();
+    const domainTotals = {};
+    allDates.forEach(function(dt){Object.entries(domByDate[dt]).forEach(function([d,c]){domainTotals[d]=(domainTotals[d]||0)+c;});});
     const _allDomsSorted = Object.entries(domainTotals).sort((a,b)=>b[1]-a[1]).slice(0,_SR_LINE_MAX).map(([d])=>d);
     const _srMaxPage = Math.max(0, Math.ceil(_allDomsSorted.length/_SR_LINE_SZ)-1);
     if ((window._aimSrLinePage||0) > _srMaxPage) window._aimSrLinePage = 0;
@@ -9141,24 +9272,54 @@ function aimRenderSourceLineChart() {
     const topDomains = _allDomsSorted.slice(_srStart, _srEnd);
     const _srDescEl = document.getElementById('aim-sr-line-desc');
     const _srRangeEl = document.getElementById('aim-sr-line-range');
-    if(_srDescEl) _srDescEl.textContent = 'Top '+(_allDomsSorted.length>0?(_srStart+1):'–')+'–'+_srEnd+' of '+_allDomsSorted.length+' domains';
-    if(_srRangeEl) _srRangeEl.textContent = (_allDomsSorted.length>0?(_srStart+1)+'–'+_srEnd:'–');
-    const labels = allDates.map(d => { try { const [y,m,dy]=d.split('-'); return new Date(+y,+m-1,+dy).toLocaleDateString('en-US',{month:'short',day:'numeric'}); } catch(e){return d;} });
-    const datasets = topDomains.map((domain,i) => ({
-      label:domain,
-      data:allDates.map(dt => { const s=(srcByDate[dt]||[]).find(x=>x.domain===domain); return s?s.citation_count:0; }),
-      borderColor:AIM_SOURCE_LINE_COLORS[i]||'#6b7280', backgroundColor:(AIM_SOURCE_LINE_COLORS[i]||'#6b7280')+'18',
-      borderWidth:1.8, pointRadius:2.5, tension:0.35, fill:false
-    }));
+    if (_srDescEl) _srDescEl.textContent = 'Top '+(_allDomsSorted.length>0?(_srStart+1):'–')+'–'+_srEnd+' of '+_allDomsSorted.length+' domains';
+    if (_srRangeEl) _srRangeEl.textContent = (_allDomsSorted.length>0?(_srStart+1)+'–'+_srEnd:'–');
+    const labels = allDates.map(function(d){try{const [y,m,dy]=d.split('-');return new Date(+y,+m-1,+dy).toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch(e){return d;}});
+    const datasets = topDomains.map(function(domain,i){return{label:domain,data:allDates.map(function(dt){return (domByDate[dt]&&domByDate[dt][domain])||0;}),borderColor:AIM_SOURCE_LINE_COLORS[i]||'#6b7280',backgroundColor:(AIM_SOURCE_LINE_COLORS[i]||'#6b7280')+'18',borderWidth:1.8,pointRadius:2.5,tension:0.35,fill:false};});
     const legendEl = document.getElementById('aim-sr-line-legend');
-    if (legendEl) legendEl.innerHTML = topDomains.map(d => `<div class="chart-legend-item">${aimBrandIcon(d,d,14)}<span style="margin-left:3px">${d}</span></div>`).join('');
-    aimChartInstances['srLine'] = new Chart(ctx, {
-      type:'line', data:{labels, datasets},
+    if (legendEl) legendEl.innerHTML = topDomains.map(function(d){return'<div class="chart-legend-item">'+aimBrandIcon(d,d,14)+'<span style="margin-left:3px">'+d+'</span></div>';}).join('');
+    aimChartInstances['srLine'] = new Chart(ctx, {type:'line',data:{labels,datasets},
       options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
         plugins:{legend:{display:false},datalabels:{display:false},tooltip:{enabled:false,external:aimMakeChartTooltip('aim-sr-tt','')}},
-        scales:{y:{min:0,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.03)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}
+        scales:{y:{min:0,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.03)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  }
+
+  // When a model filter is active and _aimAllResponses is available, build
+  // per-date domain counts directly from the response history so both date
+  // AND model filters are applied accurately with per-provider citation counts.
+  if (provKey && window._aimAllResponses && window._aimAllResponses.length > 0) {
+    const _respDomByDate = {};
+    window._aimAllResponses.forEach(function(r) {
+      if (!_aimSrcDateInRange(r.iso_date || r.date)) return;
+      if (r.provider_key !== provKey) return;
+      const dt = r.iso_date || r.date; if (!dt) return;
+      (r.source_objects || r.sources || []).forEach(function(s) {
+        const url = typeof s === 'string' ? s : (s.url || s.link || '');
+        const domain = (url && url.startsWith('http'))
+          ? url.replace(/^https?:\/\/([^/]+).*/, '$1').replace(/^www\./, '')
+          : (typeof s === 'string' ? s : (s.domain || '')).replace(/^www\./, '');
+        if (!domain) return;
+        if (!_respDomByDate[dt]) _respDomByDate[dt] = {};
+        _respDomByDate[dt][domain] = (_respDomByDate[dt][domain] || 0) + 1;
+      });
     });
-    return;
+    if (Object.keys(_respDomByDate).length > 0) { _srLineRender(_respDomByDate); return; }
+  }
+
+  if (srcByDate && Object.keys(srcByDate).length > 0) {
+    let allDates = Object.keys(srcByDate).sort().filter(_aimSrcDateInRange);
+    if (!allDates.length) allDates = Object.keys(srcByDate).sort();
+    const provSrcDomains = provKey && window._aimSourcesByProvider?.[provKey]
+      ? new Set(window._aimSourcesByProvider[provKey].map(s=>s.domain)) : null;
+    const _srcDomByDate = {};
+    allDates.forEach(function(dt) {
+      _srcDomByDate[dt] = {};
+      (srcByDate[dt] || []).forEach(function(s) {
+        if (provSrcDomains && provSrcDomains.size > 0 && !provSrcDomains.has(s.domain)) return;
+        _srcDomByDate[dt][s.domain] = s.citation_count;
+      });
+    });
+    _srLineRender(_srcDomByDate); return;
   }
 
   // Fallback
@@ -9231,34 +9392,39 @@ function aimRenderUrlLineChart() {
   var _provColors  = { chatgpt:'#10a37f', googleaimode:'#06b6d4', googleaio:'#f59e0b', perplexity:'#8b5cf6', gemini:'#4285f4' };
   var _provOrder   = ['chatgpt','googleaimode','googleaio','perplexity','gemini'];
   var _provDomains = { chatgpt:'openai.com', googleaimode:'google.com', googleaio:'google.com', perplexity:'perplexity.ai', gemini:'gemini.google.com' };
-  var allUrls;
-  if (aimFilterDate !== 'all' && window._aimUrlsByDate && Object.keys(window._aimUrlsByDate).length) {
-    var _urlDateTotals = {};
-    Object.keys(window._aimUrlsByDate).filter(_aimSrcDateInRange).forEach(function(dt) {
-      (window._aimUrlsByDate[dt] || []).forEach(function(u) { _urlDateTotals[u.url] = (_urlDateTotals[u.url]||0)+u.citation_count; });
-    });
-    var _topByDate = (window._aimTopSourceUrls || [])
-      .filter(function(u) { return (_urlDateTotals[u.url]||0) > 0; })
-      .map(function(u) { return Object.assign({}, u, { mentions: _urlDateTotals[u.url]||0 }); })
-      .sort(function(a,b) { return b.mentions - a.mentions; });
-    allUrls = (_topByDate.length > 0 ? _topByDate : (window._aimTopSourceUrls || [])).slice(0, _AIM_URL_CHART_MAX || 30);
-  } else {
-    allUrls = (window._aimTopSourceUrls || []).slice(0, _AIM_URL_CHART_MAX || 30);
-  }
-  // When model filter active, re-sort by that provider's count and fall back to
-  // domain-level filter when by_provider is not populated.
   var _urlActiveProvKey = aimFilterModel !== 'all' ? (AIM_PROVIDER_KEYS[aimFilterModel] || null) : null;
-  if (_urlActiveProvKey) {
-    var _provHasData = allUrls.some(function(u) { return u.by_provider && u.by_provider[_urlActiveProvKey]; });
-    if (_provHasData) {
-      allUrls = allUrls.slice().sort(function(a, b) {
-        return ((b.by_provider && b.by_provider[_urlActiveProvKey]) || 0) - ((a.by_provider && a.by_provider[_urlActiveProvKey]) || 0);
+  var allUrls;
+
+  // When model filter is active, use _aimGetFilteredSourceUrls which correctly
+  // filters by both date AND model from _aimAllResponses.
+  if (_urlActiveProvKey && window._aimAllResponses && window._aimAllResponses.length > 0) {
+    var _filteredUrls = _aimGetFilteredSourceUrls();
+    if (_filteredUrls && _filteredUrls.length > 0) {
+      // Rebuild by_provider map with only the active provider's counts (= filtered mention count)
+      allUrls = _filteredUrls.slice(0, _AIM_URL_CHART_MAX || 30).map(function(u) {
+        var bp = {}; bp[_urlActiveProvKey] = u.mentions;
+        return Object.assign({}, u, { by_provider: bp });
       });
-    } else if (window._aimSourcesByProvider && window._aimSourcesByProvider[_urlActiveProvKey] && window._aimSourcesByProvider[_urlActiveProvKey].length) {
-      var _pdSet = new Set(window._aimSourcesByProvider[_urlActiveProvKey].map(function(s) { return (s.domain||'').replace(/^www\./,''); }));
-      if (_pdSet.size > 0) allUrls = allUrls.filter(function(u) { return _pdSet.has((u.domain||'').replace(/^www\./,'')); });
     }
   }
+
+  // No model filter, or model filter returned nothing: use date-filtered _aimUrlsByDate
+  if (!allUrls) {
+    if (aimFilterDate !== 'all' && window._aimUrlsByDate && Object.keys(window._aimUrlsByDate).length) {
+      var _urlDateTotals = {};
+      Object.keys(window._aimUrlsByDate).filter(_aimSrcDateInRange).forEach(function(dt) {
+        (window._aimUrlsByDate[dt] || []).forEach(function(u) { _urlDateTotals[u.url] = (_urlDateTotals[u.url]||0)+u.citation_count; });
+      });
+      var _topByDate = (window._aimTopSourceUrls || [])
+        .filter(function(u) { return (_urlDateTotals[u.url]||0) > 0; })
+        .map(function(u) { return Object.assign({}, u, { mentions: _urlDateTotals[u.url]||0 }); })
+        .sort(function(a,b) { return b.mentions - a.mentions; });
+      allUrls = (_topByDate.length > 0 ? _topByDate : (window._aimTopSourceUrls || [])).slice(0, _AIM_URL_CHART_MAX || 30);
+    } else {
+      allUrls = (window._aimTopSourceUrls || []).slice(0, _AIM_URL_CHART_MAX || 30);
+    }
+  }
+
   var total = allUrls.length;
   var maxPage = Math.max(0, Math.ceil(total / (_AIM_URL_CHART_PAGE_SZ || 6)) - 1);
   if (_aimUrlChartPage > maxPage) _aimUrlChartPage = 0;
@@ -12763,6 +12929,8 @@ function aimApplySnapshot(snap) {
           sentiment_label: r.sentiment_label || 'neutral',
           sentiment_score: r.sentiment_score ?? 50,
           is_mentioned:    (r.visibility_score ?? 0) > 0 ? 1 : 0,
+          position:        r.position ?? r._aim_position ?? null,
+          visibility_score: r.visibility_score ?? null,
           prompt_id:       pid,
           prompt_text:     promptObj?.text || r.prompt_text || '',
           prompt_topic:    promptObj?.topic || 'General',
