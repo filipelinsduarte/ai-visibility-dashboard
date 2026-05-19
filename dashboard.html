@@ -7601,8 +7601,8 @@ function aimUpdateSentiment() {
   var posRate = classified ? Math.round(counts.positive / classified * 100) : 0;
 
   aimRenderSentDonut2(counts, posRate);
-  aimRenderCompSentimentTable();
-  aimRenderSentEntriesTable();
+  try { aimRenderCompSentimentTable(); } catch(e) { console.error('[AIM] CompSentTable error:', e); }
+  try { aimRenderSentEntriesTable(); } catch(e) { console.error('[AIM] SentEntries error:', e); }
 }
 
 function aimRenderSentDonut2(counts, posRate) {
@@ -8374,14 +8374,28 @@ function aimCompSentSplitReal(b) {
 }
 
 function aimComputeCompInsight(b) {
+  try {
   var data = _aimBuildCompMentionData();
   var nn = (b.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
   var entry = data[nn];
   if (!entry || entry.total === 0) {
-    return {
-      str: 'No AI responses mention this brand in the tracked period.',
-      wk: 'Expand prompt coverage to capture mentions of this competitor.'
-    };
+    // Fall back to backend sentiment counts for qualitative framing
+    var _sentCache = aimComputeAllCompSent();
+    var _cached = _sentCache[nn];
+    if (!_cached || !_cached.total) {
+      return { str: '', wk: '' };
+    }
+    var _total = _cached.total;
+    var _posR = Math.round(_cached.pos/_total*100);
+    var _negR = Math.round(_cached.neg/_total*100);
+    var _neuR = Math.round(_cached.neu/_total*100);
+    var _str = _posR >= 50 ? 'Consistently cited as a recommended option across tracked AI responses.'
+      : _neuR >= 70 ? 'Frequently referenced in AI responses, mostly in factual or comparative context.'
+      : 'Appears across multiple tracked responses with mixed framing.';
+    var _wk = _negR >= 30 ? 'Appears with critical framing in a notable share of responses — often in trade-off or limitation contexts.'
+      : _neuR >= 60 ? 'Mostly cited neutrally — rarely with strong positive endorsement.'
+      : '';
+    return { str: _str, wk: _wk };
   }
   function bestSnippet(arr) {
     if (!arr.length) return null;
@@ -8414,6 +8428,7 @@ function aimComputeCompInsight(b) {
     }
   }
   return { str: str, wk: wk };
+  } catch(e) { console.error('[AIM] CompInsight error:', e); return { str: '', wk: '' }; }
 }
 
 function aimCpSentPage(dir) {
@@ -8433,6 +8448,7 @@ function aimRenderCompSentimentTable() {
   const end = Math.min(start + 6, total);
   const slice = sorted.slice(start, end);
   tbody.innerHTML = slice.map(b => {
+    try {
     const vis = Math.min(100, aimGetBrandMetrics(b).vis * _aimTopicMult(b.name));
     const sp = aimCompSentSplitReal(b);
     const ins = aimComputeCompInsight(b);
@@ -8457,6 +8473,7 @@ function aimRenderCompSentimentTable() {
       <td>${ins.str ? `<span class="aim-comp-insight str">${ins.str}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
       <td>${ins.wk ? `<span class="aim-comp-insight wk">${ins.wk}</span>` : '<span style="color:var(--text-faint);font-size:11px">–</span>'}</td>
     </tr>`;
+    } catch(e) { console.error('[AIM] Row error:', b && b.name, e); return ''; }
   }).join('');
   const rangeEl = document.getElementById('aim-cp-sent-range');
   if (rangeEl) rangeEl.textContent = `${start + 1}–${end} of ${total}`;
