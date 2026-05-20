@@ -36,6 +36,8 @@ The dashboard is a single HTML file (`dashboard.html`) with no external dependen
 
 ## Quick start
 
+> **Just want to see the dashboard running locally?** See **[SETUP.md](./SETUP.md)** — copy-paste, 3 commands, no env vars required (the snapshot is already baked into `dashboard.html`). The steps below are for regenerating data from the live Peekaboo API.
+
 **1. Set environment variables**
 
 ```bash
@@ -400,6 +402,224 @@ The Peekaboo API allows 18 requests/minute. Both scripts include a built-in thro
 
 ---
 
-## License
+## Debugging log: "the dashboard is blank"
 
-Internal tool for AI Peekaboo. Not for redistribution.
+> A real session of taking this repo from "renders nothing" to "renders snapshot data." Written for a junior dev as a worked example of how to diagnose a broken self-contained HTML app. Branch: `fix/restore-missing-declarations`.
+
+### The symptom
+
+Cloned the repo, ran `python3 -m http.server 8080`, opened `http://localhost:8080/dashboard.html`. The page loaded — sidebar visible — but every panel was empty. No charts, no numbers, no errors visible to the user.
+
+### Step 1 — Verify the data is actually there
+
+When a "data dashboard" renders blank, there are only two possibilities:
+
+1. **No data** — the snapshot was never injected.
+2. **Data is present but rendering is broken** — usually a JS error halted the script.
+
+Cheapest check first: `wc -c dashboard.html` showed 16 MB. An empty template is closer to 1 MB. So the data is there. Confirmed by grepping for the injection markers:
+
+```bash
+grep -n "window._AIM_SNAPSHOT" dashboard.html | head
+```
+
+Found `window._AIM_SNAPSHOT={"generated_at":"2026-05-19T19:59:33","brand":"AI Peekaboo", ...}` injected on line 5214. **The data is present.** That immediately narrows the problem to "something is preventing JS from running it through to render."
+
+**Takeaway**: before debugging rendering logic, prove whether the data exists. Most "blank screen" issues are one of those two halves of the problem, and they need totally different fixes.
+
+### Step 2 — Read the browser console
+
+The user pasted these errors from DevTools:
+
+```
+dashboard.html:6987 Uncaught SyntaxError: Unexpected token ';' (at dashboard.html:6987:68)
+dashboard.html:16954 Uncaught SyntaxError: Unexpected token ';' (at dashboard.html:16954:66)
+```
+
+A `SyntaxError` is fatal: it stops the browser from parsing the **entire** `<script>` block. Not just that function — the whole script. Nothing after the syntax error runs. So `aimApplySnapshot(window._AIM_SNAPSHOT)` (the function that actually fills the dashboard with data) never executed. That fully explains "data is there, but UI is empty."
+
+Opened those lines. Both had the identical typo:
+
+```js
+// broken — missing closing paren on the parenthesized assignment
+const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = null;
+```
+
+Fixed to:
+
+```js
+const snap = window._AIM_SNAPSHOT || null;
+```
+
+**Takeaway**: when you see `Uncaught SyntaxError`, fix it before reading any other errors. Until the script parses cleanly, every other error message is either misleading or won't even show up. One syntax error can mask a hundred real bugs.
+
+### Step 3 — A new error appears (and that is good)
+
+After fixing the syntax errors, the console showed:
+
+```
+Uncaught ReferenceError: AIM_WORKSPACES is not defined
+    at aimRenderTopbar (dashboard.html:5876:15)
+    at HTMLDocument.<anonymous> (dashboard.html:13091:3)
+```
+
+This is **progress**. The script now parses, runs `DOMContentLoaded`, calls `aimRenderTopbar()` — and only then crashes because `AIM_WORKSPACES` doesn't exist. We've moved from "nothing runs" to "things run until they don't."
+
+Where is `AIM_WORKSPACES` supposed to come from? Search:
+
+```bash
+grep -nE "^(const|let|var) +AIM_WORKSPACES" dashboard.html
+# (no output)
+```
+
+It's referenced 12 times across the file but **never declared**. Same story for `AI_BRANDS` and `aimSelectedWorkspaceId`. The codebase is using these as globals that don't exist.
+
+**Takeaway**: when one error is fixed and a different one appears, you're making progress, not going backwards. Track the *frontier of the error* — each new error is a more specific clue than the previous one.
+
+### Step 4 — Use git history to find the missing pieces
+
+When something is referenced but never declared, it was almost certainly declared once and got removed. `git log` is your friend:
+
+```bash
+# Find every commit that ever touched a string
+git log --all --oneline -S "const AIM_WORKSPACES" -- dashboard.html
+
+# Output included:
+# fa46607 Initial release: AI Monitoring Dashboard
+```
+
+So it existed in the very first commit. Extract it directly without checking out the branch:
+
+```bash
+git show fa46607:dashboard.html | grep -nE "^(const|let|var) +AIM_WORKSPACES"
+# 2905:const AIM_WORKSPACES = [
+```
+
+`git show <sha>:<path>` reads a file as it existed at any commit — no need to `git checkout` and risk losing your in-progress work.
+
+**Takeaway**: `git log -S "string"` (the "pickaxe") finds every commit that changed how often a string appears. It's the right tool when you want to ask "when did this code disappear?" Don't use `git log --grep` for that — `--grep` searches commit messages, not the diff content.
+
+### Step 5 — Find every missing declaration in one pass
+
+Rather than play whack-a-mole one `ReferenceError` at a time, list every top-level declaration in the original vs current, and diff:
+
+```bash
+git show fa46607:dashboard.html | grep -oE "^(const|let|var) +[A-Za-z_][A-Za-z0-9_]+" | awk '{print $2}' | sort -u > /tmp/orig.txt
+grep -oE "^(const|let|var) +[A-Za-z_][A-Za-z0-9_]+" dashboard.html | awk '{print $2}' | sort -u > /tmp/head.txt
+comm -23 /tmp/orig.txt /tmp/head.txt
+```
+
+Output: 13 missing declarations. Far better to know all 13 up front than to discover them one tab-click at a time.
+
+**Takeaway**: when you find one instance of a class of bug, search for the whole class. One missing declaration usually means there are others — fixing them in a batch is much faster than waiting for users to find each one.
+
+### Step 6 — Restore minimally, in the right place
+
+The 13 missing declarations were re-inserted just before `const AIM_PROVIDER_KEYS = …` in the same neighborhood as the other seed-data globals (`AIM_VIS_BY_MODEL`, `AIM_SENT_BY_MODEL`, `AIM_DATE_CONFIGS`). Why there? Two reasons:
+
+1. **Execution order**: they must exist before `DOMContentLoaded` fires `aimRenderTopbar()` on line ~13091. Anywhere in the script body before that works.
+2. **Locality**: putting them next to similar globals makes the code easier to read for the next person.
+
+I did NOT re-inject two declarations that the original had — `AIM_PROMPT_COMP_RANKINGS` and `AIM_TOPIC_COLORS`. Both are already declared elsewhere in HEAD. Adding them again would just produce a new `SyntaxError: Identifier 'AIM_PROMPT_COMP_RANKINGS' has already been declared`.
+
+**Takeaway**: a "copy from the old version" fix is only safe if you've checked that you're not creating duplicates. JS doesn't let you redeclare a `const` or `let` at the same scope.
+
+### Step 7 — Sanity-check the fix works
+
+```bash
+# All 13 declarations exist exactly once each
+for v in AI_BRANDS AIM_WORKSPACES aimSelectedWorkspaceId aimCompMentionsPage \
+         aimCompSentPage aimCpHeatmapPageIdx aimHmSortCol aimHmSortDir \
+         AIM_HM_PAGE_SIZE AIM_HM_MODELS AIM_HM_ALL AIM_COMP_INSIGHTS AIM_VIS_DATA; do
+  echo "$v: $(grep -cE "^(const|let|var) +$v " dashboard.html)"
+done
+
+# No remaining instances of the broken paren pattern
+grep -c 'window._AIM_SNAPSHOT = null;' dashboard.html  # expect 0
+```
+
+Then a **hard refresh** in the browser (`Cmd+Shift+R`) — important because Python's `http.server` happily returns `304 Not Modified` and the browser will keep showing the broken file from cache.
+
+**Takeaway**: a static-file dev server has no idea your file changed. If your fix doesn't seem to land, your browser is probably serving you a stale cached copy. Open DevTools → Network → check "Disable cache" and leave it on while you work.
+
+---
+
+## What was wrong, and why it matters
+
+### The two classes of bug
+
+**Class A — `SyntaxError` (2 instances, blocks everything)**
+
+```js
+// dashboard.html:6987 and :16954
+const snap = window._AIM_SNAPSHOT || (window._AIM_SNAPSHOT = null;
+//                                                              ^ missing )
+```
+
+A single `SyntaxError` anywhere in the `<script>` block means the **entire** block is skipped. Not the line, not the function — the whole tag. Browsers do not "try to keep going past a syntax error" inside a script.
+
+**Class B — `ReferenceError` (13 instances, blocks code paths that touch them)**
+
+13 globals were referenced across the file but never declared:
+
+| Variable | What it does |
+|---|---|
+| `AI_BRANDS` | List of brands shown in sidebar/topbar |
+| `AIM_WORKSPACES` | Multi-brand workspace config |
+| `aimSelectedWorkspaceId` | Which workspace is currently active |
+| `aimCompMentionsPage` / `aimCompSentPage` / `aimCpHeatmapPageIdx` | Pagination state for Competitors tab |
+| `aimHmSortCol` / `aimHmSortDir` | Sort state for the heatmap |
+| `AIM_HM_PAGE_SIZE` / `AIM_HM_MODELS` / `AIM_HM_ALL` | Heatmap config |
+| `AIM_COMP_INSIGHTS` | Per-competitor strength/weakness blurbs |
+| `AIM_VIS_DATA` | Mock chart series (overwritten by snapshot) |
+
+The first one (`AIM_WORKSPACES`) blew up during `DOMContentLoaded` because the very first function the dashboard runs (`aimRenderTopbar`) reads from it. That meant `aimApplySnapshot()` — called *after* `aimRenderTopbar` in the same listener — never ran. The 16 MB of snapshot data was sitting on `window._AIM_SNAPSHOT` waiting, but nothing was reading it.
+
+### Why these declarations went missing (informed guess)
+
+The repo has commits like `Revert public template to last known-good state` and a revert of the revert. Comparing the original `fa46607` (72 top-level declarations) to current HEAD (133 declarations), the codebase has clearly been refactored — but 13 declarations got dropped along the way.
+
+The pattern suggests an automated "remove unused variables" pass that misclassified these globals as dead code. The catch: these globals are **populated later via mutation** (`AI_BRANDS[0].visibility = avgVis`), not direct assignment. A static analyzer that only looks for `X = …` won't see them being used and will flag them as unused.
+
+### Why the mock seed data doesn't pollute the real dashboard
+
+You might wonder: "if we restored mock seed data with fake competitor names like 'Profound, 67% visibility', won't that show up?" No. `aimApplySnapshot(snap)` mutates these globals in place when it runs:
+
+```js
+AI_BRANDS[0].visibility = avgVis;            // overwrites mock
+AI_BRANDS[0].sentiment  = avgSent;
+const _ws1 = AIM_WORKSPACES.find(w => w.id === 1);
+// _ws1.brands gets repopulated from snap.brand_global_vis
+```
+
+So the seed values are scaffolding. They have to exist so the script can parse and the boot sequence can run, but they get replaced with real snapshot data within milliseconds.
+
+---
+
+## Takeaways for a junior dev
+
+These translate beyond this repo to almost any debugging session.
+
+1. **Separate "no data" from "broken rendering" before doing anything else.** The fixes are completely different. A two-minute check (file size, grep for data markers) saves you an hour of looking in the wrong place.
+
+2. **Fix `SyntaxError` first, always.** Until your script parses, nothing else in the file runs. Don't try to interpret other errors; they're either misleading or won't show up.
+
+3. **A new error after a fix is a sign of progress.** "It used to crash on line 1, now it crashes on line 10" means 9 things are now working. Track the frontier of the error, not the count.
+
+4. **`git log -S "string"` is the right tool for "when did this disappear?"** It searches the *diff content* across history. `git log --grep` searches commit messages — a different question. `git show <sha>:<path>` lets you read a file at any historical commit without checking out the branch.
+
+5. **When you find one bug of a kind, search for the whole kind.** One missing global usually means several. One typo'd `}` usually means there's another somewhere. Find them all in one pass instead of letting users discover them one click at a time.
+
+6. **A static-file dev server doesn't know your file changed.** If your fix doesn't seem to land, you're almost certainly looking at a cached browser copy. DevTools → Network → "Disable cache" while you debug.
+
+7. **Static analyzers ("remove unused vars") can produce confidently-wrong results** for code that uses mutation patterns. If a variable is declared once and then *mutated* (not reassigned), an unused-variable check may flag it as dead. This is one of the few places where `// eslint-disable` is genuinely justified.
+
+8. **Self-contained HTML files have no module system, so order matters.** Every `<script>` block runs top-to-bottom in source order, all globals share one namespace, and there's no compile-time check that the things you reference actually exist. The freedom is great until it isn't.
+
+9. **Restore minimally, in the right place.** When patching from history, only bring back what's actually missing. Put it where similar code lives, not at the top of the file. Future readers will thank you.
+
+10. **Hard-refresh before you trust anything.** `Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Linux/Windows. Combine with DevTools cache disable.
+
+---
+
+## License
