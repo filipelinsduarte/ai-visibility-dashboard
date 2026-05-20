@@ -36,6 +36,8 @@ The dashboard is a single HTML file (`dashboard.html`) with no external dependen
 
 ## Quick start
 
+> **Just want to see the dashboard running locally?** See **[SETUP.md](./SETUP.md)** — copy-paste, 3 commands, no env vars required (the snapshot is already baked into `dashboard.html`). The steps below are for regenerating data from the live Peekaboo API.
+
 **1. Set environment variables**
 
 ```bash

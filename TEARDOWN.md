@@ -109,8 +109,10 @@ Why these five? They're the functions where a bug would silently corrupt every c
 ## How to read the rest of this material
 
 - Start: **this file** (you're here).
+- First: **`SETUP.md`** if you haven't actually got the dashboard running locally yet.
 - Then: **`README.md` → "Debugging log"** for the worked example of the recent fix.
 - Then: **`COMPONENT_STRUCTURE.md`** for the rules behind when to extract anything (the *why*, not the *what*).
+- Then: **`TDD_PHILOSOPHY.md`** for testing strategy aimed at non-technical maintainers using AI tools.
 - Then: **`REVIEW_ARCHITECTURE.md`** for KISS/SOLID/TDD with line refs (applies those rules to this repo).
 - Then: **`REVIEW_FRONTEND.md`** for perf/a11y/render with line refs.
 
